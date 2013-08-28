@@ -689,7 +689,7 @@ projekktor = $p = function() {
         pluginName = '',
         pluginObj = null;
 
-        // nothing to do / we don´t do this twice
+        // nothing to do
         if (this._plugins.length>0 || plugins.length==0) return;        
         for(var i=0; i<plugins.length; i++) {
             pluginName = "projekktor"+plugins[i].charAt(0).toUpperCase() + plugins[i].slice(1);
@@ -848,7 +848,7 @@ projekktor = $p = function() {
                 if (this.env.mouseIsOver==false)
                     break;
         
-                // make sure we don´t mess with input-overlays here:
+                // make sure we do not mess with input-overlays here:
                 if ( "|TEXTAREA|INPUT".indexOf('|' + evt.target.tagName.toUpperCase()) > -1){        
                     return;
                 }
@@ -892,7 +892,7 @@ projekktor = $p = function() {
     this._keyListener = function(evt) {
         if (!this.env.mouseIsOver) return;
             
-            // make sure we don´t mess with input-overlays here:
+            // make sure we do not mess with input-overlays here:
         if ( "|TEXTAREA|INPUT".indexOf('|' + evt.target.tagName.toUpperCase()) > -1){        
             return;
         }             
@@ -1222,7 +1222,7 @@ projekktor = $p = function() {
         }
         // if mediacontainer does not exist ...
         if (this.env.mediaContainer.length==0) {
-        // and there´s a "display", injectz media container
+        // and there is a "display", injectz media container
         if ( this.env.playerDom.find('.'+this.getNS()+'display').length>0 ) {
             this.env.mediaContainer = $(document.createElement('div'))
             .attr({'id':this.getId()+"_media"}) // IMPORTANT IDENTIFIER
