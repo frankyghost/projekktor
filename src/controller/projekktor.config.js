@@ -100,10 +100,10 @@ projekktorConfig.prototype = {
     /* debug on / off */
     _debug:                         false,
     
-    /* the width of the player - >0= overwrite destNodes width, 0= keep destNode´s width, false=maintain ratio */
+    /* the width of the player - >0= overwrite destNodes width, 0= keep dest node width, false=maintain ratio */
     _width:                         null,
     
-    /* guess what.... the hight of the player - >0= overwrite destNodes height, 0 = keep destNode´s width, false=maintain ratio */
+    /* guess what.... the hight of the player - >0= overwrite destNodes height, 0 = keep height , false=maintain ratio */
     _height:                        null,
     
     _ratio:                         false,
@@ -221,6 +221,6 @@ projekktorConfig.prototype = {
     /* sets the duration for media items without a duration (images & html pages) */
     duration:                       0,
     
-    /* sets the player´s additional CSS class */
+    /* add this CSS classes on startup */
     className:                      ''
 };

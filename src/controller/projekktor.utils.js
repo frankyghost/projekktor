@@ -217,7 +217,7 @@ jQuery(function ($) {
 				return result;
 
 			// jquerx 1.4.2 IE flash <object> issue workaround:
-			// this doesn´t work in IE: destObj.append(result);
+			// this does not work in IE: destObj.append(result);
 			dest.get(0).innerHTML = result;
 
 			if (shield !== false) {
@@ -252,7 +252,7 @@ jQuery(function ($) {
 		},
 
 		/**
-		 * replaces {}-tags with parameter´s equialents
+		 * replaces {}-tags with parameter equialents
 		 * @public
 		 * @param (String) Da string to get processed
 		 * @param (Object) Object holding data to fill in
@@ -546,7 +546,7 @@ jQuery(function ($) {
             return "0";
         },
 
-		/* returns the version of the flash player installed for user´s browser. returns 0 on none. */
+		/* returns the version of the flash player installed on client. returns 0 on none. */
 		FLASH: function (typ) {
 			try {
 				try {

@@ -489,7 +489,7 @@ jQuery(function ($) {
             if (instant)
                 this._noHide = false;
 
-            // don´t hide nao
+            // do not hide nao
             if (this._noHide || this.cb.hasClass('inactive'))
                 return;
 

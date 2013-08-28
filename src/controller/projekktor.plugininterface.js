@@ -79,7 +79,7 @@ projekktorPluginInterface.prototype = {
     },
     
     /**
-    * applies a new dom element to the player in case it´s not yet present
+    * applies a new dom element to the player in case it is not yet present
     * also transparently applies the cssclass prefix as configured
     * 
     * @private

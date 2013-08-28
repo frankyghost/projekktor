@@ -42,7 +42,7 @@ $p.newModel({
 	// load youtube API stuff if required:
 	if (window.ProjekktorYoutubePlayerAPIReady!==true) {
 	    $.getScript('http://www.youtube.com/player_api');
-	    // we can´t use the getscript onready callback here
+	    // we ca not use the getscript onready callback here
 	    // coz youtube does some additional ubersecret stuff
 	    (function() {
 		try{
