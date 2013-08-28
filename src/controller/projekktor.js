@@ -321,7 +321,7 @@ projekktor = $p = function() {
 
         for(var index in data.file) {
             if (data.file.hasOwnProperty(index)) {
-                // mööööp
+                // meeeep
                 if (index=='config') continue;
         
                 // just a filename _> go object
