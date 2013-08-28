@@ -1,0 +1,34 @@
+{
+  "name": "projekktor",
+  "title": "Projekktor",
+  "description": "Video (and audio) player for the web, written in JavaScript",
+  "version": "1.2.36",
+  "homepage": "http://www.projekktor.com",
+  "author": {
+    "name": "Sascha Kluger, Spinning Airwhale Media",
+    "url": "http://www.spinningairwhale.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fastcompany/projekktor.git"
+  },
+  "licenses": [
+    {
+      "type": "GNU General Public License",
+      "url": "http://www.projekktor.com/license.php"
+    }
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "grunt-compare-size": "~0.4.0",
+    "grunt-git-authors": "1.2.0",
+    "grunt-update-submodules": "0.2.0",
+    "grunt-contrib-watch": "0.3.1",
+    "grunt-contrib-jshint": "0.3.0",
+    "grunt-contrib-uglify": "0.2.0",
+    "grunt": "0.4.1",
+    "gzip-js": "0.3.1",
+    "archiver": "~0.4.2"
+  },
+  "keywords": []
+}
