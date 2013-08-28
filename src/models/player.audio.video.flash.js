@@ -11,7 +11,7 @@
  * the Projekktor environment.
  *
  * JARIS Player:
- * copyright 2010 Jefferson González, Jefferson Gonzalez, http://jarisflvplayer.org
+ * copyright 2010 Jefferson Gonzalez, http://jarisflvplayer.org
  * under GNU LESSER GENERAL PUBLIC LICENSE 3
 */
 jQuery(function($) {
