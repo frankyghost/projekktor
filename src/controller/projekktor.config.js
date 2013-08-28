@@ -58,7 +58,7 @@ projekktorConfig.prototype = {
     /* "true" will stop all other player instances but the one the user clicked play on. */
     _thereCanBeOnlyOne:             true,
     
-    /* on "true" try to leave fullscreen on player "complete" - doesn´t seem to work properly in Firefox... yeah! */
+    /* on "true" try to leave fullscreen on player "complete" - does not seem to work properly in Firefox... yeah! */
     _leaveFullscreen:               false,
             
     /* An array of items to be played. Check http://www.projekktor.com/docs/playlists to learn more */
