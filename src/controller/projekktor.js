@@ -2728,7 +2728,7 @@ projekktor = $p = function() {
             });
         }
 
-        // ... from media tag´s children
+        // ... from media tag children
         // ... within a lame browser (IE <9) ...
         if (!$('<video/>').get(0).canPlayType) {
             var childNode = domNode;
@@ -2900,7 +2900,7 @@ projekktor = $p = function() {
         var ref = this,
                 files=[];
 
-        // load and initialize plugins´
+        // load and initialize plugins
         this._registerPlugins();
 
 
