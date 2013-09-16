@@ -1142,7 +1142,7 @@ projekktor = $p = function() {
     this.getItem = function() {
         // ignore NA dummy
         if (this.media.length==1 && this.media[0].mediaModel=='na') {
-            return {};
+            return null;
         }
 
         // some shortcuts    
@@ -1154,7 +1154,7 @@ projekktor = $p = function() {
             case 'current':
                 return $.extend(true, {}, this.media[this._currentItem] || {});
             case '*':
-                return $.extend(true, {}, this.media || {});
+                return $.extend(true, [], this.media || []);
             default:
                 return $.extend(true, {}, this.media[arguments[0] || this._currentItem] || {});
         }
