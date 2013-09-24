@@ -87,7 +87,7 @@ $p.newModel({
     applySrc: function() {
         var ref = this,
             sources = this.getSource();
-
+console.log(sources)
         this.mediaElement.get(0).api_source(sources[0].src);
         
         this.seekedListener();            

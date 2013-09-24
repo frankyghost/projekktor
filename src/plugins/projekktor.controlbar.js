@@ -804,13 +804,14 @@ jQuery(function ($) {
             this.displayProgress();
         },
 
-        volumeHandler: function (value) {                
-            if (value>0)
-                this.cookie('muted', false);
-                
-            if (!this.cookie('muted'))
-                this.cookie('volume', value);
-                
+        volumeHandler: function (value) {
+            try {
+               if (value>0)
+                   this.cookie('muted', false);
+                   
+               if (!this.cookie('muted'))
+                   this.cookie('volume', value);
+            } catch(e){console.log(e)}
             this.displayVolume(this._getVolume());
         },
 

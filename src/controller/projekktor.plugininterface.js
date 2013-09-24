@@ -205,7 +205,7 @@ projekktorPluginInterface.prototype = {
             result = null,
             cookieString = '',
             tmp = storedData = jQuery.parseJSON(eval(result = new RegExp('(?:^|; )' + encodeURIComponent(this.getConfig('cookieName')+"_"+this.name) + '=([^;]*)').exec(document.cookie)) ? decodeURIComponent(result[1]) : null);
-    
+
         if (typeof storedData!='object' || storedData==null) {
             storedData = {};
             if (key!=null)
@@ -238,12 +238,11 @@ projekktorPluginInterface.prototype = {
        
         // set cookie:
         t.setDate(t.getDate() + (ttl || this.getConfig('cookieExpiry', 0)));
-        
+      
         cookieString = encodeURIComponent(this.getConfig('cookieName', 'projekktor')+"_"+this.name)+'='
             +encodeURIComponent(storedData)
             +'; expires=' + ((ttl==false) ? "Thu, 01 Jan 1970 00:00:01 GMT" : t.toUTCString())
-            +'; path=' + this.getConfig('cookiePath', '/');
-            
+   
         if (this.getConfig('cookieDomain', false)) {
             cookieString += '; domain=' + options.domain;
         }
