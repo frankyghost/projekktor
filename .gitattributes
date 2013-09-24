@@ -1,1 +1,11 @@
-* eol=lf
+* text=auto eol=lf
+
+*.jar binary
+*.mp3 binary
+*.mp4 binary
+*.ogv binary
+*.png binary
+*.webm binary
+*.png binary
+*.psd binary
+*.gif binary
