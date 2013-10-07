@@ -36,7 +36,7 @@ if (!!document.createElement('video').canPlayType) {
     )();
 }
 
-// this object is returned when multiple player's are requested
+// this object is returned in case multiple player's are requested
 function Iterator(arr) {
     this.length = arr.length;
     this.each = function(fn) {$.each(arr, fn);};
@@ -44,7 +44,7 @@ function Iterator(arr) {
 };
 
 // make sure projekktor works with jquery 1.3, 1.4, 1.5, 1.6:
-if ($.fn.prop===null) {
+if (!$.fn.prop) {
     $.fn.prop = function(arga, argb) {
         return $(this).attr(arga, argb);
     };
