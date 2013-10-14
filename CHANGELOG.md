@@ -1,6 +1,20 @@
 PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
+V1.2.39
+=======
+
+  addtions:
+  * [core] added OSMF player model
+  
+  fixes:
+  * [core] fixed jQuery 1.4 issues
+
+  changes:
+  * [core] made OSMF player model default
+  
+  
+
 V1.2.38
 =======
   
