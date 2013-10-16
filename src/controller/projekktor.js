@@ -261,6 +261,54 @@ projekktor = $p = function() {
         return resultIdx;
     };
 
+    this._canPlay = function(tp, platform, streamType) {    
+        var ref = this,
+            checkIn = [],
+            checkFor = [],
+            st = streamType || 'http',
+            pltfrm = (typeof platform=='object') ? platform : [platform],
+            type = (tp) ? tp.replace(/x-/, '') : undefined,
+            tm = ref._testMediaSupport();
+
+        $.each(pltfrm, function(nothing, plt) {
+            $.each($.extend(tm[st], tm['*'] || []) || [], function(thisPlatform, val) {
+                if (plt!=null)
+                    if (thisPlatform!=plt)
+                        return true;               
+                checkIn = $.merge(checkIn, this);
+                return true;
+            });
+        });
+
+        if (checkIn.length===0) {
+            return false;
+        }
+
+        switch (typeof type) {
+            case 'undefined':
+                return checkIn.length>0;
+            case 'string':                    
+                if (type=='*')
+                    return checkIn;
+                checkFor.push(type);
+                break;
+            case 'array':
+                checkFor = type;
+                break;
+        }
+              
+        for(var i in checkFor) {
+            if ($p.mmap.hasOwnProperty(i)) {
+                if (typeof checkFor[i] !== 'string') break;
+                if ($.inArray( checkFor[i], checkIn)>-1) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    };    
+    
     /* apply available data and playout models */
     this._prepareMedia = function(data) {
         var ref = this,
@@ -276,33 +324,57 @@ projekktor = $p = function() {
         for(var i in $p.mmap ) {
             if ($p.mmap.hasOwnProperty(i)) {
                 platforms = (typeof $p.mmap[i].platform=='object') ? $p.mmap[i].platform : [ $p.mmap[i].platform ];
-                $.each(platforms, function(_na, platform) {        
-                    if ( !ref._canPlay($p.mmap[i].type, platform, data.config.streamType) )
-                        return true;                    
-  
-                    // set priority level
-                    $p.mmap[i].level = $.inArray(platform, ref.config._platforms);
-                    $p.mmap[i].level = ($p.mmap[i].level<0) ? 100 : $p.mmap[i].level;
-    
-                    extRegEx.push( '.'+$p.mmap [i].ext );
-    
-                    if (!extTypes[$p.mmap[i].ext]) {
-                        extTypes[$p.mmap[i].ext] = [];
-                    }
-    
-                    extTypes[$p.mmap[i].ext].push( $p.mmap[i] );
-
-                    if ($p.mmap[i].streamType==null || data.config.streamType==null || $.inArray(data.config.streamType, $p.mmap[i].streamType)>-1 || $p.mmap[i].streamType=='*') {
-                        if (!typesModels[$p.mmap[i].type]) {
-                            typesModels[$p.mmap[i].type] = [];
+                $.each(platforms, function(_na, platform) {
+                
+                    var k = 0,
+                        streamType = 'http';
+                    
+                    for (var j in data.file) {
+                        if (data.file.hasOwnProperty(j)) {
+                        
+                            streamType = data.file[j].streamType || ref.getConfig('streamType') || 'http';
+                        
+                            if (j==='config') continue;
+                            if ( !ref._canPlay($p.mmap[i].type, streamType) ) {
+                                k++;
+                            }
+                            
+                            // this platform does not support any of the provided streamtypes:
+                            if (k===0) {
+                                return false;
+                            }
+                            
+                            // set priority level
+                            $p.mmap[i].level = $.inArray(platform, ref.config._platforms);
+                            $p.mmap[i].level = ($p.mmap[i].level<0) ? 100 : $p.mmap[i].level;
+                            
+                            // upcoming fun:
+                            extRegEx.push( '.'+$p.mmap[i].ext );
+                            
+                            // build extension2filetype map
+                            if (!extTypes[$p.mmap[i].ext]) {
+                                extTypes[$p.mmap[i].ext] = [];
+                            }                            
+                            extTypes[$p.mmap[i].ext].push( $p.mmap[i] );
+                            
+                            if ($p.mmap[i].streamType===null || $p.mmap[i].streamType=='*' || $.inArray(streamType, $p.mmap[i].streamType)>-1) {
+                                if (!typesModels[$p.mmap[i].type]) {
+                                    typesModels[$p.mmap[i].type] = [];
+                                }
+                                
+                                if ( typesModels[$p.mmap[i].type].indexOf( $p.mmap[i] )==-1) {
+                                    typesModels[$p.mmap[i].type].push( $p.mmap[i] );                        
+                                }
+                                
+                            }
+                            return true;                            
                         }
-                        typesModels[$p.mmap[i].type].push( $p.mmap[i] );                        
                     }
 
-                    return true;
                 });
             }
         }
+
 
         extRegEx = '^.*\.(' + extRegEx.join('|') + ")$";
 
@@ -1335,51 +1407,6 @@ projekktor = $p = function() {
     this.getCanPlayNatively = function(type) {
         return this._canPlay(type, 'native');
     }
-
-    this._canPlay = function(tp, platform, streamType) {    
-        var ref = this,
-            checkIn = [],
-            checkFor = [],
-            st = streamType || 'http',
-            pltfrm = (typeof platform=='object') ? platform : [platform],
-            type = (tp) ? tp.replace(/x-/, '') : undefined,
-            tm = ref._testMediaSupport();
-
-        $.each(pltfrm, function(nothing, plt) {
-            $.each($.extend(tm[st], tm['*'] || []) || [], function(thisPlatform, val) {
-                if (plt!=null)
-                    if (thisPlatform!=plt)
-                        return true;               
-                checkIn = $.merge(checkIn, this);
-                return true;
-            })
-        })
-
-        if (checkIn.length==0) {
-            return false;
-        }
-
-        switch (typeof type) {
-            case 'undefined':
-                return checkIn.length>0
-            case 'string':                    
-                if (type=='*')
-                    return checkIn;
-                checkFor.push(type);
-                break;
-            case 'array':
-                checkFor = type;
-                break;
-        }
-              
-        for(var i in checkFor) {
-            if (typeof checkFor[i] !== 'string') break;
-            if ($.inArray( checkFor[i], checkIn)>-1)
-                return true;
-        }
-
-        return false;
-    };
     
     this.getPlatform = function() {
         return this.media[this._currentItem].platform  || 'error';
