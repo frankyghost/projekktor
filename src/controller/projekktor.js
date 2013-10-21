@@ -261,15 +261,15 @@ projekktor = $p = function() {
         return resultIdx;
     };
 
-    this._canPlay = function(tp, platform, streamType) {    
+    this._canPlay = function(mediaType, platform, streamType) {    
         var ref = this,
             checkIn = [],
             checkFor = [],
             st = streamType || 'http',
             pltfrm = (typeof platform=='object') ? platform : [platform],
-            type = (tp) ? tp.replace(/x-/, '') : undefined,
+            type = (mediaType) ? mediaType.replace(/x-/, '') : undefined,
             tm = ref._testMediaSupport();
-
+            
         $.each(pltfrm, function(nothing, plt) {
             $.each($.extend(tm[st], tm['*'] || []) || [], function(thisPlatform, val) {
                 if (plt!=null)
@@ -312,70 +312,81 @@ projekktor = $p = function() {
     /* apply available data and playout models */
     this._prepareMedia = function(data) {
         var ref = this,
+            types = [],
             mediaFiles = [],
             qualities = [],
             extTypes = {},
             typesModels = {},
             modelSets = [],
             result = {},
-            extRegEx = [];
+            extRegEx = [],
+            bestMatch = 0;
 
         // build regex string and filter dublicate extensions and more ...        
-        for(var i in $p.mmap ) {
-            if ($p.mmap.hasOwnProperty(i)) {
-                platforms = (typeof $p.mmap[i].platform=='object') ? $p.mmap[i].platform : [ $p.mmap[i].platform ];
+        for(var mmapIndex in $p.mmap ) {
+            if ($p.mmap.hasOwnProperty(mmapIndex)) {
+                platforms = (typeof $p.mmap[mmapIndex].platform=='object') ? $p.mmap[mmapIndex].platform : [ $p.mmap[mmapIndex].platform ];
                 $.each(platforms, function(_na, platform) {
-                
+            
                     var k = 0,
                         streamType = 'http';
                     
                     for (var j in data.file) {
                         if (data.file.hasOwnProperty(j)) {
-                        
-                            streamType = data.file[j].streamType || ref.getConfig('streamType') || 'http';
-                        
                             if (j==='config') continue;
-                            if ( !ref._canPlay($p.mmap[i].type, streamType) ) {
+                            
+                            streamType = data.file[j].streamType || ref.getConfig('streamType') || 'http';
+
+                            if ( ref._canPlay($p.mmap[mmapIndex].type, platform, streamType) ) {
                                 k++;
                             }
                             
                             // this platform does not support any of the provided streamtypes:
                             if (k===0) {
-                                return false;
+                                continue;
                             }
-                            
+                      
                             // set priority level
-                            $p.mmap[i].level = $.inArray(platform, ref.config._platforms);
-                            $p.mmap[i].level = ($p.mmap[i].level<0) ? 100 : $p.mmap[i].level;
+                            $p.mmap[mmapIndex].level = $.inArray(platform, ref.config._platforms);
+                            $p.mmap[mmapIndex].level = ($p.mmap[mmapIndex].level<0) ? 100 : $p.mmap[mmapIndex].level;
                             
                             // upcoming fun:
-                            extRegEx.push( '.'+$p.mmap[i].ext );
+                            extRegEx.push( '.'+$p.mmap[mmapIndex].ext );
                             
                             // build extension2filetype map
-                            if (!extTypes[$p.mmap[i].ext]) {
-                                extTypes[$p.mmap[i].ext] = [];
+                            if (!extTypes[$p.mmap[mmapIndex].ext]) {
+                                extTypes[$p.mmap[mmapIndex].ext] = [];
                             }                            
-                            extTypes[$p.mmap[i].ext].push( $p.mmap[i] );
+                            extTypes[$p.mmap[mmapIndex].ext].push( $p.mmap[mmapIndex] );
                             
-                            if ($p.mmap[i].streamType===null || $p.mmap[i].streamType=='*' || $.inArray(streamType, $p.mmap[i].streamType)>-1) {
-                                if (!typesModels[$p.mmap[i].type]) {
-                                    typesModels[$p.mmap[i].type] = [];
+                            if ($p.mmap[mmapIndex].streamType===null || $p.mmap[mmapIndex].streamType=='*' || $.inArray(streamType, $p.mmap[mmapIndex].streamType)>-1) {
+
+                                if (!typesModels[$p.mmap[mmapIndex].type]) {
+                                    typesModels[$p.mmap[mmapIndex].type] = [];
                                 }
-                                
-                                if ( typesModels[$p.mmap[i].type].indexOf( $p.mmap[i] )==-1) {
-                                    typesModels[$p.mmap[i].type].push( $p.mmap[i] );                        
+
+                                k = -1;
+                                for(var ci = 0, len = typesModels[$p.mmap[mmapIndex].type].length; ci < len; ci++) {                           
+                                    if (typesModels[$p.mmap[mmapIndex].type][ci].model == $p.mmap[mmapIndex].model) {
+                                       k = ci;
+                                       break;
+                                    }
+                                }                                
+
+                                if (k===-1) {
+                                    typesModels[$p.mmap[mmapIndex].type].push( $p.mmap[mmapIndex] );                        
                                 }
                                 
                             }
-                            return true;                            
+                            continue;                            
                         }
                     }
-
+                    
+                    return true;
                 });
             }
         }
-
-
+        
         extRegEx = '^.*\.(' + extRegEx.join('|') + ")$";
 
         // incoming file is a string only, no array
@@ -429,14 +440,12 @@ projekktor = $p = function() {
                 else {
                     data.file[index].type = this._getTypeFromFileExtension( data.file[index].src );
                 }
-                  
-                var possibleTypes = $.merge(typesModels[data.file[index].type] || [], typesModels[data.file[index].type.replace(/x-/, '')] || [] );
-
-                if (possibleTypes.length>0) {                                
-                    possibleTypes.sort(function(a, b) {
+                
+                if (typesModels[data.file[index].type] .length>0) {                                
+                    typesModels[data.file[index].type] .sort(function(a, b) {
                             return a.level - b.level;
                     });                               
-                    modelSets.push(possibleTypes[0]);
+                    modelSets.push(typesModels[data.file[index].type] [0]);
                 }
             }
         }
@@ -451,16 +460,14 @@ projekktor = $p = function() {
                 return a.level - b.level;
             });
             
-            var bestMatch = modelSets[0].level;
+            bestMatch = modelSets[0].level;
             
             modelSets = $.grep(modelSets, function(value) {
                 return value.level == bestMatch;
             });
         }
  
-
-
-        var types = [];
+        types = [];
         $.each(modelSets || [], function() {
             types.push(this.type);
         });
@@ -470,33 +477,34 @@ projekktor = $p = function() {
 
         types = $p.utils.unique(types);
 
-        for (var index in data.file) {
-
-            // discard files not matching the selected model
-            if (data.file[index].type==null)
-                continue;
+        for (index in data.file) {
+            if (data.file.hasOwnProperty(index)) {
             
-            if ( ($.inArray( data.file[index].type.replace(/x-/, ''), types)<0) && modelSet.type!='none/none')
-                continue;
-            
-            // make srcURL absolute    for non-RTMP files
-            data.file[index].src = (!$.isEmptyObject(data.config) && (data.config.streamType=='http' || data.config.streamType==null) )
-                ? $p.utils.toAbsoluteURL(data.file[index].src)
-                : data.file[index].src;
-    
-            // set "default" quality
-            if ( data.file[index].quality==null)
-                data.file[index].quality = 'default';
-            
-            // add this files quality key to index
-            qualities.push(data.file[index].quality)
-            
-            // add media variant
-            mediaFiles.push(data.file[index])        
-
+                // discard files not matching the selected model
+                if (data.file[index].type==null)
+                    continue;
+                
+                if ( ($.inArray( data.file[index].type.replace(/x-/, ''), types)<0) && modelSet.type!='none/none')
+                    continue;
+                
+                // make srcURL absolute    for non-RTMP files
+                data.file[index].src = (!$.isEmptyObject(data.config) && (data.config.streamType=='http' || data.config.streamType==null) )
+                    ? $p.utils.toAbsoluteURL(data.file[index].src)
+                    : data.file[index].src;
+        
+                // set "default" quality
+                if ( data.file[index].quality==null)
+                    data.file[index].quality = 'default';
+                
+                // add this files quality key to index
+                qualities.push(data.file[index].quality)
+                
+                // add media variant
+                mediaFiles.push(data.file[index])        
+            }
         }         
        
-        if (mediaFiles.length==0) {
+        if (mediaFiles.length===0) {
             mediaFiles.push({src:null, quality:"default"});
         }
   
@@ -762,10 +770,12 @@ projekktor = $p = function() {
         pluginObj = null;
 
         // nothing to do
-        if (this._plugins.length>0 || plugins.length==0) return;        
+        if (this._plugins.length>0 || plugins.length===0) {
+            return;
+        }
         for(var i=0; i<plugins.length; i++) {
             pluginName = "projekktor"+plugins[i].charAt(0).toUpperCase() + plugins[i].slice(1);
-            try {typeof eval(pluginName);} catch(e) {$p.utils.log("ERROR:", e); continue;}
+            try {typeof eval(pluginName);} catch(e) {alert("Projekktor Error: Plugin '" + plugins[i] + "' malicious or not available."); continue;}
         
             pluginObj = $.extend(true, {}, new projekktorPluginInterface(), eval(pluginName).prototype);
             pluginObj.name = plugins[i].toLowerCase();
@@ -777,7 +787,7 @@ projekktor = $p = function() {
                 this.config['plugin_'+pluginObj.name] = {};
             
             this.config['plugin_'+pluginObj.name] = $.extend(true, {}, pluginObj.config || {});
-            
+
             for (var propName in pluginObj) {
                 if (propName.indexOf('Handler')>1) {
                     if (this._pluginCache[propName]==null) {
@@ -1836,7 +1846,7 @@ projekktor = $p = function() {
         // start model:
         this.playerModel = new playerModel();
         $.extend(this.playerModel, $p.models[newModel].prototype );
-
+        
         this._promote('syncing', 'display');
 
         this._enqueue(function() { try {ref._applyCuePoints();} catch(e) {} } );
@@ -3073,6 +3083,7 @@ $p.newModel = function(obj, ext) {
         obj.setiLove();
     }
     
+ 
     /* remove overwritten model from iLove-map */
     $p.mmap = $.grep($p.mmap, function(iLove) {
         var doesNotExist = iLove.model != ((obj.replace) ? obj.replace.toLowerCase() : ''),

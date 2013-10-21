@@ -29,6 +29,7 @@ $p.newModel({
     hasGUI: false,    
     allowRandomSeek: false,
     isPseudoStream: false,
+    streamType: 'http',
     
     _isStream: false,
     _isMuted: false,
@@ -76,7 +77,7 @@ $p.newModel({
             seamlesstabbing: 'false',
             bgcolor: '#ccc',
             FlashVars: $.extend({
-                streamType: this.pp.getConfig('streamType', ''), // "dvr", //  "live" "recorded", "dvr"
+                // streamType: this.pp.getConfig('streamType', ''), // "dvr", //  "live" "recorded", "dvr"
                 controlBarMode: 'none',
                 playButtonOverlay: false,
                 // showVideoInfoOverlayOnStartUp: true,
@@ -87,17 +88,6 @@ $p.newModel({
             };
 
         this.createFlash(domOptions, destContainer);
-
-        if(this.pp.getConfig('streamType')=='pseudo') {
-            this.isPseudoStream = true;
-            this.allowRandomSeek = true;
-            this.media.loadProgress = 100;
-        }
-        
-        if (this.pp.getConfig('streamType').indexOf('live')) {
-            this.allowRandomSeek = true;
-            this.media.loadProgress = 100;         
-        }
     },
     
     // disable default ready listener - wait for onJavaScriptBridgeCreated 
@@ -114,12 +104,25 @@ $p.newModel({
             sources = this.getSource();
 
         this.mediaElement.get(0).setMediaResourceURL(sources[0].src);
+        
+        this.streamType = sources[0].streamType || this.pp.getConfig('streamType') || 'http';
 
         if (this.getState('PLAYING')) {
             this.setPlay();
             if (ref.isPseudoStream!==true)
                 this.setSeek(this.media.position || 0);
         }
+        
+        if(this.pp.getConfig('streamType')=='pseudo') {
+            this.isPseudoStream = true;
+            this.allowRandomSeek = true;
+            this.media.loadProgress = 100;
+        }
+        
+        if (this.pp.getConfig('streamType').indexOf('live')) {
+            this.allowRandomSeek = true;
+            this.media.loadProgress = 100;         
+        }        
     }, 
 
     _OSMFListener: function() {    
