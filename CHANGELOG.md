@@ -6,12 +6,14 @@ V1.2.39
 
   addtions:
   * [core] added OSMF player model
+  * [core] "streamType" can now be specified separately for each alternate media entry of a playlist item (allows mixing e.g. of RTMP, HTTP for one single playlist item)
   
   fixes:
   * [core] fixed jQuery 1.4 issues
 
   changes:
   * [core] made OSMF player model default
+  * [core] missing or broken plugins are now reported via an alert()
   
   
 

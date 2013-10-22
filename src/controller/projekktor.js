@@ -386,7 +386,7 @@ projekktor = $p = function() {
                 });
             }
         }
-        
+
         extRegEx = '^.*\.(' + extRegEx.join('|') + ")$";
 
         // incoming file is a string only, no array
@@ -411,8 +411,7 @@ projekktor = $p = function() {
                 if (typeof data.file[index]=='string') {
                     data.file[index] = {'src':data.file[index]};
                 }
-        
-        
+
                 // nothing to do, next one
                 if (data.file[index].src==null) {
                     continue;
@@ -433,18 +432,20 @@ projekktor = $p = function() {
                         if (codecMatch[1]!=null) {
                             data.file[index].codec = codecMatch[1];                
                         }
-                        data.file[index].type = codecMatch[0]; // .replace(/x-/, '');
-                        // data.file[index].originalType = codecMatch[0];
+                        data.file[index].type = codecMatch[0].replace(/x-/, '');
+                        data.file[index].originalType = codecMatch[0];
                     } catch(e){}
                 }
                 else {
                     data.file[index].type = this._getTypeFromFileExtension( data.file[index].src );
                 }
-                
-                if (typesModels[data.file[index].type] .length>0) {                                
-                    typesModels[data.file[index].type] .sort(function(a, b) {
+        
+                if (typesModels[data.file[index].type] && typesModels[data.file[index].type].length>0) {
+                      
+                    typesModels[data.file[index].type].sort(function(a, b) {
                             return a.level - b.level;
-                    });                               
+                    });
+               
                     modelSets.push(typesModels[data.file[index].type] [0]);
                 }
             }
@@ -459,14 +460,14 @@ projekktor = $p = function() {
             modelSets.sort(function(a, b) {
                 return a.level - b.level;
             });
-            
+
             bestMatch = modelSets[0].level;
             
             modelSets = $.grep(modelSets, function(value) {
                 return value.level == bestMatch;
             });
         }
- 
+
         types = [];
         $.each(modelSets || [], function() {
             types.push(this.type);
@@ -599,6 +600,11 @@ projekktor = $p = function() {
                     modelRef.start();
                 });
             break;
+            
+            case 'availableQualitiesChange':
+                this.media[this._currentItem].qualities = value;
+                this._promote('availableQualitiesChange', value);
+                break;
 
             case 'qualityChange':
                 this.setConfig({playbackQuality: value});            
@@ -1627,9 +1633,9 @@ projekktor = $p = function() {
         return this.playerModel.getMediaDimensions() || {width:0, height:0};
     };
         
-        this.getAppropriateQuality = function() {
-            return this._getAppropriateQuality(this.media[this._currentItem].qualities || [])
-        }
+    this.getAppropriateQuality = function() {
+        return this._getAppropriateQuality(this.media[this._currentItem].qualities || [])
+    }
 
     this._getAppropriateQuality = function(quals) {
             
@@ -2778,7 +2784,7 @@ projekktor = $p = function() {
                     result.playlist[0].push({
                         src: childNode.attr('src'),
                         type: childNode.attr('type') || this._getTypeFromFileExtension(childNode.attr('src')),
-                                        quality: childNode.attr('data-quality') || ''
+                        quality: childNode.attr('data-quality') || ''
                     });                
                     break;
                     case 'TRACK':
@@ -2805,7 +2811,7 @@ projekktor = $p = function() {
                 result.playlist[0].push({
                     src: $(this).attr('src'),
                     type: $(this).attr('type') || ref._getTypeFromFileExtension($(this).attr('src')),
-                                    quality: $(this).attr('data-quality') || ''
+                    quality: $(this).attr('data-quality') || ''
                 });                
                 break;
                 case 'TRACK':

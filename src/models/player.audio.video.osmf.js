@@ -16,6 +16,7 @@ $p.newModel({
     
     flashVersion: "10.1",
     flashVerifyMethod: 'addEventListener',
+    
     iLove: [
         {ext:'flv', type:'video/flv', platform:'flash', fixed: true, streamType: ['*']},
         {ext:'mp4', type:'video/mp4', platform:'flash', streamType: ['*']},
@@ -30,6 +31,8 @@ $p.newModel({
     allowRandomSeek: false,
     isPseudoStream: false,
     streamType: 'http',
+    
+    availableQualities: {},
     
     _isStream: false,
     _isMuted: false,
@@ -215,10 +218,19 @@ $p.newModel({
     },    
     
     /* todo */
-    OSMF_updateDynamicStream: function() {        
+    OSMF_updateDynamicStream: function() {
         var dynamicStreams = this.mediaElement.get(0).getStreamItems(),
-            switchMode = this.mediaElement.get(0).getAutoDynamicStreamSwitch() ? "Auto" : "Manual";
-        // console.log("OSMF_updateDynamicStream", switchMode, dynamicStreams)            
+            name = '';
+            // switchMode = this.mediaElement.get(0).getAutoDynamicStreamSwitch() ? "Auto" : "Manual";
+            
+        for (var index in dynamicStreams) {
+            if (dynamicStreams.hasOwnProperty(index) && dynamicStreams[index].bitrate!==undefined) {
+                name = dynamicStreams[index].width + "x" + dynamicStreams[index].height;
+                this.availableQualities[ this.pp.getConfig('OSMFQualityMap') ?  this.pp.getConfig('OSMFQualityMap')[name] || name : name] = index;
+            }
+        }
+        
+        this.sendUpdate('availableQualitiesChange', this.availableQualities);  
     },
     
     /* todo */
@@ -234,8 +246,14 @@ $p.newModel({
     },
     
     errorListener: function() {
-        if (arguments[0]!==0) {        
-            this.sendUpdate('error', arguments[0]);   
+        switch (arguments[0]) {
+            case 16:
+                this.sendUpdate('error', 80);
+                break;
+                
+            default:
+                // this.sendUpdate('error', 0);
+                break;
         }
     },
     
