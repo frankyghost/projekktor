@@ -296,9 +296,6 @@ jQuery(function ($) {
         setPosterLive: function () {},
 
         setQuality: function (quality) {
-
-            var resultSrc = [];
-
             if (this._quality == quality) return;
             this._quality = quality;
             
@@ -444,7 +441,7 @@ jQuery(function ($) {
             $.each(this.media.file || [], function () {
 
                 // set proper quality source
-                if (ref._quality != this.quality && ref._quality != null)
+                if (ref._quality!=this.quality && ref._quality!==null)
                     return true;
 
                 // nothing todo 

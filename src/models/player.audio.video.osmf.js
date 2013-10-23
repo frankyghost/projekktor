@@ -37,6 +37,8 @@ $p.newModel({
     _isStream: false,
     _isMuted: false,
     _isStarted: false,
+    _qualitySwitching: false,
+    _isDynamicStream: false,
     _volume: 0,
 
     _eventMap: {
@@ -125,7 +127,7 @@ $p.newModel({
         if (this.pp.getConfig('streamType').indexOf('live')) {
             this.allowRandomSeek = true;
             this.media.loadProgress = 100;         
-        }        
+        }
     }, 
 
     _OSMFListener: function() {    
@@ -176,7 +178,6 @@ $p.newModel({
         this.seekedListener();
     },
     
-    
     OSMF_bufferingChange: function(state) {
         if (state===true) 
             this.waitingListener();
@@ -220,17 +221,30 @@ $p.newModel({
     /* todo */
     OSMF_updateDynamicStream: function() {
         var dynamicStreams = this.mediaElement.get(0).getStreamItems(),
-            name = '';
+            name = '',
+            result = [];
             // switchMode = this.mediaElement.get(0).getAutoDynamicStreamSwitch() ? "Auto" : "Manual";
-            
+       
         for (var index in dynamicStreams) {
             if (dynamicStreams.hasOwnProperty(index) && dynamicStreams[index].bitrate!==undefined) {
                 name = dynamicStreams[index].width + "x" + dynamicStreams[index].height;
-                this.availableQualities[ this.pp.getConfig('OSMFQualityMap') ?  this.pp.getConfig('OSMFQualityMap')[name] || name : name] = index;
+                if ( this.pp.getConfig('OSMFQualityMap') &&  this.pp.getConfig('OSMFQualityMap')[name] ) {
+                    this.availableQualities[ this.pp.getConfig('OSMFQualityMap')[name] ] = index;
+                }
+                
             }
         }
+
+        $p.utils.log( dynamicStreams );
         
-        this.sendUpdate('availableQualitiesChange', this.availableQualities);  
+        $.each( this.availableQualities, function(key, val) {
+            result.push(key);
+        });
+        
+        result.push('auto');
+        
+        this.sendUpdate('availableQualitiesChange', result);
+        this._isDynamicStream = true;
     },
     
     /* todo */
@@ -265,6 +279,14 @@ $p.newModel({
         this._volume = volume;      
     },    
     
+    endedListener: function (obj) {
+        if (this.mediaElement === null) return;
+        if (this.media.maxpos <= 0) return;
+        if (this.getState() == 'STARTING') return;
+        if (this._qualitySwitching===true) return;
+        this._setState('completed');
+    },    
+    
     /************************************************
      * setters
      ************************************************/
@@ -293,6 +315,22 @@ $p.newModel({
     setPlay: function(event) {     
         this.mediaElement.get(0).play2();
     },
+    
+
+    setQuality: function (quality) {
+        if (this._quality == quality) return;
+        this._quality = quality;
+        
+        if (this._isDynamicStream === true) {
+            this.switchDynamicStreamIndex( (quality=='auto') ? -1 : this.availableQualities[quality] );
+            return;
+        }
+        
+        this._qualitySwitching = true;
+        this.applySrc();
+        this._qualitySwitching = false;
+        this.qualityChangeListener();
+    },    
 
     /************************************************
      * getters

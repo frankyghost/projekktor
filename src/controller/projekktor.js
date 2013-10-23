@@ -603,7 +603,7 @@ projekktor = $p = function() {
             
             case 'availableQualitiesChange':
                 this.media[this._currentItem].qualities = value;
-                this._promote('availableQualitiesChange', value);
+                this._promote('availableQualitiesChange', value);            
                 break;
 
             case 'qualityChange':
@@ -1633,12 +1633,9 @@ projekktor = $p = function() {
         return this.playerModel.getMediaDimensions() || {width:0, height:0};
     };
         
-    this.getAppropriateQuality = function() {
-        return this._getAppropriateQuality(this.media[this._currentItem].qualities || [])
-    }
-
-    this._getAppropriateQuality = function(quals) {
-            
+   this.getAppropriateQuality = function(qualities) {
+        var quals = qualities || this.getPlaybackQualities() || [];
+        
         if (quals.length==0)
             return [];
            
@@ -1687,9 +1684,9 @@ projekktor = $p = function() {
             return true;
         });
 
-        return temp.key || 'default';
+        return (this.getPlaybackQualities().indexOf('auto')>-1) ? 'auto' : temp.key || 'default';
     };
-    
+        
     /* asynchronously loads external XML and JSON data from server */
     this.getFromUrl = function(url, dest, callback, customParser, dataType) {
         var data = null,
@@ -2243,9 +2240,9 @@ projekktor = $p = function() {
     this.setPlaybackQuality = function(quality) {
         var qual = quality || this.getAppropriateQuality();         
         if ($.inArray(qual, this.media[this._currentItem].qualities || [])>-1) {
-        this.playerModel.applyCommand('quality', qual);
-                this.setConfig({playbackQuality: qual});    
-            }
+            this.playerModel.applyCommand('quality', qual);
+            this.setConfig({playbackQuality: qual});    
+        }
         return this;
     };
 
