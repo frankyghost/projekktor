@@ -42,7 +42,7 @@ $p.newModel({
     _volume: 0,
 
     _eventMap: {
-        mediaPlayerStateChange: "OSMF_playerStateChange",
+        //  mediaPlayerStateChange: "OSMF_playerStateChange", obsolete
         mediaPlayerCapabilityChange: "OSMF_PlayerCapabilityChange",
         durationChange: "OSMF_durationChange",
         currentTimeChange: "OSMF_currentTimeChange",
@@ -207,7 +207,7 @@ $p.newModel({
             case 'playing':
                 this.playingListener();
                 break;
-            case 'paused':
+            case 'paused':            
                 this.pauseListener();
                 break;
             case 'stopped':

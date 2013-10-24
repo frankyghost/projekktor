@@ -576,8 +576,10 @@ projekktor = $p = function() {
                     case 'COMPLETED':                           
                         // all items in PL completed:
                         if (this._currentItem+1>=this.media.length && !this.getConfig('loop')) {
-                            if (this.getConfig('leaveFullscreen')) this.setFullscreen(false);            
                             this._promote('done', {});
+                            if (this.getConfig('leaveFullscreen')) {
+                                this.reset(); // POW, crowba-method for Firefox!
+                            }
                         }
                         // next one, pls:
                         this.setActiveItem('next');
@@ -1461,15 +1463,15 @@ projekktor = $p = function() {
     */
     this.getNativeFullscreenSupport = function() {
         var ref = this,
-        fullScreenApi = {
-            supportsFullScreen: 'semi',
-            isFullScreen: function() {try {return ref.getDC().hasClass('fullscreen');} catch(e){return false;}},
-            requestFullScreen: function() {ref.playerModel.applyCommand('fullscreen', true);},
-            cancelFullScreen: function() {ref.playerModel.applyCommand('fullscreen', false);},
-            prefix: '',
-            ref: this
-        },
-        browserPrefixes = 'webkit moz o ms khtml'.split(' ');
+            fullScreenApi = {
+                supportsFullScreen: 'viewport', // viewport=full viewport, media=video only (e.g. iphone), dom=html5 true fullscreen
+                isFullScreen: function() {try {return ref.getDC().hasClass('fullscreen');} catch(e){return false;}},
+                requestFullScreen: function() {ref.playerModel.applyCommand('fullscreen', true);},
+                cancelFullScreen: function() {ref.playerModel.applyCommand('fullscreen', false);},
+                prefix: '',
+                ref: this
+            },
+            browserPrefixes = 'webkit moz o ms khtml'.split(' ');
 
         // return fullScreenApi;
         // check for native support
@@ -1478,135 +1480,145 @@ projekktor = $p = function() {
         if (typeof document.cancelFullScreen != 'undefined') {
             fullScreenApi.supportsFullScreen = true;
         } else {
+            // (double)-check for fullscreen support by vendor prefix
+            for (var i = 0, il = browserPrefixes.length; i < il; i++ ) {
+    
+                fullScreenApi.prefix = browserPrefixes[i];
+    
+                // media element only
+                if (typeof document.createElement('video')[fullScreenApi.prefix+"EnterFullscreen"] != 'undefined') {
+                    fullScreenApi.supportsFullScreen = 'mediaonly';
+                }
+    
+                // player container / true fullscreen
+                if (typeof document[fullScreenApi.prefix + 'CancelFullScreen' ] != 'undefined' ) {
+                
+                    fullScreenApi.supportsFullScreen = 'dom';
+    
+                    // FF8+FF9 double-check
+                    if (fullScreenApi.prefix=='moz' && typeof document[fullScreenApi.prefix + 'FullScreenEnabled'] == 'undefined' ) {
+                        fullScreenApi.supportsFullScreen = 'viewport';
+                    }
+                }
 
-        // (double)-check for fullscreen support by vendor prefix
-        for (var i = 0, il = browserPrefixes.length; i < il; i++ ) {
-
-            fullScreenApi.prefix = browserPrefixes[i];
-
-            // media element only
-            if (typeof document.createElement('video')[fullScreenApi.prefix+"EnterFullscreen"] != 'undefined') {
-            fullScreenApi.supportsFullScreen = 'media';
+                if (fullScreenApi.supportsFullScreen!==false && fullScreenApi.supportsFullScreen!=='viewport') {
+                    break;
+                }
+    
             }
+        }
+    
+        // SEMI:
+        // we are done here: full viewport only
+        if (fullScreenApi.supportsFullScreen=='viewport' || (fullScreenApi.supportsFullScreen=='dom' && this.getConfig('forceFullViewport'))) {
+            return fullScreenApi;
+        }
 
-            // player container / true fullscreen
-            if (typeof document[fullScreenApi.prefix + 'CancelFullScreen' ] != 'undefined' ) {
-            fullScreenApi.supportsFullScreen = 'dom';
-
-            // FF8+FF9 double-check
-            if (fullScreenApi.prefix=='moz' && typeof document[fullScreenApi.prefix + 'FullScreenEnabled'] == 'undefined' )
-                fullScreenApi.supportsFullScreen = false;
+        
+        // MEDIA ONLY:
+        // the browser supports true fullscreen for the media element only - this is semi cool
+        if (fullScreenApi.supportsFullScreen=='mediaonly') {
+            fullScreenApi.requestFullScreen = function(el) {
+                ref.playerModel.getMediaElement().get(0)[this.prefix+'EnterFullscreen']();
             }
-
-            if (fullScreenApi.supportsFullScreen!==false && fullScreenApi.supportsFullScreen!=='semi')
-            break;
-
+            fullScreenApi.dest = {};
+    
+            // cancel fullscreen method
+            fullScreenApi.cancelFullScreen = function() {}
+    
+            return fullScreenApi;
         }
-        }
-
-        // forget it:
-            if (fullScreenApi.supportsFullScreen=='semi' || (fullScreenApi.supportsFullScreen=='dom' && this.getConfig('forceFullViewport')))
-        return fullScreenApi;
-
+        
+        
+        // HTML5 true fullscreen:
         // is in fullscreen check
         fullScreenApi.isFullScreen = function(esc) {
-                /*
-                 * FF and GoogleTV report bullshit here:
-                 * */
-        var dest = (ref.getIframe()) ? parent.window.document : document;
-        switch (this.prefix) {
-            case '':
-            return dest.fullScreen;
-            case 'webkit':
-            return dest.webkitIsFullScreen;
-                    case 'moz':
-                        return dest[this.prefix + 'FullScreen'] || (ref.getDC().hasClass('fullscreen') && esc!==true);
-            default:                  
-            return dest[this.prefix + 'FullScreen'];
+            // * FF and GoogleTV report bullshit here:
+            var dest = (ref.getIframe()) ? parent.window.document : document;
+            switch (this.prefix) {
+                case '':
+                    return dest.fullScreen;
+                case 'webkit':
+                    return dest.webkitIsFullScreen;
+                case 'moz':
+                     return dest[this.prefix + 'FullScreen'] || (ref.getDC().hasClass('fullscreen') && esc!==true);
+                default:                  
+                    return dest[this.prefix + 'FullScreen'];
+            }
         }
-        
-        
-        }
-
-        // set initiation method and dest Obj
-        if (fullScreenApi.supportsFullScreen=='dom') {
 
         // the browser supports true fullscreen for any DOM container - this is ubercool:
         fullScreenApi.requestFullScreen = function() {
-                    if (this.isFullScreen()) return;
+            if (this.isFullScreen()) return;
                     
-                    var win = ref.getIframeParent() || $(window);
-                    win.data('fsdata', {
-                        scrollTop: win.scrollTop(),
-                        scrollLeft: win.scrollLeft()
-                    });
-                    
-            var target = ref.getIframe() || ref.getDC(),
-            apiRef = this,
-            dest = (ref.getIframe()) ? parent.window.document : document,
-                        win = ref.getIframeParent() || $(window);
-                                                
-            $(dest).unbind(this.prefix + "fullscreenchange.projekktor");
-            $(dest).bind(this.prefix + "fullscreenchange.projekktor", function(evt) {
-
-            if (!apiRef.isFullScreen(true)) {
-                            apiRef.ref.playerModel.applyCommand('fullscreen', false);
-                            var win = apiRef.ref.getIframeParent() || $(window),
-                                fsData = win.data('fsdata');
-                            if (fsData!=null) {
-                                win.scrollTop(fsData.scrollTop);
-                                win.scrollLeft(fsData.scrollLeft);
-                            }
-                            
-            } else {
-                            apiRef.ref.playerModel.applyCommand('fullscreen', true);
-                        }
+            var win = ref.getIframeParent() || $(window),
+                target = ref.getIframe() || ref.getDC().get(0),
+                apiRef = this,
+                dest = (ref.getIframe()) ? parent.window.document : document,
+                win = ref.getIframeParent() || $(window);
+            
+            // store scroll positon:
+            win.data('fsdata', {
+                scrollTop: win.scrollTop(),
+                scrollLeft: win.scrollLeft()
             });
 
-            if (this.prefix === '')
-            target.get(0).requestFullScreen()
-            else
-            target.get(0)[this.prefix + 'RequestFullScreen']();
-                    
+            $(dest).unbind(this.prefix + "fullscreenchange.projekktor");
+            
+            if (this.prefix === '') {
+                target.requestFullScreen();
+            }
+            else {
+                target[this.prefix + 'RequestFullScreen']();
+            }  
+            
+            apiRef.ref.playerModel.applyCommand('fullscreen', true);            
+            
+            // create fullscreen change listener on the fly:
+            $(dest).bind(this.prefix + "fullscreenchange.projekktor", function(evt) {
+                if (!apiRef.isFullScreen(true)) {
+                    apiRef.ref.playerModel.applyCommand('fullscreen', false);
+                    var win = apiRef.ref.getIframeParent() || $(window),
+                        fsData = win.data('fsdata');
+                    if (fsData!=null) {
+                        win.scrollTop(fsData.scrollTop);
+                        win.scrollLeft(fsData.scrollLeft);
+                    }
+                } else {
                     apiRef.ref.playerModel.applyCommand('fullscreen', true);
+                }
+            });
+
         }
 
         // cancel fullscreen method
         fullScreenApi.cancelFullScreen = function() {
 
-                    $( (ref.getIframe()) ? parent.window.document : document).unbind(this.prefix + "fullscreenchange.projekktor");
-            var target = ref.getIframe() ? parent.window.document : document;
+            var target = ref.getIframe() ? parent.window.document : document,
+                win = ref.getIframeParent() || $(window),
+                fsData = win.data('fsdata');
+            
+            $( (ref.getIframe()) ? parent.window.document : document).unbind(this.prefix + "fullscreenchange.projekktor");
 
-            // $(target).unbind(this.prefix + "fullscreenchange.projekktor");
             // seems to cause errors in FF           
-                    if (target.exitFullScreen)
-                        target.exitFullScreen();
-            else if (this.prefix == '')
-            target.cancelFullScreen();
-            else
-            target[this.prefix + 'CancelFullScreen']();
-                    var win = ref.getIframeParent() || $(window),
-                        fsData = win.data('fsdata');
+            if (target.exitFullScreen) {
+                target.exitFullScreen();
+            }
+            else if (this.prefix == '') {
+                target.cancelFullScreen();
+            }
+            else {
+                target[this.prefix + 'CancelFullScreen']();
+            }                
+
+            // restore scrollposition
+            if (fsData!=null) {
+                win.scrollTop(fsData.scrollTop);
+                win.scrollLeft(fsData.scrollLeft);
+            }
                     
-                    if (fsData!=null) {
-                        win.scrollTop(fsData.scrollTop);
-                        win.scrollLeft(fsData.scrollLeft);
-                    }
-                    
-                    ref.playerModel.applyCommand('fullscreen', false);
+            ref.playerModel.applyCommand('fullscreen', false);
         }
-
-            return fullScreenApi;
-        }
-
-        // the browser supports true fullscreen for the media element only - this is semi cool
-        fullScreenApi.requestFullScreen = function(el) {
-        ref.playerModel.getMediaElement().get(0)[this.prefix+'EnterFullscreen']();
-        }
-        fullScreenApi.dest = {};
-
-        // cancel fullscreen method
-        fullScreenApi.cancelFullScreen = function() {}
 
         return fullScreenApi;
     };
@@ -2092,8 +2104,7 @@ projekktor = $p = function() {
     };
 
     this.setFullscreen = function(goFull) {
-        var nativeFullscreen = this.getNativeFullscreenSupport(),
-            ref = this;
+        var nativeFullscreen = this.getNativeFullscreenSupport();
 
         goFull = (goFull==null) ? !nativeFullscreen.isFullScreen() : goFull;                                
 

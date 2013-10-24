@@ -10,6 +10,7 @@ V1.2.39
   
   fixes:
   * [core] fixed jQuery 1.4 issues
+  * [core] now even Firefox accepts to leave fullscreen once "done" is being triggered
 
   changes:
   * [core] made OSMF player model default
