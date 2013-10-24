@@ -1367,16 +1367,21 @@ projekktor = $p = function() {
         
     this.getIframeParent = this.getIframeWindow = function() {
         try {
-        var result = parent.location.host || false;
-        return (result===false) ? false : $(parent.window);
-        } catch(e) { return false; }
+            var result = false;
+            if(this.config._iframe)
+                parent.location.host || false;
+            return (result===false) ? false : $(parent.window);
+        } catch(e) { return false; }        
     };
 
     this.getIframe = function() {
         try {
-            var result = window.$(frameElement) || [];
+        	var result = [];
+            if(this.config._iframe)
+            	result = window.$(frameElement) || [];
             return (result.length==0) ? false : result;
         } catch(e) { return false; }
+        
     };
         
     this.getIframeAllowFullscreen = function() {
