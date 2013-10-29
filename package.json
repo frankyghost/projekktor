@@ -20,6 +20,7 @@
   ],
   "dependencies": {},
   "devDependencies": {
+    "grunt-contrib-copy": "~0.4.0",
     "grunt-compare-size": "~0.4.0",
     "grunt-git-authors": "1.2.0",
     "grunt-update-submodules": "0.2.0",
