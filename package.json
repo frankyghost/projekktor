@@ -7,7 +7,7 @@
   "author": {
     "name": "Sascha Kluger, Spinning Airwhale Media",
     "url": "http://www.spinningairwhale.com"
-  }, 
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/frankyghost/projekktor.git"
@@ -20,6 +20,8 @@
   ],
   "dependencies": {},
   "devDependencies": {
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-compress": "~0.4.0",
     "grunt-contrib-copy": "~0.4.0",
     "grunt-compare-size": "~0.4.0",
     "grunt-git-authors": "1.2.0",

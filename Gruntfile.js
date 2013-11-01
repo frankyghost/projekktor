@@ -1,8 +1,9 @@
 module.exports = function (grunt) {
 
   "use strict";
-  grunt.file.mkdir('dest/');
-  var name = grunt.option('name') || '',
+ 
+  var dest = 'dest/',
+    name = grunt.option('name') || '',
     version = (name!='') ? grunt.option('ver') + "." + name : grunt.option('ver') || '',  
     distpaths = [
       "dist/projekktor-" + version + ".js",
@@ -16,18 +17,15 @@ module.exports = function (grunt) {
       var data = {};
       try {
         data = grunt.file.readJSON(filepath);
-      } catch (e) {} 
+      } catch (e) {}
       return data;
     },
     srcHintOptions = readOptionalJSON("src/.jshintrc");
 
   filesPreUglify["dist/projekktor-" + version + ".pre-min.js"] = ["dist/projekktor-" + version + ".js"];
   filesUglify["dist/projekktor-" + version + ".min.js"] = ["dist/projekktor-" + version + ".pre-min.js"];
-
-  var rewriter = function(a,b,c,d,e) {
-   grunt.log.writeln(a + b + c + d + "\n");
-
-  };
+  dest = dest + name + "/"
+  grunt.file.mkdir(dest);
   
   grunt.initConfig({
     pkg: grunt.file.readJSON("package.json"),
@@ -53,23 +51,23 @@ module.exports = function (grunt) {
           "src/controller/projekktor.plugininterface.js",
           "src/models/player.js",
           "src/models/player.NA.js",
-          { flag: "playlist", src: "src/models/player.playlist.js" },
+          {flag: "playlist", src: "src/models/player.playlist.js" },
           "src/models/player.audio.video.js",
           "src/models/player.audio.video.vlc.js",
-          { flag: "jwflash", src: "src/models/player.video.jwflash.js", alt: "src/models/player.audio.video.osmf.js" },         
-          // { flag: "jarisflash", src: "src/models/player.audio.video.flash.js", alt: "src/models/player.audio.video.osmf.js" },         
-          { flag: "youtube", src: "src/models/player.youtube.js" },
-          { flag: "html", src: "src/models/player.image.html.js" },
+          {flag: "jwflash", src: "src/models/player.video.jwflash.js", alt: "src/models/player.audio.video.osmf.js" },         
+          {flag: "jarisflash", src: "src/models/player.audio.video.flash.js", alt: "src/models/player.audio.video.osmf.js" },         
+          {flag: "youtube", src: "src/models/player.youtube.js" },
+          {flag: "html", src: "src/models/player.image.html.js" },
           "src/plugins/projekktor.display.js",
           "src/plugins/projekktor.controlbar.js",
           "src/plugins/projekktor.contextmenu.js",
-          { user:true, flag: "plugins/ima", src: "plugins/projekktor.ima.js" },
-          { user:true, flag: "plugins/logo", src: "plugins/projekktor.logo.js" },
-          { user:true, flag: "plugins/postertitle", src: "plugins/projekktor.postertitle.js" },
-          { user:true, flag: "plugins/share", src: "plugins/projekktor.share.js" },
-          { user:true, flag: "plugins/tracking", src: "plugins/projekktor.tracking.js" },
-          { user:true, flag: "plugins/tracks", src: "plugins/projekktor.tracks.js" },
-          { user:true, flag: "plugins/audioslideshow", src: "plugins/projekktor.audioslideshow.js" }
+          {user:true, flag: "plugins/ima", src: "plugins/projekktor.ima.js" },
+          {user:true, flag: "plugins/logo", src: "plugins/projekktor.logo.js" },
+          {user:true, flag: "plugins/postertitle", src: "plugins/projekktor.postertitle.js" },
+          {user:true, flag: "plugins/share", src: "plugins/projekktor.share.js" },
+          {user:true, flag: "plugins/tracking", src: "plugins/projekktor.tracking.js" },
+          {user:true, flag: "plugins/tracks", src: "plugins/projekktor.tracks.js" },
+          {user:true, flag: "plugins/audioslideshow", src: "plugins/projekktor.audioslideshow.js" }
         ]
       }
     },    
@@ -132,28 +130,45 @@ module.exports = function (grunt) {
         }
       }
     },
+    clean: {
+      build: {
+        src: [dest]
+      }
+    },
     readme: {
         src: 'readme.html',  // source template file
-        dest: 'dest/readme.html',  // destination file (usually index.html)
-        name: version
+        dest: dest + 'readme.html',  // destination file (usually index.html)
+        version: version,
+        name: name
     },
     copy: {
       main: {
         files: [
           // includes files within path
           // {expand: true, src: ['path/*'], dest: 'dest/', filter: 'isFile'},
-    
           // includes files within path and its sub-directories
-          {expand: true, flatten: true, src: ['dist/*' + version + '*'], dest: 'dest/'},
-          {expand: true, flatten: true, src: ['dist/media/*'], dest: 'dest/media/'},
-          {expand: true, src: ['themes/**'], dest: 'dest/'},
-          {expand: true, src: ['readme.html'], dest: 'dest/', filter: rewriter}
-    
+          {expand: true, flatten: true, src: ['dist/*' + version + '*'], dest: dest},
+          {expand: true, flatten: true, src: ['dist/media/*'], dest: dest + 'media/'},
+          {expand: true, src: ['themes/**'], dest: dest},
+          {expand: true, src: ['readme.html'], dest: dest},
+          {expand: true, flatten: true, src: ['libs/jquery-1.9.1.min.js'], dest: dest}
           // makes all src relative to cwd
           // {expand: true, cwd: 'path/', src: ['**'], dest: 'dest/'},
-    
           // flattens results to a single level
           // {expand: true, flatten: true, src: ['path/**'], dest: 'dest/', filter: 'isFile'}
+        ]
+      }
+    },
+    compress: {
+      main: {
+        options: {
+          archive: dest + "projekktor-" + version + '.zip'
+        },
+        files: [
+          //{src: ['path/*'], dest: 'internal_folder/', filter: 'isFile'}, // includes files in path
+          // {src: ['dest/**'], dest: ''}, // includes files in path and its subdirs
+          {expand: true, cwd: dest, src: ['**'], dest: ''}, // makes all src relative to cwd
+          //{flatten: true, src: ['path/**'], dest: 'internal_folder4/', filter: 'isFile'} // flattens results to a single level
         ]
       }
     }    
@@ -187,7 +202,7 @@ module.exports = function (grunt) {
 
     grunt.util.spawn({
       grunt: true,
-      args: ["--ver=" + version, "update_submodules", "build:*:" + modules, "pre-uglify", "uglify", "dist:*", "compare_size", "copy", "readme"]
+      args: ["--ver=" + version, "update_submodules", "build:*:" + modules, "pre-uglify", "uglify", "dist:*", "compare_size", "clean", "copy", "readme", "compress"]
     }, function (err, result) {
       if (err) {
         grunt.log.writeln(err + " "+ result);
@@ -467,7 +482,9 @@ module.exports = function (grunt) {
   });
 
   // Load grunt tasks from NPM packages
+  grunt.loadNpmTasks("grunt-contrib-clean");  
   grunt.loadNpmTasks("grunt-contrib-copy");
+  grunt.loadNpmTasks("grunt-contrib-compress");
   grunt.loadNpmTasks("grunt-compare-size");
   grunt.loadNpmTasks("grunt-git-authors");
   grunt.loadNpmTasks("grunt-update-submodules");
@@ -483,15 +500,17 @@ module.exports = function (grunt) {
     "uglify",
     "dist:*",
     "compare_size",
+    "clean",
     "copy",
-    "readme"
+    "readme",
+    "compress"
   ]);
 
   // Build minimal -- only required plugins
-  grunt.registerTask("build-minimal", ["update_submodules", "build", "pre-uglify", "uglify", "dist:*", "compare_size", "copy", "readme"]);
+  grunt.registerTask("build-minimal", ["update_submodules", "build", "pre-uglify", "uglify", "dist:*", "compare_size", "clean", "copy", "readme", "compress"]);
 
   // Build complete -- all plugins present
-  grunt.registerTask("build-complete", ["update_submodules", "build:*:*", "pre-uglify", "uglify", "dist:*", "compare_size", "copy", "readme"]);
+  grunt.registerTask("build-complete", ["update_submodules", "build:*:*", "pre-uglify", "uglify", "dist:*", "compare_size", "clean", "copy", "readme", "compress"]);
 
   // Minimal build
   grunt.registerTask("build-user", [
@@ -501,8 +520,10 @@ module.exports = function (grunt) {
     "uglify",
     "dist:*",
     "compare_size",
+    "clean",
     "copy",
-    "readme"
+    "readme",
+    "compress"    
   ]);
 
   // Short list as a high frequency watch task
