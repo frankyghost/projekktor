@@ -16,7 +16,7 @@ module.exports = function (grunt) {
       var data = {};
       try {
         data = grunt.file.readJSON(filepath);
-      } catch (e) {}
+      } catch (e) {} 
       return data;
     },
     srcHintOptions = readOptionalJSON("src/.jshintrc");

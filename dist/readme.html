@@ -12,28 +12,27 @@
     <link rel="stylesheet" href="themes/maccaco/projekktor.style.css" type="text/css" media="screen" />
 
     <!-- Load jquery -->
-    <script type="text/javascript" src="src/libs/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
 
     <!-- load projekktor -->
-    <script type="text/javascript" src="dist/projekktor.min.js"></script>
+    <script type="text/javascript" src="projekktor-<%= grunt.config('readme').version %>.min.js"></script>
 
 </head>
 <body>
 
-    <h1>W00t!! Thanx for downloading Projekktor V<%= pkg.version %>.</h1>
+    <h1>W00t!! Thanx for downloading Projekktor V<%= grunt.config('readme').version %></h1>
     <p>
-    This file is intended to give a quick introduction on how to install and use Projekktor.
-    Please have a look at the source in order to check out what&acute;s going on here.
-    More detailed information and a documentation can be found online:
+	This file is intended to give a quick introduction on how to install and use Projekktor.
+	Please have a look at the source in order to check out what&acute;s going on here.
+	More detailed information and a documentation can be found online:
     </p>
 
     <ul>
-    <li><a href="http://www.projekktor.com">Homepage</a></li>
-    <li><a href="http://www.projekktor.com/docs.php">Docs</a></li>
-    <li><a href="http://www.projekktor.com/downloads.php">More Downloads</a></li>
-    <li><a href="http://www.projekktor.com/license.php">GPL License</a></li>
-    <li><a href="http://www.projekktor.com/donate.php"><b>Support this projekkt: Consider a donation</b></a></li>
-    <li><a href="http://www.spinningairwhale.com/contact/?via=distro"><b>Need customizations or Support? Get in touch.</b></a></li>
+	<li><a href="http://www.projekktor.com">Homepage</a></li>
+	<li><a href="http://www.projekktor.com/doc/">Documentation</a></li>
+	<li><a href="https://github.com/frankyghost/projekktor/blob/master/LICENSE">GPL License</a></li>
+	<li><a href="http://www.projekktor.com/shop/supporter-license/"><b>Support this projekkt: Consider a donation</b></a></li>
+	<li><a href="http://www.projekktor.com/contact/"><b>Need customizations or Support? Get in touch.</b></a></li>
     </ul>
     <p>
     brought to you by <a href="http://www.spinningairwhale.com">spinning airwhale</a> - web|media|interfaces
@@ -46,24 +45,20 @@
     <script type="text/javascript">
     $(document).ready(function() {
         projekktor('#player_a', {
-				poster: 'dist/media/intro.png',
-				title: 'this is projekktor',
-				playerFlashMP4: 'swf/StrobeMediaPlayback/StrobeMediaPlayback.swf',
-				playerFlashMP3: 'swf/StrobeMediaPlayback/StrobeMediaPlayback.swf',
-				width: 640,
-				height: 385,
-				playlist: [
-					{
-						0: {src: "dist/media/intro.ogv", type: "video/ogg"},
-						1: {src: "dist/media/intro.mp4", type: "video/mp4"},
-						2: {src: "dist/media/intro.webm", type: "video/webm"}
-					}
-				]
-				
-			}, 
-			function(player) {
-				$('#projekktorver').html( player.getPlayerVer() );
-			}
+		poster: 'media/intro.png',
+		title: 'this is projekktor',
+		playerFlashMP4: 'jarisplayer.swf',
+		playerFlashMP3: 'jarisplayer.swf',
+		width: 640,
+		height: 385,
+		playlist: [
+		    {
+			0: {src: "media/intro.ogv", type: "video/ogg"},
+			1: {src: "media/intro.mp4", type: "video/mp4"},
+			2: {src: "media/intro.webm", type: "video/webm"}
+		    }
+		]    
+	    }, function(player) {} // on ready 
         );
     });
     </script>
