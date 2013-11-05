@@ -35,7 +35,7 @@ projekktorDisplay.prototype = {
         staticControls:     false,
         
         /* time to delay buffering-icon-overlay once "waiting" event has been triggered */
-        bufferIconDelay:    1000,
+        bufferIconDelay:    1,
             
         /* if set the indicator animation is tinkered from a cssprite - must be horizontal */
         spriteUrl:          '',
@@ -50,45 +50,39 @@ projekktorDisplay.prototype = {
     /* triggered on plugin-instanciation */
     initialize: function() {
     
-    // create the display container itself
-    this.display = this.applyToPlayer($('<div/>'));
+        // create the display container itself
+        this.display = this.applyToPlayer($('<div/>'));
+        
+        // create the startbutton
+        this.startButton =  this.applyToPlayer( $('<div/>').addClass('start'), 'startbtn');
     
-    // create the startbutton
-    this.startButton =  this.applyToPlayer( $('<div/>').addClass('start'), 'startbtn');
-
-    // create buffericon
-    this.buffIcn = this.applyToPlayer( $('<div/>').addClass('buffering'), 'buffericn');
-    
-    this.imaContainer = this.applyToPlayer( $('<div/>').addClass('ima'), 'ima');    
-
-
-
+        // create buffericon
+        this.buffIcn = this.applyToPlayer( $('<div/>').addClass('buffering'), 'buffericn');
+        
+        this.imaContainer = this.applyToPlayer( $('<div/>').addClass('ima'), 'ima');
+        
         this.setActive();
 
-    // add spritelayer to buffericon (if required)
-    if (this.config.spriteUrl!=='') {
-        this.buffIcnSprite = $('<div/>')
-            .appendTo(this.buffIcn)
-            .css({
-                width: this.config.spriteWidth,
-                height: this.config.spriteHeight,
-                marginLeft: ((this.buffIcn.width()-this.config.spriteWidth) / 2)+"px",
-                marginTop: ((this.buffIcn.height()-this.config.spriteHeight) / 2)+"px",
-                backgroundColor: 'transparent',
-                backgroundImage: 'url('+this.config.spriteUrl+')',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: '0 0'
-            })
-            .addClass('inactive');
+        // add spritelayer to buffericon (if required)
+        if (this.config.spriteUrl!=='') {
+            this.buffIcnSprite = $('<div/>')
+                .appendTo(this.buffIcn)
+                .css({
+                    width: this.config.spriteWidth,
+                    height: this.config.spriteHeight,
+                    marginLeft: ((this.buffIcn.width()-this.config.spriteWidth) / 2)+"px",
+                    marginTop: ((this.buffIcn.height()-this.config.spriteHeight) / 2)+"px",
+                    backgroundColor: 'transparent',
+                    backgroundImage: 'url('+this.config.spriteUrl+')',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: '0 0'
+                })
+                .addClass('inactive');
         }    
         
-    // create a dedicated media container (if none exists)
-    this.pp.getMediaContainer();
-        /*
-        this.display
-            .append(this.startButton)
-            .append(this.buffIcn)        
-*/
+        // create a dedicated media container (if none exists)
+        this.pp.getMediaContainer();
+
         this.pluginReady = true;
     },
 
@@ -150,7 +144,7 @@ projekktorDisplay.prototype = {
                 break;
             
             case 'AWAKENING':
-                // this.hideBufferIcon();;
+                this.showBufferIcon();
                 this.hideStartButton();
                 break;
             
@@ -301,7 +295,7 @@ projekktorDisplay.prototype = {
         if (this.buffIcn.hasClass('active') ) return;
         this.buffIcn.addClass('active').removeClass('inactive');
 
-        if (ref.buffIcnSprite==null) return;
+        if (ref.buffIcnSprite===null) return;
         
         var startOffset=(ref.config.spriteCountUp===true) ? 0 : (ref.config.spriteHeight + ref.config.spriteOffset)*(ref.config.spriteTiles-1),
             spriteOffset = startOffset;
@@ -309,7 +303,7 @@ projekktorDisplay.prototype = {
         (function() {
 
             if (!ref.buffIcn.is(':visible')) return;
-            ref.buffIcnSprite.css('backgroundPosition', '0px -'+spriteOffset+"px")
+            ref.buffIcnSprite.css('backgroundPosition', '0px -'+spriteOffset+"px");
             
             if (ref.config.spriteCountUp===true)
                 spriteOffset += ref.config.spriteHeight + ref.config.spriteOffset;
@@ -323,5 +317,5 @@ projekktorDisplay.prototype = {
         })(); 
 
     }
-}
+};
 });

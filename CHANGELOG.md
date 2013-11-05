@@ -1,6 +1,24 @@
 PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
+V1.3.0
+=======
+
+  addtions:
+  * [core] added OSMF player model
+  * [core] "streamType" can now be specified separately for each alternate media entry of a playlist item (allows mixing e.g. of RTMP, HTTP for one single playlist item)
+  * [core] made mJpeg multipart streams available for clients with VLC Web Plugin
+  
+  fixes:
+  * [core] fixed jQuery 1.4 issues
+  * [core] now even Firefox accepts to leave fullscreen once "done" is being triggered
+
+  changes:
+  * [core] made OSMF player model default
+  * [core] missing or broken plugins are now reported via an alert()
+  * [core] set default duration for images to one second
+  
+
 V1.2.38
 =======
   

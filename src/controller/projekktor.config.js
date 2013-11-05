@@ -59,7 +59,7 @@ projekktorConfig.prototype = {
     _thereCanBeOnlyOne:             true,
     
     /* on "true" try to leave fullscreen on player "complete" - does not seem to work properly in Firefox... yeah! */
-    _leaveFullscreen:               false,
+    _leaveFullscreen:               true,
             
     /* An array of items to be played. Check http://www.projekktor.com/docs/playlists to learn more */
     _playlist:                      [],

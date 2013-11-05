@@ -36,7 +36,7 @@ if (!!document.createElement('video').canPlayType) {
     )();
 }
 
-// this object is returned when multiple player's are requested
+// this object is returned in case multiple player's are requested
 function Iterator(arr) {
     this.length = arr.length;
     this.each = function(fn) {$.each(arr, fn);};
@@ -44,7 +44,7 @@ function Iterator(arr) {
 };
 
 // make sure projekktor works with jquery 1.3, 1.4, 1.5, 1.6:
-if ($.fn.prop===null) {
+if (!$.fn.prop) {
     $.fn.prop = function(arga, argb) {
         return $(this).attr(arga, argb);
     };
@@ -131,7 +131,7 @@ projekktor = $p = function() {
 
     function PPlayer(srcNode, cfg, onReady) {
 
-    this.config = new projekktorConfig('1.2.38');
+    this.config = new projekktorConfig('1.3.00');
 
     this.env = {
         muted: false,
@@ -261,44 +261,127 @@ projekktor = $p = function() {
         return resultIdx;
     };
 
+    this._canPlay = function(mediaType, platform, streamType) {    
+        var ref = this,
+            checkIn = [],
+            checkFor = [],
+            st = streamType || 'http',
+            pltfrm = (typeof platform=='object') ? platform : [platform],
+            type = (mediaType) ? mediaType.replace(/x-/, '') : undefined,
+            tm = ref._testMediaSupport();
+            
+        $.each(pltfrm, function(nothing, plt) {
+            $.each($.extend(tm[st], tm['*'] || []) || [], function(thisPlatform, val) {
+                if (plt!=null)
+                    if (thisPlatform!=plt)
+                        return true;               
+                checkIn = $.merge(checkIn, this);
+                return true;
+            });
+        });
+
+        if (checkIn.length===0) {
+            return false;
+        }
+
+        switch (typeof type) {
+            case 'undefined':
+                return checkIn.length>0;
+            case 'string':                    
+                if (type=='*')
+                    return checkIn;
+                checkFor.push(type);
+                break;
+            case 'array':
+                checkFor = type;
+                break;
+        }
+              
+        for(var i in checkFor) {
+            if ($p.mmap.hasOwnProperty(i)) {
+                if (typeof checkFor[i] !== 'string') break;
+                if ($.inArray( checkFor[i], checkIn)>-1) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    };    
+    
     /* apply available data and playout models */
     this._prepareMedia = function(data) {
         var ref = this,
+            types = [],
             mediaFiles = [],
             qualities = [],
             extTypes = {},
             typesModels = {},
             modelSets = [],
             result = {},
-            extRegEx = [];
+            extRegEx = [],
+            bestMatch = 0;
 
         // build regex string and filter dublicate extensions and more ...        
-        for(var i in $p.mmap ) {
-            if ($p.mmap.hasOwnProperty(i)) {
-                platforms = (typeof $p.mmap[i].platform=='object') ? $p.mmap[i].platform : [ $p.mmap[i].platform ];
-                $.each(platforms, function(_na, platform) {        
-                    if ( !ref._canPlay($p.mmap[i].type, platform, data.config.streamType) )
-                        return true;                    
-  
-                    // set priority level
-                    $p.mmap[i].level = $.inArray(platform, ref.config._platforms);
-                    $p.mmap[i].level = ($p.mmap[i].level<0) ? 100 : $p.mmap[i].level;
-    
-                    extRegEx.push( '.'+$p.mmap [i].ext );
-    
-                    if (!extTypes[$p.mmap[i].ext]) {
-                        extTypes[$p.mmap[i].ext] = [];
-                    }
-    
-                    extTypes[$p.mmap[i].ext].push( $p.mmap[i] );
+        for(var mmapIndex in $p.mmap ) {
+            if ($p.mmap.hasOwnProperty(mmapIndex)) {
+                platforms = (typeof $p.mmap[mmapIndex].platform=='object') ? $p.mmap[mmapIndex].platform : [ $p.mmap[mmapIndex].platform ];
+                $.each(platforms, function(_na, platform) {
+            
+                    var k = 0,
+                        streamType = 'http';
+                    
+                    for (var j in data.file) {
+                        if (data.file.hasOwnProperty(j)) {
+                            if (j==='config') continue;
+                            
+                            streamType = data.file[j].streamType || ref.getConfig('streamType') || 'http';
 
-                    if ($p.mmap[i].streamType==null || data.config.streamType==null || $.inArray(data.config.streamType, $p.mmap[i].streamType)>-1 || $p.mmap[i].streamType=='*') {
-                        if (!typesModels[$p.mmap[i].type]) {
-                            typesModels[$p.mmap[i].type] = [];
+                            if ( ref._canPlay($p.mmap[mmapIndex].type, platform, streamType) ) {
+                                k++;
+                            }
+                            
+                            // this platform does not support any of the provided streamtypes:
+                            if (k===0) {
+                                continue;
+                            }
+                      
+                            // set priority level
+                            $p.mmap[mmapIndex].level = $.inArray(platform, ref.config._platforms);
+                            $p.mmap[mmapIndex].level = ($p.mmap[mmapIndex].level<0) ? 100 : $p.mmap[mmapIndex].level;
+                            
+                            // upcoming fun:
+                            extRegEx.push( '.'+$p.mmap[mmapIndex].ext );
+                            
+                            // build extension2filetype map
+                            if (!extTypes[$p.mmap[mmapIndex].ext]) {
+                                extTypes[$p.mmap[mmapIndex].ext] = [];
+                            }                            
+                            extTypes[$p.mmap[mmapIndex].ext].push( $p.mmap[mmapIndex] );
+                            
+                            if ($p.mmap[mmapIndex].streamType===null || $p.mmap[mmapIndex].streamType=='*' || $.inArray(streamType, $p.mmap[mmapIndex].streamType)>-1) {
+
+                                if (!typesModels[$p.mmap[mmapIndex].type]) {
+                                    typesModels[$p.mmap[mmapIndex].type] = [];
+                                }
+
+                                k = -1;
+                                for(var ci = 0, len = typesModels[$p.mmap[mmapIndex].type].length; ci < len; ci++) {                           
+                                    if (typesModels[$p.mmap[mmapIndex].type][ci].model == $p.mmap[mmapIndex].model) {
+                                       k = ci;
+                                       break;
+                                    }
+                                }                                
+
+                                if (k===-1) {
+                                    typesModels[$p.mmap[mmapIndex].type].push( $p.mmap[mmapIndex] );                        
+                                }
+                                
+                            }
+                            continue;                            
                         }
-                        typesModels[$p.mmap[i].type].push( $p.mmap[i] );                        
                     }
-
+                    
                     return true;
                 });
             }
@@ -328,8 +411,7 @@ projekktor = $p = function() {
                 if (typeof data.file[index]=='string') {
                     data.file[index] = {'src':data.file[index]};
                 }
-        
-        
+
                 // nothing to do, next one
                 if (data.file[index].src==null) {
                     continue;
@@ -350,21 +432,21 @@ projekktor = $p = function() {
                         if (codecMatch[1]!=null) {
                             data.file[index].codec = codecMatch[1];                
                         }
-                        data.file[index].type = codecMatch[0]; // .replace(/x-/, '');
-                        // data.file[index].originalType = codecMatch[0];
+                        data.file[index].type = codecMatch[0].replace(/x-/, '');
+                        data.file[index].originalType = codecMatch[0];
                     } catch(e){}
                 }
                 else {
                     data.file[index].type = this._getTypeFromFileExtension( data.file[index].src );
                 }
-                  
-                var possibleTypes = $.merge(typesModels[data.file[index].type] || [], typesModels[data.file[index].type.replace(/x-/, '')] || [] );
-
-                if (possibleTypes.length>0) {                                
-                    possibleTypes.sort(function(a, b) {
+        
+                if (typesModels[data.file[index].type] && typesModels[data.file[index].type].length>0) {
+                      
+                    typesModels[data.file[index].type].sort(function(a, b) {
                             return a.level - b.level;
-                    });                               
-                    modelSets.push(possibleTypes[0]);
+                    });
+               
+                    modelSets.push(typesModels[data.file[index].type] [0]);
                 }
             }
         }
@@ -378,17 +460,15 @@ projekktor = $p = function() {
             modelSets.sort(function(a, b) {
                 return a.level - b.level;
             });
-            
-            var bestMatch = modelSets[0].level;
+
+            bestMatch = modelSets[0].level;
             
             modelSets = $.grep(modelSets, function(value) {
                 return value.level == bestMatch;
             });
         }
- 
 
-
-        var types = [];
+        types = [];
         $.each(modelSets || [], function() {
             types.push(this.type);
         });
@@ -398,33 +478,34 @@ projekktor = $p = function() {
 
         types = $p.utils.unique(types);
 
-        for (var index in data.file) {
-
-            // discard files not matching the selected model
-            if (data.file[index].type==null)
-                continue;
+        for (index in data.file) {
+            if (data.file.hasOwnProperty(index)) {
             
-            if ( ($.inArray( data.file[index].type.replace(/x-/, ''), types)<0) && modelSet.type!='none/none')
-                continue;
-            
-            // make srcURL absolute    for non-RTMP files
-            data.file[index].src = (!$.isEmptyObject(data.config) && (data.config.streamType=='http' || data.config.streamType==null) )
-                ? $p.utils.toAbsoluteURL(data.file[index].src)
-                : data.file[index].src;
-    
-            // set "default" quality
-            if ( data.file[index].quality==null)
-                data.file[index].quality = 'default';
-            
-            // add this files quality key to index
-            qualities.push(data.file[index].quality)
-            
-            // add media variant
-            mediaFiles.push(data.file[index])        
-
+                // discard files not matching the selected model
+                if (data.file[index].type==null)
+                    continue;
+                
+                if ( ($.inArray( data.file[index].type.replace(/x-/, ''), types)<0) && modelSet.type!='none/none')
+                    continue;
+                
+                // make srcURL absolute    for non-RTMP files
+                data.file[index].src = (!$.isEmptyObject(data.config) && (data.config.streamType=='http' || data.config.streamType==null) )
+                    ? $p.utils.toAbsoluteURL(data.file[index].src)
+                    : data.file[index].src;
+        
+                // set "default" quality
+                if ( data.file[index].quality==null)
+                    data.file[index].quality = 'default';
+                
+                // add this files quality key to index
+                qualities.push(data.file[index].quality)
+                
+                // add media variant
+                mediaFiles.push(data.file[index])        
+            }
         }         
        
-        if (mediaFiles.length==0) {
+        if (mediaFiles.length===0) {
             mediaFiles.push({src:null, quality:"default"});
         }
   
@@ -495,8 +576,10 @@ projekktor = $p = function() {
                     case 'COMPLETED':                           
                         // all items in PL completed:
                         if (this._currentItem+1>=this.media.length && !this.getConfig('loop')) {
-                            if (this.getConfig('leaveFullscreen')) this.setFullscreen(false);            
                             this._promote('done', {});
+                            if (this.getConfig('leaveFullscreen')) {
+                                this.reset(); // POW, crowba-method for Firefox!
+                            }
                         }
                         // next one, pls:
                         this.setActiveItem('next');
@@ -519,6 +602,11 @@ projekktor = $p = function() {
                     modelRef.start();
                 });
             break;
+            
+            case 'availableQualitiesChange':
+                this.media[this._currentItem].qualities = value;
+                this._promote('availableQualitiesChange', value);            
+                break;
 
             case 'qualityChange':
                 this.setConfig({playbackQuality: value});            
@@ -690,10 +778,12 @@ projekktor = $p = function() {
         pluginObj = null;
 
         // nothing to do
-        if (this._plugins.length>0 || plugins.length==0) return;        
+        if (this._plugins.length>0 || plugins.length===0) {
+            return;
+        }
         for(var i=0; i<plugins.length; i++) {
             pluginName = "projekktor"+plugins[i].charAt(0).toUpperCase() + plugins[i].slice(1);
-            try {typeof eval(pluginName);} catch(e) {$p.utils.log("ERROR:", e); continue;}
+            try {typeof eval(pluginName);} catch(e) {alert("Projekktor Error: Plugin '" + plugins[i] + "' malicious or not available."); continue;}
         
             pluginObj = $.extend(true, {}, new projekktorPluginInterface(), eval(pluginName).prototype);
             pluginObj.name = plugins[i].toLowerCase();
@@ -705,7 +795,7 @@ projekktor = $p = function() {
                 this.config['plugin_'+pluginObj.name] = {};
             
             this.config['plugin_'+pluginObj.name] = $.extend(true, {}, pluginObj.config || {});
-            
+
             for (var propName in pluginObj) {
                 if (propName.indexOf('Handler')>1) {
                     if (this._pluginCache[propName]==null) {
@@ -1277,16 +1367,21 @@ projekktor = $p = function() {
         
     this.getIframeParent = this.getIframeWindow = function() {
         try {
-        var result = parent.location.host || false;
-        return (result===false) ? false : $(parent.window);
-        } catch(e) { return false; }
+            var result = false;
+            if(this.config._iframe)
+                parent.location.host || false;
+            return (result===false) ? false : $(parent.window);
+        } catch(e) { return false; }        
     };
 
     this.getIframe = function() {
         try {
-            var result = window.$(frameElement) || [];
+        	var result = [];
+            if(this.config._iframe)
+            	result = window.$(frameElement) || [];
             return (result.length==0) ? false : result;
         } catch(e) { return false; }
+        
     };
         
     this.getIframeAllowFullscreen = function() {
@@ -1335,51 +1430,6 @@ projekktor = $p = function() {
     this.getCanPlayNatively = function(type) {
         return this._canPlay(type, 'native');
     }
-
-    this._canPlay = function(tp, platform, streamType) {    
-        var ref = this,
-            checkIn = [],
-            checkFor = [],
-            st = streamType || 'http',
-            pltfrm = (typeof platform=='object') ? platform : [platform],
-            type = (tp) ? tp.replace(/x-/, '') : undefined,
-            tm = ref._testMediaSupport();
-
-        $.each(pltfrm, function(nothing, plt) {
-            $.each($.extend(tm[st], tm['*'] || []) || [], function(thisPlatform, val) {
-                if (plt!=null)
-                    if (thisPlatform!=plt)
-                        return true;               
-                checkIn = $.merge(checkIn, this);
-                return true;
-            })
-        })
-
-        if (checkIn.length==0) {
-            return false;
-        }
-
-        switch (typeof type) {
-            case 'undefined':
-                return checkIn.length>0
-            case 'string':                    
-                if (type=='*')
-                    return checkIn;
-                checkFor.push(type);
-                break;
-            case 'array':
-                checkFor = type;
-                break;
-        }
-              
-        for(var i in checkFor) {
-            if (typeof checkFor[i] !== 'string') break;
-            if ($.inArray( checkFor[i], checkIn)>-1)
-                return true;
-        }
-
-        return false;
-    };
     
     this.getPlatform = function() {
         return this.media[this._currentItem].platform  || 'error';
@@ -1418,15 +1468,15 @@ projekktor = $p = function() {
     */
     this.getNativeFullscreenSupport = function() {
         var ref = this,
-        fullScreenApi = {
-            supportsFullScreen: 'semi',
-            isFullScreen: function() {try {return ref.getDC().hasClass('fullscreen');} catch(e){return false;}},
-            requestFullScreen: function() {ref.playerModel.applyCommand('fullscreen', true);},
-            cancelFullScreen: function() {ref.playerModel.applyCommand('fullscreen', false);},
-            prefix: '',
-            ref: this
-        },
-        browserPrefixes = 'webkit moz o ms khtml'.split(' ');
+            fullScreenApi = {
+                supportsFullScreen: 'viewport', // viewport=full viewport, media=video only (e.g. iphone), dom=html5 true fullscreen
+                isFullScreen: function() {try {return ref.getDC().hasClass('fullscreen');} catch(e){return false;}},
+                requestFullScreen: function() {ref.playerModel.applyCommand('fullscreen', true);},
+                cancelFullScreen: function() {ref.playerModel.applyCommand('fullscreen', false);},
+                prefix: '',
+                ref: this
+            },
+            browserPrefixes = 'webkit moz o ms khtml'.split(' ');
 
         // return fullScreenApi;
         // check for native support
@@ -1435,135 +1485,145 @@ projekktor = $p = function() {
         if (typeof document.cancelFullScreen != 'undefined') {
             fullScreenApi.supportsFullScreen = true;
         } else {
+            // (double)-check for fullscreen support by vendor prefix
+            for (var i = 0, il = browserPrefixes.length; i < il; i++ ) {
+    
+                fullScreenApi.prefix = browserPrefixes[i];
+    
+                // media element only
+                if (typeof document.createElement('video')[fullScreenApi.prefix+"EnterFullscreen"] != 'undefined') {
+                    fullScreenApi.supportsFullScreen = 'mediaonly';
+                }
+    
+                // player container / true fullscreen
+                if (typeof document[fullScreenApi.prefix + 'CancelFullScreen' ] != 'undefined' ) {
+                
+                    fullScreenApi.supportsFullScreen = 'dom';
+    
+                    // FF8+FF9 double-check
+                    if (fullScreenApi.prefix=='moz' && typeof document[fullScreenApi.prefix + 'FullScreenEnabled'] == 'undefined' ) {
+                        fullScreenApi.supportsFullScreen = 'viewport';
+                    }
+                }
 
-        // (double)-check for fullscreen support by vendor prefix
-        for (var i = 0, il = browserPrefixes.length; i < il; i++ ) {
-
-            fullScreenApi.prefix = browserPrefixes[i];
-
-            // media element only
-            if (typeof document.createElement('video')[fullScreenApi.prefix+"EnterFullscreen"] != 'undefined') {
-            fullScreenApi.supportsFullScreen = 'media';
+                if (fullScreenApi.supportsFullScreen!==false && fullScreenApi.supportsFullScreen!=='viewport') {
+                    break;
+                }
+    
             }
+        }
+    
+        // SEMI:
+        // we are done here: full viewport only
+        if (fullScreenApi.supportsFullScreen=='viewport' || (fullScreenApi.supportsFullScreen=='dom' && this.getConfig('forceFullViewport'))) {
+            return fullScreenApi;
+        }
 
-            // player container / true fullscreen
-            if (typeof document[fullScreenApi.prefix + 'CancelFullScreen' ] != 'undefined' ) {
-            fullScreenApi.supportsFullScreen = 'dom';
-
-            // FF8+FF9 double-check
-            if (fullScreenApi.prefix=='moz' && typeof document[fullScreenApi.prefix + 'FullScreenEnabled'] == 'undefined' )
-                fullScreenApi.supportsFullScreen = false;
+        
+        // MEDIA ONLY:
+        // the browser supports true fullscreen for the media element only - this is semi cool
+        if (fullScreenApi.supportsFullScreen=='mediaonly') {
+            fullScreenApi.requestFullScreen = function(el) {
+                ref.playerModel.getMediaElement().get(0)[this.prefix+'EnterFullscreen']();
             }
-
-            if (fullScreenApi.supportsFullScreen!==false && fullScreenApi.supportsFullScreen!=='semi')
-            break;
-
+            fullScreenApi.dest = {};
+    
+            // cancel fullscreen method
+            fullScreenApi.cancelFullScreen = function() {}
+    
+            return fullScreenApi;
         }
-        }
-
-        // forget it:
-            if (fullScreenApi.supportsFullScreen=='semi' || (fullScreenApi.supportsFullScreen=='dom' && this.getConfig('forceFullViewport')))
-        return fullScreenApi;
-
+        
+        
+        // HTML5 true fullscreen:
         // is in fullscreen check
         fullScreenApi.isFullScreen = function(esc) {
-                /*
-                 * FF and GoogleTV report bullshit here:
-                 * */
-        var dest = (ref.getIframe()) ? parent.window.document : document;
-        switch (this.prefix) {
-            case '':
-            return dest.fullScreen;
-            case 'webkit':
-            return dest.webkitIsFullScreen;
-                    case 'moz':
-                        return dest[this.prefix + 'FullScreen'] || (ref.getDC().hasClass('fullscreen') && esc!==true);
-            default:                  
-            return dest[this.prefix + 'FullScreen'];
+            // * FF and GoogleTV report bullshit here:
+            var dest = (ref.getIframe()) ? parent.window.document : document;
+            switch (this.prefix) {
+                case '':
+                    return dest.fullScreen;
+                case 'webkit':
+                    return dest.webkitIsFullScreen;
+                case 'moz':
+                     return dest[this.prefix + 'FullScreen'] || (ref.getDC().hasClass('fullscreen') && esc!==true);
+                default:                  
+                    return dest[this.prefix + 'FullScreen'];
+            }
         }
-        
-        
-        }
-
-        // set initiation method and dest Obj
-        if (fullScreenApi.supportsFullScreen=='dom') {
 
         // the browser supports true fullscreen for any DOM container - this is ubercool:
         fullScreenApi.requestFullScreen = function() {
-                    if (this.isFullScreen()) return;
+            if (this.isFullScreen()) return;
                     
-                    var win = ref.getIframeParent() || $(window);
-                    win.data('fsdata', {
-                        scrollTop: win.scrollTop(),
-                        scrollLeft: win.scrollLeft()
-                    });
-                    
-            var target = ref.getIframe() || ref.getDC(),
-            apiRef = this,
-            dest = (ref.getIframe()) ? parent.window.document : document,
-                        win = ref.getIframeParent() || $(window);
-                                                
-            $(dest).unbind(this.prefix + "fullscreenchange.projekktor");
-            $(dest).bind(this.prefix + "fullscreenchange.projekktor", function(evt) {
-
-            if (!apiRef.isFullScreen(true)) {
-                            apiRef.ref.playerModel.applyCommand('fullscreen', false);
-                            var win = apiRef.ref.getIframeParent() || $(window),
-                                fsData = win.data('fsdata');
-                            if (fsData!=null) {
-                                win.scrollTop(fsData.scrollTop);
-                                win.scrollLeft(fsData.scrollLeft);
-                            }
-                            
-            } else {
-                            apiRef.ref.playerModel.applyCommand('fullscreen', true);
-                        }
+            var win = ref.getIframeParent() || $(window),
+                target = ref.getIframe() || ref.getDC().get(0),
+                apiRef = this,
+                dest = (ref.getIframe()) ? parent.window.document : document,
+                win = ref.getIframeParent() || $(window);
+            
+            // store scroll positon:
+            win.data('fsdata', {
+                scrollTop: win.scrollTop(),
+                scrollLeft: win.scrollLeft()
             });
 
-            if (this.prefix === '')
-            target.get(0).requestFullScreen()
-            else
-            target.get(0)[this.prefix + 'RequestFullScreen']();
-                    
+            $(dest).unbind(this.prefix + "fullscreenchange.projekktor");
+            
+            if (this.prefix === '') {
+                target.requestFullScreen();
+            }
+            else {
+                target[this.prefix + 'RequestFullScreen']();
+            }  
+            
+            apiRef.ref.playerModel.applyCommand('fullscreen', true);            
+            
+            // create fullscreen change listener on the fly:
+            $(dest).bind(this.prefix + "fullscreenchange.projekktor", function(evt) {
+                if (!apiRef.isFullScreen(true)) {
+                    apiRef.ref.playerModel.applyCommand('fullscreen', false);
+                    var win = apiRef.ref.getIframeParent() || $(window),
+                        fsData = win.data('fsdata');
+                    if (fsData!=null) {
+                        win.scrollTop(fsData.scrollTop);
+                        win.scrollLeft(fsData.scrollLeft);
+                    }
+                } else {
                     apiRef.ref.playerModel.applyCommand('fullscreen', true);
+                }
+            });
+
         }
 
         // cancel fullscreen method
         fullScreenApi.cancelFullScreen = function() {
 
-                    $( (ref.getIframe()) ? parent.window.document : document).unbind(this.prefix + "fullscreenchange.projekktor");
-            var target = ref.getIframe() ? parent.window.document : document;
+            var target = ref.getIframe() ? parent.window.document : document,
+                win = ref.getIframeParent() || $(window),
+                fsData = win.data('fsdata');
+            
+            $( (ref.getIframe()) ? parent.window.document : document).unbind(this.prefix + "fullscreenchange.projekktor");
 
-            // $(target).unbind(this.prefix + "fullscreenchange.projekktor");
             // seems to cause errors in FF           
-                    if (target.exitFullScreen)
-                        target.exitFullScreen();
-            else if (this.prefix == '')
-            target.cancelFullScreen();
-            else
-            target[this.prefix + 'CancelFullScreen']();
-                    var win = ref.getIframeParent() || $(window),
-                        fsData = win.data('fsdata');
+            if (target.exitFullScreen) {
+                target.exitFullScreen();
+            }
+            else if (this.prefix == '') {
+                target.cancelFullScreen();
+            }
+            else {
+                target[this.prefix + 'CancelFullScreen']();
+            }                
+
+            // restore scrollposition
+            if (fsData!=null) {
+                win.scrollTop(fsData.scrollTop);
+                win.scrollLeft(fsData.scrollLeft);
+            }
                     
-                    if (fsData!=null) {
-                        win.scrollTop(fsData.scrollTop);
-                        win.scrollLeft(fsData.scrollLeft);
-                    }
-                    
-                    ref.playerModel.applyCommand('fullscreen', false);
+            ref.playerModel.applyCommand('fullscreen', false);
         }
-
-            return fullScreenApi;
-        }
-
-        // the browser supports true fullscreen for the media element only - this is semi cool
-        fullScreenApi.requestFullScreen = function(el) {
-        ref.playerModel.getMediaElement().get(0)[this.prefix+'EnterFullscreen']();
-        }
-        fullScreenApi.dest = {};
-
-        // cancel fullscreen method
-        fullScreenApi.cancelFullScreen = function() {}
 
         return fullScreenApi;
     };
@@ -1590,12 +1650,9 @@ projekktor = $p = function() {
         return this.playerModel.getMediaDimensions() || {width:0, height:0};
     };
         
-        this.getAppropriateQuality = function() {
-            return this._getAppropriateQuality(this.media[this._currentItem].qualities || [])
-        }
-
-    this._getAppropriateQuality = function(quals) {
-            
+   this.getAppropriateQuality = function(qualities) {
+        var quals = qualities || this.getPlaybackQualities() || [];
+        
         if (quals.length==0)
             return [];
            
@@ -1644,9 +1701,9 @@ projekktor = $p = function() {
             return true;
         });
 
-        return temp.key || 'default';
+        return (this.getPlaybackQualities().indexOf('auto')>-1) ? 'auto' : temp.key || 'default';
     };
-    
+        
     /* asynchronously loads external XML and JSON data from server */
     this.getFromUrl = function(url, dest, callback, customParser, dataType) {
         var data = null,
@@ -1809,7 +1866,7 @@ projekktor = $p = function() {
         // start model:
         this.playerModel = new playerModel();
         $.extend(this.playerModel, $p.models[newModel].prototype );
-
+        
         this._promote('syncing', 'display');
 
         this._enqueue(function() { try {ref._applyCuePoints();} catch(e) {} } );
@@ -2052,8 +2109,7 @@ projekktor = $p = function() {
     };
 
     this.setFullscreen = function(goFull) {
-        var nativeFullscreen = this.getNativeFullscreenSupport(),
-            ref = this;
+        var nativeFullscreen = this.getNativeFullscreenSupport();
 
         goFull = (goFull==null) ? !nativeFullscreen.isFullScreen() : goFull;                                
 
@@ -2200,9 +2256,9 @@ projekktor = $p = function() {
     this.setPlaybackQuality = function(quality) {
         var qual = quality || this.getAppropriateQuality();         
         if ($.inArray(qual, this.media[this._currentItem].qualities || [])>-1) {
-        this.playerModel.applyCommand('quality', qual);
-                this.setConfig({playbackQuality: qual});    
-            }
+            this.playerModel.applyCommand('quality', qual);
+            this.setConfig({playbackQuality: qual});    
+        }
         return this;
     };
 
@@ -2741,7 +2797,7 @@ projekktor = $p = function() {
                     result.playlist[0].push({
                         src: childNode.attr('src'),
                         type: childNode.attr('type') || this._getTypeFromFileExtension(childNode.attr('src')),
-                                        quality: childNode.attr('data-quality') || ''
+                        quality: childNode.attr('data-quality') || ''
                     });                
                     break;
                     case 'TRACK':
@@ -2768,7 +2824,7 @@ projekktor = $p = function() {
                 result.playlist[0].push({
                     src: $(this).attr('src'),
                     type: $(this).attr('type') || ref._getTypeFromFileExtension($(this).attr('src')),
-                                    quality: $(this).attr('data-quality') || ''
+                    quality: $(this).attr('data-quality') || ''
                 });                
                 break;
                 case 'TRACK':
@@ -3046,6 +3102,7 @@ $p.newModel = function(obj, ext) {
         obj.setiLove();
     }
     
+ 
     /* remove overwritten model from iLove-map */
     $p.mmap = $.grep($p.mmap, function(iLove) {
         var doesNotExist = iLove.model != ((obj.replace) ? obj.replace.toLowerCase() : ''),

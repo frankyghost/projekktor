@@ -25,7 +25,7 @@ $p.newModel({
     
     applyMedia: function(destContainer) {
         this.mediaElement = this.applyImage(this.media.file[0].src, destContainer.html(''));
-        this._duration = this.pp.getConfig('duration');
+        this._duration = this.pp.getConfig('duration') || 1;
         this._position = -1;
         this.displayReady();
         this._position = -0.5;    

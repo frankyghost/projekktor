@@ -33,7 +33,7 @@ jQuery(function ($) {
 					.attr('unselectable', 'on')
 					.bind("selectstart", function () {
 						return false;
-					})
+					});
 			return dest;
 		},
 
@@ -59,7 +59,7 @@ jQuery(function ($) {
 				try {
 					if ($.inArray(array1[i], array2) > -1) result.push(array1[i]);
 				} catch (e) {}
-			})
+			});
 			return result;
 		},
 
@@ -90,7 +90,7 @@ jQuery(function ($) {
 			}
 
 			h = l.protocol + '//' + l.host;
-			if (s.indexOf('/') == 0) {
+			if (s.indexOf('/')===0) {
 				return h + s;
 			}
 
@@ -123,8 +123,7 @@ jQuery(function ($) {
 		 * @return (Integer) Absolute seconds
 		 */
 		toSeconds: function (t) {
-
-			var s = 0.0
+			var s = 0.0;
 			if (typeof t != 'string') return t;
 			if (t) {
 				var p = t.split(':');
@@ -132,7 +131,7 @@ jQuery(function ($) {
 					p = p.slice(0, 3);
 
 				for (i = 0; i < p.length; i++)
-					s = s * 60 + parseFloat(p[i].replace(',', '.'))
+					s = s * 60 + parseFloat(p[i].replace(',', '.'));
 			}
 
 			return parseFloat(s);
@@ -232,7 +231,7 @@ jQuery(function ($) {
 						top: 0,
 						left: 0
 					})
-				)
+				);
 			}
 
 			return $('#' + domOptions.id);
@@ -285,8 +284,9 @@ jQuery(function ($) {
 			if (target == null)
 				return false;
 
-			if ((target instanceof $) == false)
-				target = $(target)
+			if ((target instanceof $)===false) {
+				target = $(target);
+			}
 
 			if (!target.data('od')) {
 				target.data('od', {
@@ -334,8 +334,9 @@ jQuery(function ($) {
 			wid = $p.utils.roundNumber((rw / wid) * 100, 0);
 			hei = $p.utils.roundNumber((rh / hei) * 100, 0);
 
-			if (wid == 0 || hei == 0)
+			if (wid===0 || hei===0) {
 				return false;
+			}
 
 			target.css({
 				'margin': 0,
@@ -388,8 +389,9 @@ jQuery(function ($) {
 		// http://paulirish.com/2009/log-a-lightweight-wrapper-for-consolelog/                
 		log: function () {
 
-			if (this.logging == false)
+			if (this.logging===false) {
 				return;
+			}
 
 			this.history = this.history || []; // store logs to an array for reference
 			this.history.push(arguments);
@@ -454,12 +456,13 @@ jQuery(function ($) {
         
         versionCompare: function (installed, required) {
             var a = installed.split('.'),
-                b = required.split('.');
+                b = required.split('.'),
+				i = 0;
     
-            for (var i = 0; i < a.length; ++i) {
+            for (i = 0; i < a.length; ++i) {
                 a[i] = Number(a[i]);
             }
-            for (var i = 0; i < b.length; ++i) {
+            for (i = 0; i < b.length; ++i) {
                 b[i] = Number(b[i]);
             }
             if (a.length == 2) {
@@ -499,17 +502,19 @@ jQuery(function ($) {
                 var n, v, json = [], arr = (obj && obj.constructor == Array);
     
                 for (n in obj) {
-                    v = obj[n];
-                    t = typeof(v);
-                    if (obj.hasOwnProperty(n)) {
-                        if (t == "string") {
-                            v = '"' + v + '"';
-                        } else if (t == "object" && v !== null){
-                            v = $p.utils.stringify(v);
-                        }
-    
-                        json.push((arr ? "" : '"' + n + '":') + String(v));
-                    }
+					if (obj.hasOwnProperty(n)) {
+						v = obj[n];
+						t = typeof(v);
+						if (obj.hasOwnProperty(n)) {
+							if (t == "string") {
+								v = '"' + v + '"';
+							} else if (t == "object" && v !== null){
+								v = $p.utils.stringify(v);
+							}
+		
+							json.push((arr ? "" : '"' + n + '":') + String(v));
+						}
+					}
                 }
     
                 return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");
@@ -517,7 +522,7 @@ jQuery(function ($) {
         },
         
 		logging: false
-	}
+	};
 });
 
 
