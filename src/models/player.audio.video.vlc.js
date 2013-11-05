@@ -43,7 +43,7 @@ $p.newModel({
                         var ref = navigator.plugins[i][j];
                         if (ref.suffixes!=null && ref.type!=null) {
                             $.each(ref.suffixes.split(','), function(key, value) {
-                                model.iLove.push( {ext:value, type: ref.type.replace(/x-/, ''), platform:['vlc'], streamType: ['rtsp', 'http', 'pseudo', 'httpVideo']} );
+                                model.iLove.push( {ext:value, type: ref.type.replace(/x-/, ''), platform:['vlc'], streamType: ['rtsp', 'http', 'pseudo', 'httpVideo', 'multipart']} );
                             })
                         }
                     }
@@ -124,21 +124,19 @@ $p.newModel({
      * Handle Events
      ****************************************/ 
     addListeners: function() {
-        if (this.mediaElement==null) return;
-    
         var ref = this;
 
         $.each(this._eventMap, function(event, value){
             try {
                 if (ref.mediaElement.get(0).attachEvent) {
                     // Microsoft
-                    ref.mediaElement.get(0).attachEvent (event, function(evt) {ref[value](this, evt)});
+                    ref.mediaElement.get(0).attachEvent (event, function(evt) {ref[value](this, evt);});
                 } else if ( ref.mediaElement.get(0).addEventListener) {
                     // Mozilla: DOM level 2            
-                    ref.mediaElement.get(0).addEventListener (event, function(evt) {ref[value](this, evt)}, false);
+                    ref.mediaElement.get(0).addEventListener (event, function(evt) {ref[value](this, evt);}, false);
                 } else {            
                     // DOM level 0            
-                    ref.mediaElement.get(0)["on" + event] = function(evt) {ref[value](this, evt)};
+                    ref.mediaElement.get(0)["on" + event] = function(evt) {ref[value](this, evt);};
                 }
             } catch(e){}
         });
@@ -146,7 +144,9 @@ $p.newModel({
     },
 
     removeListener: function(evt, subId) {        
-        if (this.mediaElement==null) return;
+        if (this.mediaElement==null) {
+            return;
+        }
         var id = (subId!=null) ? '.projekktor'+subId+this.pp.getId() : '.projekktor'+this.pp.getId(),
             ref = this;
 
@@ -161,7 +161,7 @@ $p.newModel({
         this.timeListener({
             position: this.mediaElement.get(0).input.time / 1000,
             duration: this.mediaElement.get(0).input.length / 1000
-        })
+        });
     },
     
     seekableListener: function() {
@@ -191,7 +191,6 @@ $p.newModel({
         } catch(e) {}
     },
       
-
 
     /*****************************************
      * Setters
