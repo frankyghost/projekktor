@@ -485,14 +485,15 @@ projekktor = $p = function() {
                 if (data.file[index].type==null)
                     continue;
                 
-                if ( ($.inArray( data.file[index].type.replace(/x-/, ''), types)<0) && modelSet.type!='none/none')
+                if ( ($.inArray( data.file[index].type.replace(/x-/, ''), types)<0) && modelSet.type!='none/none') {
                     continue;
+                }
                 
-                // make srcURL absolute    for non-RTMP files
-                data.file[index].src = (!$.isEmptyObject(data.config) && (data.config.streamType=='http' || data.config.streamType==null) )
-                    ? $p.utils.toAbsoluteURL(data.file[index].src)
-                    : data.file[index].src;
-        
+                // make srcURL absolute for non-RTMP files
+                if ($.isEmptyObject(data.config) || data.config.streamType==null || data.config.streamType.indexOf('rtmp')==-1) {
+                    data.file[index].src = $p.utils.toAbsoluteURL(data.file[index].src);
+                }
+     
                 // set "default" quality
                 if ( data.file[index].quality==null)
                     data.file[index].quality = 'default';
