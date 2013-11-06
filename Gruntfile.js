@@ -149,6 +149,7 @@ module.exports = function (grunt) {
           // includes files within path and its sub-directories
           {expand: true, flatten: true, src: ['dist/*' + version + '*'], dest: dest},
           {expand: true, flatten: true, src: ['dist/media/*'], dest: dest + 'media/'},
+          {expand: true, src: ['swf/**'], dest: dest},       
           {expand: true, src: ['themes/**'], dest: dest},
           {expand: true, src: ['readme.html'], dest: dest},
           {expand: true, flatten: true, src: ['libs/jquery-1.9.1.min.js'], dest: dest}
