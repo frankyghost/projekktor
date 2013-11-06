@@ -136,7 +136,7 @@ module.exports = function (grunt) {
       }
     },
     readme: {
-        src: 'readme.html',  // source template file
+        src: 'dist/readme.html',  // source template file
         dest: dest + 'readme.html',  // destination file (usually index.html)
         version: version,
         name: name
