@@ -2,9 +2,9 @@ module.exports = function (grunt) {
 
   "use strict";
  
-  var dest = 'dest/',
-    name = grunt.option('name') || '',
-    version = (name!='') ? grunt.option('ver') + "." + name : grunt.option('ver') || '',  
+  var name = grunt.option('name') || '',
+    dest = grunt.option('dest') || 'dest/',
+    version = (name!=='') ? grunt.option('ver') + "." + name : grunt.option('ver') || '',  
     distpaths = [
       "dist/projekktor-" + version + ".js",
       "dist/projekktor-" + version + ".min.map",
