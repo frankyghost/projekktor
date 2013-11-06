@@ -145,7 +145,7 @@ $p.newModel({
                 }
                 break;
             
-            // there´s now public event-hook for this:
+            // ther is no public event-hook for this:
             case 'loadedmetadata':
                 this.metaDataListener(value);
                 break;        
