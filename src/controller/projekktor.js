@@ -1557,7 +1557,7 @@ projekktor = $p = function() {
             if (this.isFullScreen()) return;
                     
             var win = ref.getIframeParent() || $(window),
-                target = ref.getIframe().get(0) || ref.getDC().get(0),
+                target = (ref.getIframe()) ? ref.getIframe().get(0) : null || ref.getDC().get(0),
                 apiRef = this,
                 dest = (ref.getIframe()) ? parent.window.document : document,
                 win = ref.getIframeParent() || $(window);
