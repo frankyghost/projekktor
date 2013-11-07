@@ -131,7 +131,7 @@ projekktor = $p = function() {
 
     function PPlayer(srcNode, cfg, onReady) {
 
-    this.config = new projekktorConfig('1.3.00');
+    this.config = new projekktorConfig('1.3.01');
 
     this.env = {
         muted: false,
@@ -1557,7 +1557,7 @@ projekktor = $p = function() {
             if (this.isFullScreen()) return;
                     
             var win = ref.getIframeParent() || $(window),
-                target = ref.getIframe() || ref.getDC().get(0),
+                target = ref.getIframe().get(0) || ref.getDC().get(0),
                 apiRef = this,
                 dest = (ref.getIframe()) ? parent.window.document : document,
                 win = ref.getIframeParent() || $(window);

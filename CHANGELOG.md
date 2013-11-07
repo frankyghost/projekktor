@@ -1,7 +1,14 @@
 PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
-V1.3.0
+V1.3.01
+=======
+
+  fixes:
+  * [core] fixed iframe fullscreen bug - sorry folks
+
+
+V1.3.00
 =======
 
   addtions:
@@ -53,7 +60,7 @@ V1.2.36
   fixes:
   * [core] several AUDIO related issues fixed - especially HLS and .m3u related ones
   * [core] minor Android issues fixed
-  * [core] an item session doesn´t fire any events or updates after "error" anymore
+  * [core] an item session doesnÂ´t fire any events or updates after "error" anymore
   
   
 
@@ -210,7 +217,7 @@ V1.2.23
 =======
 
   additions:
-  * [core] it´s now possible to set up different poster images for each quality-setting (in analogy to media source quality arrays)
+  * [core] itÂ´s now possible to set up different poster images for each quality-setting (in analogy to media source quality arrays)
 
   fixes:
   * [plugin:controlbar] proper view reset on .setStop()
@@ -226,7 +233,7 @@ V1.2.22
   fixes:
   * [core] fixed "autoplay" behavior on .reset() and .setFile()
   * [plugin:controlbar] volume controls are now properly set "inactive" on mobile devices
-  * [plugin:display] mouse cursor now properly turns "none" after timeout in case click invoced play but mouse hasn´t moved afterwards
+  * [plugin:display] mouse cursor now properly turns "none" after timeout in case click invoced play but mouse hasnÂ´t moved afterwards
 
 
 
@@ -235,7 +242,7 @@ V1.2.21
 
   additions:
   * [core] new API method ".setGotoCuePoint
-  * [core] the player container now gets an additional class matching the player´s state
+  * [core] the player container now gets an additional class matching the playerÂ´s state
   * [plugin:controlbar] added scrubber-position tooltip
   * [plugin:controlbar] its now possible to have vertical volume sliders wihout further hacking
   
@@ -282,7 +289,7 @@ V1.2.18
   fixes:
   * [core] credentials are now always enabled on AJAX calls
   * [core] if player toggles DONE after being in fullscreen mode player containers with unset dimensions do not disappear any longer
-  * [core] injecting new items to non IDLE players doesn´t force IDLE any longer
+  * [core] injecting new items to non IDLE players doesnÂ´t force IDLE any longer
   * [core] fixed plugin version check routine
   * [plugin:display] clicking on testcards now works properly on items with "disallowSkip" set true
   * [plugin:contextmenu] proper iframe breaking on URL clicks where applicable.
@@ -370,7 +377,7 @@ V1.2.09
 =======
 
   fixes:
-  * [core] D´oh, stupid bug caused player to crash instantly in IE.
+  * [core] DÂ´oh, stupid bug caused player to crash instantly in IE.
 
 
 V1.2.08
@@ -487,7 +494,7 @@ V1.2.00
 
   changes:
   * [core] the general plugin-event handler has been removed in favour if an event specic handler (plugins_<pluginname><event>Handler)
-  * [core] player container doesn´t prevent further propagation of keyboard events any longer
+  * [core] player container doesnÂ´t prevent further propagation of keyboard events any longer
   * [core] dropped internal "leftclick", "rightclick" and "middleclick" events. Use "mousedown" instead and check button with "event.which".
   * [plugin:display] logo overlay functionality moved to a separated plugin (called... guess! correct: "logo")
   
@@ -512,7 +519,7 @@ V1.1.02
   * [core] proper namespace prefix set for plugins
 
   changes:
-  * [core] removed "Invalid or inconsistent quality setup ..." error. In case your quality setup isn´t correct it will now simply be ignored.
+  * [core] removed "Invalid or inconsistent quality setup ..." error. In case your quality setup isnÂ´t correct it will now simply be ignored.
 
 
 V1.1.01
@@ -550,7 +557,7 @@ V1.0.29
 
  fixes:
  * [core] several performance enhancements (thx Lena)
- * [plugin:controlbar] on mobile devides controls didn´t fade away if "fade" is enabled
+ * [plugin:controlbar] on mobile devides controls didnÂ´t fade away if "fade" is enabled
 
  additions:
  * [core] hitting "c" if debug is enabled dumps the current config object to console
@@ -695,7 +702,7 @@ V1.0.17
  additions:
  * [core] added pseudo streaming support for native H.264 video playback
  * [core] added "durationChange" event
- * [core] a cuePoint now observes itself if it´s set for an already preloaded region of the media file. If so "isAvailable" will return "true".
+ * [core] a cuePoint now observes itself if itÂ´s set for an already preloaded region of the media file. If so "isAvailable" will return "true".
  * [core] new cuePoint method: "isAvailable"
  * [plugin:controlbar] new config parameter "showCuePoints"
  * [plugin:controlbar] set cuepoints are now optionally displayed on top of the scubber bar.
@@ -736,7 +743,7 @@ V1.0.15
  additions:
  * [core] .getCanPlayNatively('*') now returns all formats the player supports natively
  * [core] the player gets a CSS class according to "streamType" and "cssClassPrexi", e.g. "ppfile" or "pprtmp"
- * [core] cuePoint support => trigger custom functions depending on the player´s timeindex
+ * [core] cuePoint support => trigger custom functions depending on the playerÂ´s timeindex
  * [core] pressing "d" while mouse hovers the player enableds debugging (console.log)
 
 V1.0.14
@@ -800,7 +807,7 @@ V1.0.10
  * [core] Fallback to jarisplayer playing an audio playlist seems broken in 1.0.0.9r27 (http://dev.projekktorxl.com/projekktor/issues/12)
  * [core] Custom user agent string in IE9 breaks flash fallback  (http://dev.projekktorxl.com/projekktor/issues/11)
  * [core] hotfixed "missing quality settings"-error
- * [core] in safari the controlbar didn´t come up while on flash fallback
+ * [core] in safari the controlbar didnÂ´t come up while on flash fallback
  * [plugin:controlbar] fadeable controls stay properly hidden during item init
 
 
@@ -817,9 +824,9 @@ V1.0.08
 
  fixes:
 
- * [core] State "Completed" isn´t triggered on Android
+ * [core] State "Completed" isnÂ´t triggered on Android
  * [core] in IE9 flash is used instead of native video in case file extension is mp4s
- * [core] audio playback doesn´t start if flash or <audio> component is wrapped into an invisible container
+ * [core] audio playback doesnÂ´t start if flash or <audio> component is wrapped into an invisible container
  
  
 
@@ -840,11 +847,11 @@ V1.0.06
  * [core] fixed false negative result of ".canplaynatively()"
 
  additions:
- * [core] the browser´s context-menu (leftclick) can now be selectively unlocked by assigning the "context" class to any element
+ * [core] the browserÂ´s context-menu (leftclick) can now be selectively unlocked by assigning the "context" class to any element
  * [core] added some keyboard shortcuts
  
  changes:
- * [plugin:display] removed setFullscreen on doubleclick - doesn´t work for native fullscreen
+ * [plugin:display] removed setFullscreen on doubleclick - doesnÂ´t work for native fullscreen
  * [plugin:display] changed DOM order of display, startbutton, buffering icon, logo layer
 
 
@@ -859,7 +866,7 @@ V1.0.05
 V1.0.04
 =======
 
- okay, let´s see if we can make it up to V2.0 today ...
+ okay, letÂ´s see if we can make it up to V2.0 today ...
 
  fixes:
  * [core] improved "getCanPlay" accuracy
@@ -905,7 +912,7 @@ V1.0.01
  additions:
 
  * [core] new config option "ignoreAttributes" which will cause the player to ignore all behavior relevant <video> and <audio> attributes.
- * [core] providing a media´s "type" is now optional - player will try to get it from file-extensions then.
+ * [core] providing a mediaÂ´s "type" is now optional - player will try to get it from file-extensions then.
  * [core] new event "syncing"
  * [core] new event "starting"
  * [core] massively improved playlist experience on iMess devices
@@ -974,13 +981,13 @@ V0.9.09
  fixes:
 
  * [core] fixes stuttering flash playback in Opera and Safari
- * [core] double clicking IDLE players doesn´t force fullscreen anymore
+ * [core] double clicking IDLE players doesnÂ´t force fullscreen anymore
  * [core] on seek in a paused Youtube video the scrubber now updates instantly
  * [core] fixed "user disabled embedding" issue for Youtube videos
  * [core] refixed "start playback" behavior on i*-Devices
  * [core] fixed visible "buffering"-icon on i*-Divces which are unable to autoplay follow-up items
  * [core] volume is now properly stored in cookie (where available)
- * [plugin:display] logo is now properly disabled in case it´s not required
+ * [plugin:display] logo is now properly disabled in case itÂ´s not required
  * [plugin:controlbar] fixed hiding of controlbar if player is "DONE"
  * [plugin:controlbar] fixed mute/unmute buttons on players with initially visible controlbars
 
@@ -1044,7 +1051,7 @@ V0.9.06
 V0.9.05
 =======
 
- Slowly but surely this projekkt moves towards V1 - when you see it you´ll sh*it bricks.
+ Slowly but surely this projekkt moves towards V1 - when you see it youÂ´ll sh*it bricks.
 
  fixes:
  * [core] model-detection-accuracy
@@ -1070,7 +1077,7 @@ V0.9.03
 
  fixes:
  * [plugin:controlbar] optionally toggling mute button fix
- * [core] some &#%$§!#D flash detection issues (thanx for reporting this, doctor001)
+ * [core] some &#%$Â§!#D flash detection issues (thanx for reporting this, doctor001)
 
 
 V0.9.02
@@ -1078,7 +1085,7 @@ V0.9.02
 
  additions:
  * "leftclick", "rightclick" & "middleclick" event
- * disabled contextmenu on player (evil but doesn´t work in all browsers anyway, so what)
+ * disabled contextmenu on player (evil but doesnÂ´t work in all browsers anyway, so what)
 
  fixes:
  * [core] fixed "file type via extension-detection"
@@ -1136,7 +1143,7 @@ V0.8.21
  * [core] added "removePlugin" public API method
  * [core] playlist content type is now properly "guessed"
  * [core] added "volume fade" option for smooth transitions - works best with FlAsH *sigh*
- * [core] added "useYTIframeAPI" config option to either use Youtube´s old Flash- or the new  iFrame-HTML5 API player - default is TRUE
+ * [core] added "useYTIframeAPI" config option to either use YoutubeÂ´s old Flash- or the new  iFrame-HTML5 API player - default is TRUE
  * [core] added audio/m4a type
  * [core] made Youtube error messages i18n-able
 
@@ -1158,12 +1165,12 @@ V0.8.20
  * [core] added JSON-P support for cross-site playlist hosting
 
  fixes:
- * [core] "error" event wasn´t properly promoted in certain situations
+ * [core] "error" event wasnÂ´t properly promoted in certain situations
  * [core] "file not found" error caused "setTimeout" loop within native media model
  * [core] fixed JWPlayer model
  * [core] cookies are now properly set in Chrome
  * [core] fixed performance issues on native audio playback
- * [core] fixed Safari 5.x Mac OSX issues (video didn´t start on native playback)
+ * [core] fixed Safari 5.x Mac OSX issues (video didnÂ´t start on native playback)
  * [plugin:controlbar] fixed toggling of unmute/mute icons
  * [plugin:display] fixed logo IMG dummy issue
 
@@ -1177,7 +1184,7 @@ V0.8.19
  * added "x-webkit-airplay=allow" for native media
 
  fixes:
- * [core] "onReady" callback wasn´t triggered in case of async. loaded playlists.
+ * [core] "onReady" callback wasnÂ´t triggered in case of async. loaded playlists.
  * [core] fixed max volume toggle on player resume while playing audio via flash.
  * [plugin:display] fixed "instant buffer icon" for youtube videos
 
@@ -1206,7 +1213,7 @@ V0.8.18
  * [core] it is now possible to set and get volume while player is in IDLE state (e.g. in poster mode)
  * [core] fixed IE9 issue causing ignored <audio> and <video> -<source> tags
  * [core] flash fallback components now works properly with relative media URLs
- * [core] failed hash detection on iframed players doesn´t block the player any longer
+ * [core] failed hash detection on iframed players doesnÂ´t block the player any longer
  * [core] server data loaded from within a plugin is no longer parsed by "customParser"
  * [core] fixed strange DOM effects on [ESC]-keypress while not in fullscreen mode
  * [core] fixed .setVolume: volume < 0 or volume > 1 is now properly blocked
@@ -1263,7 +1270,7 @@ V0.8.17
  * [core] removed JQUERY 1.4.2 REQUIRED warning
 
  fixes:
- * [core] using the "getFromUrl"-method doesn´t trigger "scheduleLoading"-event any longer when used from within plugins
+ * [core] using the "getFromUrl"-method doesnÂ´t trigger "scheduleLoading"-event any longer when used from within plugins
  * [core] fixed image scaling in chrome and opera
  * [core] fixed crash if plugins-array has length of zero
  * [core] fixed iterator issues on instantiation
@@ -1289,7 +1296,7 @@ V0.8.15
  * [plugin:share] "facebook"- and "twitter"- buttons are now properly hidden in case setup is messed up
 
  additions:
- * [plugin:share] it´s now possible to set shareable links for each item individually
+ * [plugin:share] itÂ´s now possible to set shareable links for each item individually
 
 
 V0.8.14
@@ -1470,7 +1477,7 @@ V0.7.15
  * [core] fixed "disallowSkip" behavior
  * [core] fixed random stuck on end of native playback
  * [core] fixed full viewport behavior if player is wrapped into a relative positioned container
- * [core] fixed Firefox´ "flash resize workaround" play/pause issue
+ * [core] fixed FirefoxÂ´ "flash resize workaround" play/pause issue
  * [core] progress- and time- indicators now update properly on scrubbing while player is paused
  * [core] no poster on single audio fixed - http://tracker.projekktor.com/index.php?do=details&task_id=2
 
@@ -1506,7 +1513,7 @@ V0.7.14
  additions:
  * [core] added general iPad markup syntax compatibility fix
  * [core] added iPad support for single files
- * [core] added error-testcard if flash is required but user´s Flash version is below 9
+ * [core] added error-testcard if flash is required but userÂ´s Flash version is below 9
  * [core] added plugin-preloading mechanism
  * [core] added new content type "text/html" which allows to display iframed HTML content
  * [plugin: iframeoverlays] new plugin which allows video overlays via iframes catching player events.
@@ -1620,12 +1627,12 @@ V0.7.8
  changes:
  * improved file type detection and fallback decision stuff, http://code.google.com/p/projekktor-zwei/issues/list?cursor=26
  * removed flashVar parameters for MP4 Flash fallback component, http://code.google.com/p/projekktor-zwei/issues/detail?id=34
- * set default Flash fallback component«s stage quality to HIGH and enabled video smoothing, http://code.google.com/p/projekktor-zwei/issues/detail?id=36
+ * set default Flash fallback componentÂ«s stage quality to HIGH and enabled video smoothing, http://code.google.com/p/projekktor-zwei/issues/detail?id=36
 
  fixes:
  * IE7, IE8 issues, http://code.google.com/p/projekktor-zwei/issues/detail?id=32&can=1
  * fixed opera fallback issues
- * fixed testcard«s "click display to continue" bug
+ * fixed testcardÂ«s "click display to continue" bug
 
 
 V0.7.6
@@ -1652,7 +1659,7 @@ V0.7.6
 
 V0.7.2
 ======
- * fixed, added and altered that much, you shouldn«t use 0.6.1 anymore
+ * fixed, added and altered that much, you shouldnÂ«t use 0.6.1 anymore
 
 V0.6.1
 ======
