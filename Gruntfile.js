@@ -62,13 +62,13 @@ module.exports = function (grunt) {
           "src/plugins/projekktor.display.js",
           "src/plugins/projekktor.controlbar.js",
           "src/plugins/projekktor.contextmenu.js",
-          {user:true, flag: "plugins/ima", src: "plugins/projekktor.ima.js" },
-          {user:true, flag: "plugins/logo", src: "plugins/projekktor.logo.js" },
-          {user:true, flag: "plugins/postertitle", src: "plugins/projekktor.postertitle.js" },
-          {user:true, flag: "plugins/share", src: "plugins/projekktor.share.js" },
-          {user:true, flag: "plugins/tracking", src: "plugins/projekktor.tracking.js" },
-          {user:true, flag: "plugins/tracks", src: "plugins/projekktor.tracks.js" },
-          {user:true, flag: "plugins/audioslideshow", src: "plugins/projekktor.audioslideshow.js" }
+          {user:true, flag: "plugins/ima", src: pluginspath + "projekktor.ima.js" },
+          {user:true, flag: "plugins/logo", src: pluginspath + "projekktor.logo.js" },
+          {user:true, flag: "plugins/postertitle", src: pluginspath + "projekktor.postertitle.js" },
+          {user:true, flag: "plugins/share", src: pluginspath + "projekktor.share.js" },
+          {user:true, flag: "plugins/tracking", src: pluginspath + "projekktor.tracking.js" },
+          {user:true, flag: "plugins/tracks", src: pluginspath + "projekktor.tracks.js" },
+          {user:true, flag: "plugins/audioslideshow", src: pluginspath + "projekktor.audioslideshow.js" }
         ]
       }
     },    
