@@ -4,6 +4,7 @@ module.exports = function (grunt) {
  
   var name = grunt.option('name') || '',
     dest = grunt.option('dest') || 'dest/',
+    pluginspath = grunt.option('pluginspath') || 'plugins/',
     version = (name!=='') ? grunt.option('ver') + "." + name : grunt.option('ver') || '',  
     distpaths = [
       "dist/projekktor-" + version + ".js",
