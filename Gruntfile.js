@@ -1,11 +1,11 @@
 module.exports = function (grunt) {
 
   "use strict";
- 
+
   var name = grunt.option('name') || '',
     dest = grunt.option('dest') || 'dest/',
     pluginspath = grunt.option('pluginspath') || 'plugins/',
-    version = (name!=='') ? grunt.option('ver') + "." + name : grunt.option('ver') || '',  
+    version = (name!=='') ? (grunt.option('ver') || 'universal') + "." + name : (grunt.option('ver') || 'universal'),  
     distpaths = [
       "dist/projekktor-" + version + ".js",
       "dist/projekktor-" + version + ".min.map",
@@ -25,7 +25,7 @@ module.exports = function (grunt) {
 
   filesPreUglify["dist/projekktor-" + version + ".pre-min.js"] = ["dist/projekktor-" + version + ".js"];
   filesUglify["dist/projekktor-" + version + ".min.js"] = ["dist/projekktor-" + version + ".pre-min.js"];
-  dest = dest + name + "/"
+  dest = dest + name + "/";
   grunt.file.mkdir(dest);
   
   grunt.initConfig({
@@ -52,23 +52,26 @@ module.exports = function (grunt) {
           "src/controller/projekktor.plugininterface.js",
           "src/models/player.js",
           "src/models/player.NA.js",
-          {flag: "playlist", src: "src/models/player.playlist.js" },
           "src/models/player.audio.video.js",
           "src/models/player.audio.video.vlc.js",
-          {flag: "jwflash", src: "src/models/player.video.jwflash.js", alt: "src/models/player.audio.video.osmf.js" },         
-          {flag: "jarisflash", src: "src/models/player.audio.video.flash.js", alt: "src/models/player.audio.video.osmf.js" },         
-          {flag: "youtube", src: "src/models/player.youtube.js" },
-          {flag: "html", src: "src/models/player.image.html.js" },
+          "src/models/player.playlist.js",
+          "src/models/player.image.html.js",          
+          // {flag: "jwflash", src: "src/models/player.video.jwflash.js", alt: "src/models/player.audio.video.osmf.js" },         
+          {flag: "jarisflash", src: "src/models/player.audio.video.flash.js", alt: "src/models/player.audio.video.osmf.js" },
+          // {flag: "osmf", src: "src/models/player.audio.video.osmf.js"},         
+          {flag: "youtube", src: "src/models/player.youtube.js" },          
           "src/plugins/projekktor.display.js",
           "src/plugins/projekktor.controlbar.js",
           "src/plugins/projekktor.contextmenu.js",
-          {user:true, flag: "plugins/ima", src: pluginspath + "projekktor.ima.js" },
-          {user:true, flag: "plugins/logo", src: pluginspath + "projekktor.logo.js" },
-          {user:true, flag: "plugins/postertitle", src: pluginspath + "projekktor.postertitle.js" },
-          {user:true, flag: "plugins/share", src: pluginspath + "projekktor.share.js" },
-          {user:true, flag: "plugins/tracking", src: pluginspath + "projekktor.tracking.js" },
-          {user:true, flag: "plugins/tracks", src: pluginspath + "projekktor.tracks.js" },
-          {user:true, flag: "plugins/audioslideshow", src: pluginspath + "projekktor.audioslideshow.js" }
+          {user:true, flag: "plugins/ima", src: "ima", ver: true },
+          {user:true, flag: "plugins/logo", src: "logo" , ver: true},
+          {user:true, flag: "plugins/postertitle", src: "postertitle", ver: true },
+          {user:true, flag: "plugins/share", src: "share", ver: true },
+          {user:true, flag: "plugins/tracking", src: "tracking", ver: true },
+          {user:true, flag: "plugins/tracks", src:  "tracks", ver: true },
+          {user:true, flag: "plugins/audioslideshow", src:  "audioslideshow", ver: true },
+          {user:true, flag: "plugins/vastdemo", src:  "vastdemo", ver: true },
+          {user:true, flag: "plugins/settings", src:  "settings", ver: true }          
         ]
       }
     },    
@@ -132,9 +135,7 @@ module.exports = function (grunt) {
       }
     },
     clean: {
-      build: {
-        src: [dest]
-      }
+        dest: dest
     },
     readme: {
         src: 'dist/readme.html',  // source template file
@@ -200,11 +201,11 @@ module.exports = function (grunt) {
     //
     //   grunt build:*:*:+ajax:-dimensions:-effects:-offset
 
-    grunt.log.writeln("Creating custom build..." + version + "\n");
+    grunt.log.writeln("Creating custom build..." + version + " " + modules + "\n" + "  " + grunt.option('dest')  +"  " + grunt.option('name'));
 
     grunt.util.spawn({
       grunt: true,
-      args: ["--ver=" + version, "update_submodules", "build:*:" + modules, "pre-uglify", "uglify", "dist:*", "compare_size", "clean", "copy", "readme", "compress"]
+      args: ["--ver=" + (grunt.option('ver') || 'universal'), "--pluginspath=" + grunt.option('pluginspath') || '', "--dest=" + grunt.option('dest') || '', "--name=" + grunt.option('name') || '', "update_submodules", "build:*:" + modules, "pre-uglify", "uglify", "dist:*", "compare_size", "copy", "readme", "compress"]
     }, function (err, result) {
       if (err) {
         grunt.log.writeln(err + " "+ result);
@@ -220,6 +221,17 @@ module.exports = function (grunt) {
 
   });
 
+  grunt.registerMultiTask(
+    "clean",
+    "Clean target directory.",
+    function() {
+      var conf = grunt.config('clean');      
+      grunt.log.writeln(conf.dest);
+      grunt.util.spawn({cmd: ['rm'], args: ['-rf', conf.dest + "*"]}, function done() {
+        grunt.log.ok(conf.dest + ' deleted');
+      });
+    });
+        
   // Special concat/build task to handle various build requirements
   grunt.registerMultiTask(
     "build",
@@ -279,6 +291,18 @@ module.exports = function (grunt) {
     //  *:*:-html:+youtube  same (excludes effects because explicit include is trumped by explicit exclude of dependency)
     //  *:+youtube         none except effects and its dependencies (explicit include trumps implicit exclude of dependency)
     src.forEach(function (filepath, index) {
+      
+      if (filepath.ver===true) {
+        var versionpath =  pluginspath + "/" + filepath.src;
+        var dirs = grunt.file.expand({filter: 'isDirectory'}, [versionpath + "/*"]);
+        dirs.sort(
+          function versionSort($a, $b) {
+                  return -1 * version_compare($a, $b);
+          }           
+        )
+      filepath.src = dirs[0] + "/projekktor." + filepath.src + ".js";
+grunt.log.writeln("------------------------> cleaning ---------------" + filepath.src);
+      }
       // check for user plugins
       var user = filepath.user;
       if (user && filepath.src) {
@@ -289,7 +313,7 @@ module.exports = function (grunt) {
       }
 
       var flag = filepath.flag;
-
+ 
       if (flag) {
         excluder(flag);
 
@@ -312,6 +336,7 @@ module.exports = function (grunt) {
 
     // conditionally concatenate source
     src.forEach(function (filepath) {
+     
       var flag = filepath.flag,
         specified = false,
         omit = false,
@@ -403,7 +428,7 @@ module.exports = function (grunt) {
 
     distpaths.forEach(function (filename) {
       var i, c,
-      text = fs.readFileSync(filename, "utf8");
+      text = fs.readFileSync(filename, "utf8"); 
 
       // Ensure files use only \n for line endings, not \r\n
       if (/\x0d\x0a/.test(text)) {
@@ -483,8 +508,7 @@ module.exports = function (grunt) {
     });
   });
 
-  // Load grunt tasks from NPM packages
-  grunt.loadNpmTasks("grunt-contrib-clean");  
+  // Load grunt tasks from NPM packages  
   grunt.loadNpmTasks("grunt-contrib-copy");
   grunt.loadNpmTasks("grunt-contrib-compress");
   grunt.loadNpmTasks("grunt-compare-size");
@@ -496,33 +520,30 @@ module.exports = function (grunt) {
 
   // Default build that mirrors the Projekktor distribution
   grunt.registerTask("default", [
+    "clean",
     "update_submodules",
-    "build:*:*:+playlist:+youtube:+html:+vlc:-jwflash:-plugins/logo:-plugins/ima:-plugins/postertitle:-plugins/share:-plugins/tracking",
+    "build:*:*:+playlist:+youtube:+html:+vlc:-jarisflash:-plugins/logo:-plugins/ima:-plugins/postertitle:-plugins/share:-plugins/tracking",
     "pre-uglify",
     "uglify",
     "dist:*",
     "compare_size",
-    "clean",
     "copy",
     "readme",
     "compress"
   ]);
 
   // Build minimal -- only required plugins
-  grunt.registerTask("build-minimal", ["update_submodules", "build", "pre-uglify", "uglify", "dist:*", "compare_size", "clean", "copy", "readme", "compress"]);
-
-  // Build complete -- all plugins present
-  grunt.registerTask("build-complete", ["update_submodules", "build:*:*", "pre-uglify", "uglify", "dist:*", "compare_size", "clean", "copy", "readme", "compress"]);
+  grunt.registerTask("build-minimal", ["clean", "update_submodules", "build", "pre-uglify", "uglify", "dist:*", "compare_size", "copy", "readme", "compress"]);
 
   // Minimal build
   grunt.registerTask("build-user", [
+    "clean",
     "update_submodules",
     "build:*:*:+plugins/logo:+playlist:+plugins/ima:-plugins/postertitle:-plugins/share:-html:-vlc;-youtube:-jwflash:-plugins/tracking",
     "pre-uglify",
     "uglify",
     "dist:*",
     "compare_size",
-    "clean",
     "copy",
     "readme",
     "compress"    
@@ -531,3 +552,119 @@ module.exports = function (grunt) {
   // Short list as a high frequency watch task
   grunt.registerTask("dev", ["selector", "build:*:*", "jshint"]);
 };
+
+
+function version_compare (v1, v2, operator) {
+  // http://kevin.vanzonneveld.net
+  // +      original by: Philippe Jausions (http://pear.php.net/user/jausions)
+  // +      original by: Aidan Lister (http://aidanlister.com/)
+  // + reimplemented by: Kankrelune (http://www.webfaktory.info/)
+  // +      improved by: Brett Zamir (http://brett-zamir.me)
+  // +      improved by: Scott Baker
+  // +      improved by: Theriault
+  // *        example 1: version_compare('8.2.5rc', '8.2.5a');
+  // *        returns 1: 1
+  // *        example 2: version_compare('8.2.50', '8.2.52', '<');
+  // *        returns 2: true
+  // *        example 3: version_compare('5.3.0-dev', '5.3.0');
+  // *        returns 3: -1
+  // *        example 4: version_compare('4.1.0.52','4.01.0.51');
+  // *        returns 4: 1
+  // BEGIN REDUNDANT
+  this.php_js = this.php_js || {};
+  this.php_js.ENV = this.php_js.ENV || {};
+  // END REDUNDANT
+  // Important: compare must be initialized at 0.
+  var i = 0,
+    x = 0,
+    compare = 0,
+    // vm maps textual PHP versions to negatives so they're less than 0.
+    // PHP currently defines these as CASE-SENSITIVE. It is important to
+    // leave these as negatives so that they can come before numerical versions
+    // and as if no letters were there to begin with.
+    // (1alpha is < 1 and < 1.1 but > 1dev1)
+    // If a non-numerical value can't be mapped to this table, it receives
+    // -7 as its value.
+    vm = {
+      'dev': -6,
+      'alpha': -5,
+      'a': -5,
+      'beta': -4,
+      'b': -4,
+      'RC': -3,
+      'rc': -3,
+      '#': -2,
+      'p': 1,
+      'pl': 1
+    },
+    // This function will be called to prepare each version argument.
+    // It replaces every _, -, and + with a dot.
+    // It surrounds any nonsequence of numbers/dots with dots.
+    // It replaces sequences of dots with a single dot.
+    //    version_compare('4..0', '4.0') == 0
+    // Important: A string of 0 length needs to be converted into a value
+    // even less than an unexisting value in vm (-7), hence [-8].
+    // It's also important to not strip spaces because of this.
+    //   version_compare('', ' ') == 1
+    prepVersion = function (v) {
+      v = ('' + v).replace(/[_\-+]/g, '.');
+      v = v.replace(/([^.\d]+)/g, '.$1.').replace(/\.{2,}/g, '.');
+      return (!v.length ? [-8] : v.split('.'));
+    },
+    // This converts a version component to a number.
+    // Empty component becomes 0.
+    // Non-numerical component becomes a negative number.
+    // Numerical component becomes itself as an integer.
+    numVersion = function (v) {
+      return !v ? 0 : (isNaN(v) ? vm[v] || -7 : parseInt(v, 10));
+    };
+  v1 = prepVersion(v1);
+  v2 = prepVersion(v2);
+  x = Math.max(v1.length, v2.length);
+  for (i = 0; i < x; i++) {
+    if (v1[i] == v2[i]) {
+      continue;
+    }
+    v1[i] = numVersion(v1[i]);
+    v2[i] = numVersion(v2[i]);
+    if (v1[i] < v2[i]) {
+      compare = -1;
+      break;
+    } else if (v1[i] > v2[i]) {
+      compare = 1;
+      break;
+    }
+  }
+  if (!operator) {
+    return compare;
+  }
+
+  // Important: operator is CASE-SENSITIVE.
+  // "No operator" seems to be treated as "<."
+  // Any other values seem to make the function return null.
+  switch (operator) {
+  case '>':
+  case 'gt':
+    return (compare > 0);
+  case '>=':
+  case 'ge':
+    return (compare >= 0);
+  case '<=':
+  case 'le':
+    return (compare <= 0);
+  case '==':
+  case '=':
+  case 'eq':
+    return (compare === 0);
+  case '<>':
+  case '!=':
+  case 'ne':
+    return (compare !== 0);
+  case '':
+  case '<':
+  case 'lt':
+    return (compare < 0);
+  default:
+    return null;
+  }
+}
