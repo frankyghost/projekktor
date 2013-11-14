@@ -131,7 +131,7 @@ projekktor = $p = function() {
 
     function PPlayer(srcNode, cfg, onReady) {
 
-    this.config = new projekktorConfig('1.3.01');
+    this.config = new projekktorConfig('1.3.02');
 
     this.env = {
         muted: false,
