@@ -1,6 +1,13 @@
 PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
+V1.3.02
+=======
+
+  fixes:
+  * [StrobeMediaPlayer] fixed cross domain issues
+  
+
 V1.3.01
 =======
 
