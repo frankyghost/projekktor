@@ -105,7 +105,7 @@ module.exports = function (grunt) {
       all: {
         files: filesPreUglify,
         options: {
-          banner: "/*! Projekktor v<%= pkg.version %> | " + "http://www.projekktor.com | " + "Copyright 2010, 2011, Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com | " + "GNU General Public License - http://www.projekktor.com/license/\n" + "//@ sourceMappingURL=projekktor.min.map\n" + "*/"
+          banner: "/*! Projekktor v<%= pkg.version %> | " + "http://www.projekktor.com | " + "Copyright 2010, 2011, Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com | " + "GNU General Public License - http://www.projekktor.com/license/\n" + "*/"
         }
       }
     },
@@ -301,7 +301,6 @@ module.exports = function (grunt) {
           }           
         )
       filepath.src = dirs[0] + "/projekktor." + filepath.src + ".js";
-grunt.log.writeln("------------------------> cleaning ---------------" + filepath.src);
       }
       // check for user plugins
       var user = filepath.user;
