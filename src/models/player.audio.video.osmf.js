@@ -14,7 +14,7 @@ $p.newModel({
     modelId: 'OSMFVIDEO',
     replace: 'VIDEOFLASH',
     
-    flashVersion: "10.1",
+    flashVersion: "10.2",
     flashVerifyMethod: 'addEventListener',
     
     iLove: [
@@ -24,7 +24,10 @@ $p.newModel({
         {ext:'mov', type:'video/quicktime', platform:'flash', streamType: ['*']},
         {ext:'m4v', type:'video/mp4', platform:'flash', fixed: true, streamType: ['*']},
         {ext:'f4m', type:'application/f4m+xml', platform:'flash', fixed: true, streamType: ['*']},
-        {ext:'m3u8', type:'application/mpegURL', platform:'flash', fixed: true, streamType: ['*']}        
+        {ext:'m3u8', type:'application/mpegURL', platform:'flash', fixed: true, streamType: ['*']},
+        {ext:'m3u8', type:'application/x-mpegURL', platform:'flash', fixed: true, streamType: ['*']},
+        {ext:'m3u8', type:'application/vnd.apple.mpegurl', platform:'flash', fixed: true, streamType: ['*']},
+        {ext:'manifest', type:'application/vnd.ms-ss', platform:'flash', fixed: true, streamType: ['*']}
     ],
 
     hasGUI: false,    
@@ -74,20 +77,16 @@ $p.newModel({
             src: this.pp.getConfig('playerFlashMP4'),
             width: '100%',
             height: '100%',
-            allowScriptAccess:"always",
-            quality:"height",
+            allowScriptAccess: "always",
+            quality: "high",
             menu: false,
             allowFullScreen: 'true',
             wmode: 'opaque',
-            seamlesstabbing: 'false',
-            bgcolor: '#ccc',
+            SeamlessTabbing: 'false',
+            bgcolor: '#000000',
             FlashVars: $.extend({
                 // streamType: this.pp.getConfig('streamType', ''), // "dvr", //  "live" "recorded", "dvr"
-                controlBarMode: 'none',
-                playButtonOverlay: false,
-                // showVideoInfoOverlayOnStartUp: true,
                 // dvrSnapToLiveClockOffset: "5",
-                bufferingOverlay: false,
                 javascriptCallbackFunction: 'window.projekktorOSMFReady'+this.pp.getId()               
             }, this.pp.getConfig('OSMFVars'))
             };
@@ -198,6 +197,9 @@ $p.newModel({
                     this.setPlay();
                 }
                 break;
+            case 'loadError':
+                this.errorListener(80);
+                break;
         }
     },
     
@@ -260,8 +262,13 @@ $p.newModel({
     },
     
     errorListener: function() {
+        /* todo OSMF MediaErrorCodes mapping http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/org/osmf/events/MediaErrorCodes.html */
         switch (arguments[0]) {
+            case 15:
+                this.sendUpdate('error', 5);
+                break;
             case 16:
+            case 80:
                 this.sendUpdate('error', 80);
                 break;
                 
