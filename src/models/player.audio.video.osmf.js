@@ -14,7 +14,7 @@ $p.newModel({
     modelId: 'OSMFVIDEO',
     replace: 'VIDEOFLASH',
     
-    flashVersion: "10.1",
+    flashVersion: "10.2",
     flashVerifyMethod: 'addEventListener',
     
     iLove: [
