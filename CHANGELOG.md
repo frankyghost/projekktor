@@ -1,6 +1,26 @@
 PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
+
+V1.3.04
+=======
+
+  additions:
+  * [model:OSMF] added DVR support
+  * [plugin:controlbar] added "go live" button
+  * [plugin:controlbar] scrubber tooltip know shows relative time on DVR
+  
+  fixes:
+  * [core] proper restore of user quality prefs for dynamic streams
+
+
+V1.3.03
+=======
+
+  fixes:
+  * [core] improper request for undefined poster images removed
+
+
 V1.3.02
 =======
 

@@ -23,8 +23,8 @@ $p.newModel({
         {ext:'f4v', type:'video/mp4', platform:'flash', streamType: ['*']},
         {ext:'mov', type:'video/quicktime', platform:'flash', streamType: ['*']},
         {ext:'m4v', type:'video/mp4', platform:'flash', fixed: true, streamType: ['*']},
-        {ext:'f4m', type:'application/f4m+xml', platform:'flash', fixed: true, streamType: ['*']},
-        {ext:'m3u8', type:'application/mpegURL', platform:'flash', fixed: true, streamType: ['*']}        
+        {ext:'f4m', type:'application/f4m+xml', platform:'flash', fixed: true, streamType: ['*']}
+        // {ext:'m3u8', type:'application/mpegURL', platform:'flash', fixed: true, streamType: ['*']}        
     ],
 
     hasGUI: false,    
@@ -35,6 +35,7 @@ $p.newModel({
     availableQualities: {},
     
     _isStream: false,
+    _isDVR: false,
     _isMuted: false,
     _isStarted: false,
     _qualitySwitching: false,
@@ -87,6 +88,7 @@ $p.newModel({
                 playButtonOverlay: false,
                 // showVideoInfoOverlayOnStartUp: true,
                 // dvrSnapToLiveClockOffset: "5",
+                autoDynamicStreamSwitch: false,
                 bufferingOverlay: false,
                 javascriptCallbackFunction: 'window.projekktorOSMFReady'+this.pp.getId()               
             }, this.pp.getConfig('OSMFVars'))
@@ -170,7 +172,10 @@ $p.newModel({
         this.timeListener({position: this.media.position, duration: value || 0 });
     },
     
-    OSMF_currentTimeChange: function(value) {    
+    OSMF_currentTimeChange: function(value) {
+        if (this._isDVR) {
+            this.sendUpdate('isLive', (value+20 >= this.media.duration)); // 20 => default dvr buffer of SMP
+        }
         this.timeListener({position: value, duration: this.media.duration || 0 });
     },
     
@@ -201,14 +206,31 @@ $p.newModel({
         }
     },
     
-    /* catching playStateChange and playerStateChange */
+    /* catching playStateChange and playerStateChange and playerStateChange aaaand... and playerStateChange */
     OSMF_playerStateChange: function(state) {
+        var ref = this;
+        
+        // getIsDVR & getIsDVRLive seem to be broken - workaround:
+        if (!this._isDVR && this.mediaElement.get(0).getStreamType()=='dvr') {
+            this._isDVR = true;
+            this.sendUpdate('streamTypeChange', 'dvr');
+        }
+
         switch(state) {
             case 'playing':
                 this.playingListener();
                 break;
             case 'paused':            
                 this.pauseListener();
+                if (this._isDVR) {
+                    // simulate sliding time window:
+                    (function() {
+                        if (ref.media.position>=0.5) {
+                            ref.timeListener({position: ref.media.position-0.5, duration: ref.media.duration || 0 });
+                            setTimeout(arguments.callee, 500);
+                        }                        
+                    })();
+                }
                 break;
             case 'stopped':
                 if (!this.getSeekState('SEEKING')) {
@@ -218,13 +240,12 @@ $p.newModel({
         }
     },    
     
-    /* todo */
     OSMF_updateDynamicStream: function() {
         var dynamicStreams = this.mediaElement.get(0).getStreamItems(),
             name = '',
             result = [];
             // switchMode = this.mediaElement.get(0).getAutoDynamicStreamSwitch() ? "Auto" : "Manual";
-       
+
         for (var index in dynamicStreams) {
             if (dynamicStreams.hasOwnProperty(index) && dynamicStreams[index].bitrate!==undefined) {
                 name = dynamicStreams[index].width + "x" + dynamicStreams[index].height;
@@ -243,8 +264,8 @@ $p.newModel({
         
         result.push('auto');
         
-        this.sendUpdate('availableQualitiesChange', result);
-        this._isDynamicStream = true;
+        this._isDynamicStream = true; // important: set this before sending the update
+        this.sendUpdate('availableQualitiesChange', result);        
     },
     
     /* todo */
@@ -297,7 +318,11 @@ $p.newModel({
             this.applySrc();
             return;
         }
-        
+
+        if (newpos==-1) {
+            newpos = this.getDuration();
+        }
+
         this.mediaElement.get(0).seek(newpos);
     },
     
@@ -350,6 +375,10 @@ $p.newModel({
             return this.mediaElement.get(0).getCurrentSrc();
         } catch(e) {return null;}
     },
+    
+    getQuality: function () {
+        return this._quality;
+    },    
     
     /************************************************
      * disablers

@@ -687,7 +687,13 @@ projekktor = $p = function() {
                     this._addGUIListeners();                      
                 }
                 break;
-                
+                                          
+            case 'streamTypeChange':
+                if (value=='dvr') {
+                    this.getDC().addClass(this.getNS() + 'dvr');
+                }
+                this._promote(type, value);
+                break;
             default:                    
                 this._promote(type, value);
                 break;                
@@ -1855,10 +1861,10 @@ projekktor = $p = function() {
             this.media[this._currentItem].errorCode = 8;
         } else {
             // apply item specific class(es) to player
-            if (this.getConfig('className', null)!=null) 
+            if (this.getConfig('className', null)!=null) {
                 this.getDC().addClass(this.getNS() + this.getConfig('className'))
-                    
-                this.getDC().addClass(this.getNS() + (this.getConfig('streamType') || 'http') );
+            }
+            this.getDC().addClass(this.getNS() + (this.getConfig('streamType') || 'http') );
                 
             if (!$p.utils.cssTransitions()) this.getDC().addClass('notransitions')
             if (this.getIsMobileClient()) this.getDC().addClass('mobile')

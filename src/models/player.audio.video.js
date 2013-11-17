@@ -40,6 +40,7 @@ $p.newModel({
     },    
     
     isGingerbread: false,
+    isGingerbread: false,
     allowRandomSeek: false,
     videoWidth: 0,
     videoHeight: 0,
@@ -48,10 +49,8 @@ $p.newModel({
     
     init: function() {                 
         var ua = navigator.userAgent;
-        if( ua.indexOf("Android") >= 0 )
-        {
-          if (parseFloat(ua.slice(ua.indexOf("Android")+8)) < 3)
-          {
+        if( ua.indexOf("Android") >= 0 ) {
+          if (parseFloat(ua.slice(ua.indexOf("Android")+8)) < 3) {
             this.isGingerbread = true;
           }
         }
@@ -60,14 +59,13 @@ $p.newModel({
     
     
     applyMedia: function(destContainer) {
-
         if ($('#'+this.pp.getMediaId()+"_html").length===0) {
             this.wasPersistent = false;
             destContainer.html('').append(
                 $('<video/>')
                 .attr({
                     "id": this.pp.getMediaId()+"_html",         
-                    "poster": (this.pp.getIsMobileClient('ANDROID')) ? this.getPoster() : $p.utils.imageDummy(),
+                    "poster": $p.utils.imageDummy(),
                     "loop": false,
                     "autoplay": false,
                     "x-webkit-airplay": "allow"
@@ -103,7 +101,7 @@ $p.newModel({
             var src = $('<source/>');            
             src.attr('src', this.src);
             if (!ref.isGingerbread) {
-                src.attr('type', this.type);
+                src.attr('type', this.originalType );
             }
             src.appendTo(ref.mediaElement);
         });
@@ -332,9 +330,9 @@ $p.newModel({
     iosVersion: 4,    
     iLove: [
         {ext:'m3u8', type:'application/mpegURL', platform: ['ios', 'android'], streamType: ['http','httpVideo', 'httpVideoLive']},
-        {ext:'m3u', type:'application/mpegURL', platform: ['ios', 'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']},     
-        // {ext:'m3u8', type:'vnd.apple.mpegURL', platform:'ios'},
-        // {ext:'m3u', type:'vnd.apple.mpegURL', platform:'ios'},
+        {ext:'m3u', type:'application/mpegURL', platform: ['ios', 'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']},
+        {ext:'m3u8', type:'application/vnd.apple.mpegURL', platform: ['ios', 'android'], streamType: ['http','httpVideo', 'httpVideoLive']},
+        {ext:'m3u', type:'application/vnd.apple.mpegURL', platform: ['ios', 'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']},             
         {ext:'ts', type:'video/MP2T', platforms: ['ios' ,'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']}        
     ]
 }, 'VIDEO');

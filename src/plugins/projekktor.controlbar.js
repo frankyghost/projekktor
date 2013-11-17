@@ -11,9 +11,10 @@ var projekktorControlbar = function () {};
 jQuery(function ($) {
     projekktorControlbar.prototype = {
     
-        version: '1.1.00',
+        version: '1.1.01',
 
         _cTimer: null,
+        _isDVR: false,
         _noHide: false,
         _vSliderAct: false,
         
@@ -49,6 +50,13 @@ jQuery(function ($) {
                 call: null
             },
             'loaded': null, // { on:['touchstart', 'click'], call:'scrubberClk'},
+            'golive': [{
+                on: ['touchstart', 'click'],
+                call: 'goliveClk'
+            }, {
+                on: ['touchend'],
+                call: 'touchEnd'
+            }],
             'scrubber': null, // { on:['touchstart', 'click'], call:'scrubberClk'},
             'scrubbertip': null,
             'scrubberknob': null,
@@ -773,7 +781,6 @@ jQuery(function ($) {
         },
 
         stateHandler: function (state) {
-
             this.updateDisplay();
 
             if ('STOPPED|AWAKENING|IDLE|DONE'.indexOf(state) > -1) {
@@ -827,6 +834,21 @@ jQuery(function ($) {
         qualityChangeHandler: function (qual) {
             this.displayQualityToggle(qual);
         },
+        
+        streamTypeChangeHandler: function (streamType) {
+            if (streamType=='dvr') {
+                this._isDVR = true;
+                this.setActive(this.controlElements['golive'], true);
+            }
+        },
+        
+        isLiveHandler: function (islive) {
+            if (islive) {
+                this.controlElements['golive'].addClass('on').removeClass('off');
+            } else {
+                this.controlElements['golive'].addClass('off').removeClass('on');
+            }
+        },            
 
         fullscreenHandler: function (inFullscreen) {
 
@@ -900,6 +922,10 @@ jQuery(function ($) {
             this.pp.setPlaybackQuality($(evt.currentTarget).data('qual'));
         },
 
+        goliveClk: function (evt) {
+            this.pp.setSeek(-1);
+        },
+        
         playClk: function (evt) {
             this.pp.setPlay();
         },
@@ -1035,7 +1061,16 @@ jQuery(function ($) {
                 pageX = (evt.originalEvent.touches) ? evt.originalEvent.touches[0].pageX : evt.pageX,
                 pageY = (evt.originalEvent.touches) ? evt.originalEvent.touches[0].pageY : evt.pageY,
                 newPos = pageX - slider.offset().left - (tip.outerWidth() / 2),
-                times = this._clockDigits(this.pp.getDuration() / 100 * ((pageX - slider.offset().left) * 100 / slider.width()), 'tip');
+                timeIdx = this.pp.getDuration() / 100 * ((pageX - slider.offset().left) * 100 / slider.width()),
+                times = this._clockDigits(timeIdx, 'tip');
+                
+            if (this._isDVR) { 
+                timeIdx =  this.pp.getDuration() - timeIdx; 
+                var then = new Date( (new Date().getTime() / 1000 - timeIdx) * 1000), // date minus timeidx
+                    then = then.getSeconds() + (60 * then.getMinutes()) + (60 * 60 * then.getHours()); // second of today
+                    
+                times = this._clockDigits( then , 'tip');
+            }
 
             for (var key in this.controlElements) {
                 if (key == 'cb')

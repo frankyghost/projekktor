@@ -307,6 +307,10 @@ jQuery(function ($) {
         /*******************************
             ELEMENT GETTERS 
         *******************************/
+        getQuality: function () {
+            return this._quality;
+        },
+        
         getVolume: function () {
             if (this.mediaElement==null) {
                 return this._volume;
@@ -700,7 +704,7 @@ jQuery(function ($) {
             $p.utils.blockSelection(imageObj);
 
             // empty URL... apply placeholder
-            if (url === '' || url === undefined) {
+            if (url == null || url === false) {
                 return $('<span/>').attr({
                     "id": this.pp.getMediaId() + "_image"
                 }).appendTo(destObj);
