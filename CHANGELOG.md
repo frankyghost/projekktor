@@ -2,9 +2,8 @@ PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
 
-V1.3.04
+V1.3.03
 =======
-
   additions:
   * [model:OSMF] added DVR support
   * [plugin:controlbar] added "go live" button
@@ -12,13 +11,7 @@ V1.3.04
   
   fixes:
   * [core] proper restore of user quality prefs for dynamic streams
-
-
-V1.3.03
-=======
-
-  fixes:
-  * [core] improper request for undefined poster images removed
+  * [core] removed improper request for undefined poster images
 
 
 V1.3.02
