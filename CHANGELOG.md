@@ -1,4 +1,4 @@
-PROJEKKTOR - simply mighty <video>
+PROJEKKTOR - simply mighty video
 http://www.projekktor.com
 
 
