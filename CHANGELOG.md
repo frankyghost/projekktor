@@ -7,7 +7,7 @@ V1.3.03
   additions:
   * [model:OSMF] added DVR support
   * [plugin:controlbar] added "go live" button
-  * [plugin:controlbar] scrubber tooltip know shows relative time on DVR
+  * [plugin:controlbar] scrubber tooltip now shows relative time on DVR
   
   fixes:
   * [core] proper restore of user quality prefs for dynamic streams
