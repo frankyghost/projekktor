@@ -398,7 +398,7 @@ jQuery(function ($) {
             return this._displayReady;
         },
 
-        getPoster: function () {
+        getPoster: function () {      
             var result = this.pp.getConfig('poster'),
                 qual = 'default',
                 quals = [];
@@ -412,8 +412,7 @@ jQuery(function ($) {
                 }
             }
 
-            qual = this.pp._getAppropriateQuality(quals);
-
+            qual = this.pp.getAppropriateQuality(quals);
             for (var j in this.pp.getConfig('poster')) {
                 if (this.pp.getConfig('poster')[j].quality == qual) {
                     result = this.pp.getConfig('poster')[j].src || null;
@@ -496,7 +495,7 @@ jQuery(function ($) {
                 this.media.duration = duration;
                 this.sendUpdate('durationChange', duration);
             }
-            
+      
             // remember values & concider pseudo stream position offset, bypass some strange position hopping effects during pseudostream:
             if (position==this.media.position) return;
             
@@ -505,6 +504,7 @@ jQuery(function ($) {
             } else {              
                 this.media.position = this.media.offset + position;
             }
+           
             this.media.maxpos = Math.max(this.media.maxpos || 0, this.media.position || 0);
             this.media.playProgress = parseFloat((this.media.position > 0 && this.media.duration > 0) ? this.media.position * 100 / this.media.duration : 0);
             this.media.frame = this.media.position * this.pp.getConfig('fps');
@@ -659,13 +659,14 @@ jQuery(function ($) {
             this._scaleVideo();
         },
 
-        setTestcard: function (code, txt) {
+        setTestcard: function (no, txt) {
             var destContainer = this.pp.getMediaContainer().html('').css({
                     width: '100%',
                     height: '100%'
                 }),
-                messages = this.pp.getConfig('messages'),
-                msgTxt = (txt !== undefined && txt !== '') ? txt : (messages[code] !== undefined) ? messages[code] : messages[0];
+                messages = $.extend(this.pp.getConfig('messages'), this.pp.getConfig('msg')),
+                code = (messages[no]==null) ? 0 : no,
+                msgTxt = (txt !== undefined && txt !== '') ? txt : messages[code];
             
             this.removeListeners();
             this.detachMedia();            
@@ -692,6 +693,10 @@ jQuery(function ($) {
                 .attr('id', this.pp.getId() + '_testcard_media')
                 .html('<p>' + msgTxt + '</p>')
                 .appendTo(destContainer);
+                
+            if (this.pp.getConfig('msg')[code]!=null) {
+                this.mediaElement.addClass(this.pp.getNS() + 'customtestcard');
+            }
         },
 
         applySrc: function () {},

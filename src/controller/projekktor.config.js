@@ -130,7 +130,7 @@ projekktorConfig.prototype = {
     cat:                            'clip',
         
     /* URL to poster image -  will be overwritten by poster-attribute of the replaced media tag. */
-    poster:                         false,   
+    poster:                         null,   
     
     /* enable/disable controls -  will be overwritten by controls-attribute of the replaced <video> tag. */
     controls:                       true,

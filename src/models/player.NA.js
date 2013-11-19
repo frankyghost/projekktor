@@ -20,16 +20,19 @@ $p.newModel({
 
         destContainer.html('');
 
-        var mouseClick = function(evt){
-            ref.pp.removeListener('mousedown', arguments.callee);
-            ref._setState('completed');
+        var mouseClick = function(evt, player){
+            if (!player.getState('AWAKENING')) {
+                ref.pp.removeListener('mousedown', arguments.callee);
+                ref._setState('completed');
+            }
         };
         
         this.displayReady();
 
         if (this.pp.getConfig('enableTestcard') && !this.pp.getIsMobileClient()) {
-            this.setTestcard( (this.media.file[0].src!=null && this.media.errorCode===7) ? 5 : this.media.errorCode);
             this.pp.addListener('mousedown', mouseClick);
+            this._setState('error');
+            this.setTestcard( (this.media.file[0].src!=null && this.media.errorCode===7) ? 5 : this.media.errorCode);            
         } else {
             // this.applyImage(this.media.config.poster, destContainer);
             this.applyCommand ('stop');
@@ -39,7 +42,7 @@ $p.newModel({
     },
     
     detachMedia: function() {
-        this.pp.removeListener('leftclick', this.mouseClick)        
+        this.pp.removeListener('leftclick', this.mouseClick);      
     }
     
 

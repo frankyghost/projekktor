@@ -40,7 +40,7 @@ $p.newModel({
     },    
     
     isGingerbread: false,
-    isGingerbread: false,
+    isAndroid: false,
     allowRandomSeek: false,
     videoWidth: 0,
     videoHeight: 0,
@@ -50,15 +50,16 @@ $p.newModel({
     init: function() {                 
         var ua = navigator.userAgent;
         if( ua.indexOf("Android") >= 0 ) {
+            this.isAndroid = true;
           if (parseFloat(ua.slice(ua.indexOf("Android")+8)) < 3) {
             this.isGingerbread = true;
           }
         }
         this.ready();
     },
-    
-    
-    applyMedia: function(destContainer) {
+        
+    applyMedia: function(destContainer) {    
+        this._androidHLSWorkaround();
         if ($('#'+this.pp.getMediaId()+"_html").length===0) {
             this.wasPersistent = false;
             destContainer.html('').append(
@@ -204,6 +205,8 @@ $p.newModel({
         }
     },
     
+    _androidHLSWorkaround: function() {},
+    
     playingListener: function(obj) {
         var ref = this;
         if (!this.isGingerbread) {
@@ -334,7 +337,14 @@ $p.newModel({
         {ext:'m3u8', type:'application/vnd.apple.mpegURL', platform: ['ios', 'android'], streamType: ['http','httpVideo', 'httpVideoLive']},
         {ext:'m3u', type:'application/vnd.apple.mpegURL', platform: ['ios', 'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']},             
         {ext:'ts', type:'video/MP2T', platforms: ['ios' ,'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']}        
-    ]
+    ],
+    
+    _androidHLSWorkaround: function() {
+        if (this.isAndroid) {
+            window.location.href = this.getSource()[0].src;
+        }
+    }
+    
 }, 'VIDEO');
 
 $p.newModel({

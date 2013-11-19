@@ -1,13 +1,26 @@
-PROJEKKTOR - simply mighty video
+PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
+
+
+V1.3.04
+=======
+
+  additions:
+  * [core] error messages can now also be customized on playlist item level
+  * [core] HLS on Android still sucks - added a workaround anyway
+  
+  fixes:
+  * [core] proper display of error messages in case no proper platform support has been found on client side.
+  * [core] issues with quality-toggle-enabled poster images
 
 
 V1.3.03
 =======
+
   additions:
   * [model:OSMF] added DVR support
   * [plugin:controlbar] added "go live" button
-  * [plugin:controlbar] scrubber tooltip now shows relative time on DVR
+  * [plugin:controlbar] scrubber tooltip know shows relative time on DVR
   
   fixes:
   * [core] proper restore of user quality prefs for dynamic streams
