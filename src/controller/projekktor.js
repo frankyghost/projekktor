@@ -1715,7 +1715,7 @@ projekktor = $p = function() {
             return true;
         });
 
-        return (this.getPlaybackQualities().indexOf('auto')>-1) ? 'auto' : temp.key || 'default';
+        return ($.inArray('auto', this.getPlaybackQualities())>-1) ? 'auto' : temp.key || 'default';
     };
         
     /* asynchronously loads external XML and JSON data from server */

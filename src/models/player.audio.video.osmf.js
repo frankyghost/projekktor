@@ -136,7 +136,9 @@ $p.newModel({
         var event = arguments[0][1],
             value = arguments[0][2],
             ref = this;
-
+        
+        this.mediaElement = $('#' +  this.pp.getMediaId()+"_flash"); // IE 10 sucks
+        
         switch(event) {
             case 'onJavaScriptBridgeCreated':
                 if (this.mediaElement!==null && this.getState('AWAKENING') ) {                
