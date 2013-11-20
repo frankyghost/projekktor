@@ -135,7 +135,7 @@ module.exports = function (grunt) {
       }
     },
     clean: {
-        dest: dest
+        src: [dest, 'dist/*.js', 'dist/*.map', 'dist/.*.json']
     },
     readme: {
         src: 'dist/readme.html',  // source template file
@@ -221,17 +221,6 @@ module.exports = function (grunt) {
 
   });
 
-  grunt.registerMultiTask(
-    "clean",
-    "Clean target directory.",
-    function() {
-      var conf = grunt.config('clean');      
-      grunt.log.writeln(conf.dest);
-      grunt.util.spawn({cmd: ['rm'], args: ['-rf', conf.dest + "*"]}, function done() {
-        grunt.log.ok(conf.dest + ' deleted');
-      });
-    });
-        
   // Special concat/build task to handle various build requirements
   grunt.registerMultiTask(
     "build",
@@ -508,6 +497,7 @@ module.exports = function (grunt) {
   });
 
   // Load grunt tasks from NPM packages  
+  grunt.loadNpmTasks("grunt-contrib-clean");
   grunt.loadNpmTasks("grunt-contrib-copy");
   grunt.loadNpmTasks("grunt-contrib-compress");
   grunt.loadNpmTasks("grunt-compare-size");
