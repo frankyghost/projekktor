@@ -135,7 +135,7 @@ module.exports = function (grunt) {
       }
     },
     clean: {
-        src: [dest, 'dist/*.js', 'dist/*.map', 'dist/.*.json']
+        all: [dest, 'dist/*.js', 'dist/*.map', 'dist/.*.json']
     },
     readme: {
         src: 'dist/readme.html',  // source template file
