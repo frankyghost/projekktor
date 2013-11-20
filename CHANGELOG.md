@@ -10,6 +10,7 @@ V1.3.04
   * [core] HLS on Android still sucks - added a workaround anyway
   
   fixes:
+  * [core] general IE issues
   * [core] proper display of error messages in case no proper platform support has been found on client side.
   * [core] issues with quality-toggle-enabled poster images
 
