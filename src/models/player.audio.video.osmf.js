@@ -15,7 +15,7 @@ $p.newModel({
     replace: 'VIDEOFLASH',
     
     flashVersion: "10.1",
-    flashVerifyMethod: 'addEventListener',
+    flashVerifyMethod: 'addEventListener',    
     
     iLove: [
         {ext:'flv', type:'video/flv', platform:'flash', fixed: true, streamType: ['*']},
@@ -34,6 +34,7 @@ $p.newModel({
     
     availableQualities: {},
     
+    _hardwareAcceleration: true,
     _isStream: false,
     _isDVR: false,
     _isMuted: false,
@@ -86,6 +87,8 @@ $p.newModel({
                 // streamType: this.pp.getConfig('streamType', ''), // "dvr", //  "live" "recorded", "dvr"
                 controlBarMode: 'none',
                 playButtonOverlay: false,
+                enableStageVideo: this._hardwareAcceleration,
+                disableHardwareAcceleration: !this._hardwareAcceleration,
                 // showVideoInfoOverlayOnStartUp: true,
                 // dvrSnapToLiveClockOffset: "5",
                 autoDynamicStreamSwitch: false,
@@ -97,8 +100,10 @@ $p.newModel({
         this.createFlash(domOptions, destContainer);
     },
     
-    // disable default ready listener - wait for onJavaScriptBridgeCreated 
-    flashReadyListener: function() {},
+    flashReadyListener: function() {        
+        this.applySrc();
+        this.displayReady();
+    },    
 
     // 
     removeListeners: function() {},
@@ -144,8 +149,8 @@ $p.newModel({
                 if (this.mediaElement!==null && this.getState('AWAKENING') ) {                
                     $.each(this._eventMap, function(key, value){
                         ref.mediaElement.get(0).addEventListener(key, "projekktor('"+ref.pp.getId()+"').playerModel." + value);
-                    });   
-                    this.applySrc();
+                    });
+                    this.flashReadyListener();
                 }
                 break;
             
@@ -227,10 +232,12 @@ $p.newModel({
                 if (this._isDVR) {
                     // simulate sliding time window:
                     (function() {
-                        if (ref.media.position>=0.5) {
-                            ref.timeListener({position: ref.media.position-0.5, duration: ref.media.duration || 0 });
-                            setTimeout(arguments.callee, 500);
-                        }                        
+                        if (ref.getState('PAUSED')) {
+                            if (ref.media.position>=0.5) {
+                                ref.timeListener({position: ref.media.position-0.5, duration: ref.media.duration || 0 });
+                                setTimeout(arguments.callee, 500);
+                            }
+                        }
                     })();
                 }
                 break;
@@ -388,6 +395,20 @@ $p.newModel({
     _scaleVideo: function(){}
     
 });
+
+$p.newModel({    
+
+    modelId: 'OSMFVIDEONA',
+    iLove: [
+        {ext:'flv', type:'video/flv', platform:'flashna', fixed: true, streamType: ['*']},
+        {ext:'mp4', type:'video/mp4', platform:'flashna', streamType: ['*']},
+        {ext:'f4v', type:'video/mp4', platform:'flashna', streamType: ['*']},
+        {ext:'mov', type:'video/quicktime', platform:'flashna', streamType: ['*']},
+        {ext:'m4v', type:'video/mp4', platform:'flashna', fixed: true, streamType: ['*']},
+        {ext:'f4m', type:'application/f4m+xml', platform:'flashna', fixed: true, streamType: ['*']}   
+    ],    
+    _hardwareAcceleration: false
+}, 'OSMFVIDEO');
 
 $p.newModel({    
 

@@ -93,25 +93,26 @@ projekktorDisplay.prototype = {
     *****************************************/
     displayReadyHandler: function() {
         var ref = this;
-    
-        // the startbutton
-            this.startButton.unbind().click(function(){
-            ref.pp.setPlay();
-        });
+        this.hideStartButton();    
         
-        this.hideStartButton();
+        // the startbutton
+        this.startButton.unbind().click(function(){
+            ref.pp.setPlay();           
+        });
     },
 
     syncingHandler: function() {
         this.showBufferIcon();
-        if (this.pp.getState('IDLE'))
-                this.hideStartButton();        
+        if (this.pp.getState('IDLE')) {
+            this.hideStartButton();        
+        }
     },
     
     readyHandler: function() {
         this.hideBufferIcon();
-        if (this.pp.getState('IDLE'))
-                this.showStartButton();        
+        if (this.pp.getState('IDLE')) {
+            this.showStartButton();        
+        }
     },    
     
     bufferHandler: function(state) {
@@ -122,6 +123,7 @@ projekktorDisplay.prototype = {
     },    
     
     stateHandler: function(state) {
+    console.log(state);
         switch(state) {
         
             case 'IDLE':
