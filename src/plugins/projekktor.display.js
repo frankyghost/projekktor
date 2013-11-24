@@ -123,7 +123,6 @@ projekktorDisplay.prototype = {
     },    
     
     stateHandler: function(state) {
-    console.log(state);
         switch(state) {
         
             case 'IDLE':
