@@ -2,11 +2,18 @@ PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
 
+V1.3.05
+=======
+
+ additions:
+ * [core] new possibilities to bypass hardware acceleration during flash fallback
+ 
+
 V1.3.04
 =======
 
   additions:
-  * [core] error messages can now also be customized on playlist item level
+  * [core] error messages can now also be customized on item level
   * [core] HLS on Android still sucks - added a workaround anyway
   
   fixes:
