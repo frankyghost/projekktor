@@ -81,7 +81,7 @@ $p.newModel({
             quality: "high",
             menu: false,
             allowFullScreen: 'true',
-            wmode: 'opaque',
+            wmode: 'direct',
             SeamlessTabbing: 'false',
             bgcolor: '#000000',
             FlashVars: $.extend({
