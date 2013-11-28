@@ -83,7 +83,7 @@ $p.newModel({
             quality: "high",
             menu: false,
             allowFullScreen: 'true',
-            wmode: ($p.utils.ieVersion()) ? 'transparent' : 'opaque',
+            wmode: ($p.utils.ieVersion()) ? 'transparent' : 'opaque', // must be either transparent (ie) or opaque in order to allow HTML overlays
             SeamlessTabbing: 'false',
             bgcolor: '#000000',
             FlashVars: $.extend({
