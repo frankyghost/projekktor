@@ -444,9 +444,9 @@ $p.newModel({
         var ref = this; 
         
         $p.utils.blockSelection(destContainer);        
-    
+
         // create image element
-        this.imageElement = this.applyImage(this.pp.getConfig('cover') || this.pp.getConfig('poster'), destContainer);
+        this.imageElement = this.applyImage(this.getPoster('cover') || this.getPoster('poster'), destContainer);
             
         var flashContainer = $('#'+this.pp.getMediaId()+'_flash_container');
         

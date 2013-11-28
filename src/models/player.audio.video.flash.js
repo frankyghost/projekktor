@@ -235,7 +235,7 @@ $p.newModel({
         this.imageElement = this.applyImage(this.pp.getConfig('cover') || this.pp.getConfig('poster'), destContainer);
             
         var flashContainer = $('#'+this.pp.getMediaId()+'_flash_container')
-        if (flashContainer.length==0) {
+        if (flashContainer.length===0) {
             flashContainer = $(document.createElement('div'))
             .css({width: '1px', height: '1px'})
             .attr('id', this.pp.getMediaId()+"_flash_container")

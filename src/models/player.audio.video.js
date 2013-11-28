@@ -16,6 +16,7 @@ $p.newModel({
     nativeVersion: "1",
     iLove: [
         {ext:'mp4', type:'video/mp4', platform:['ios', 'android', 'native'], streamType: ['http', 'pseudo', 'httpVideo'], fixed: 'maybe'},
+        {ext:'m4v', type:'video/mp4', platform:['ios', 'android', 'native'], streamType: ['http', 'pseudo', 'httpVideo'], fixed: 'maybe'},        
         {ext:'ogv', type:'video/ogg', platform:'native', streamType: ['http', 'httpVideo']},
         {ext:'webm',type:'video/webm', platform:'native', streamType: ['http', 'httpVideo']},
         {ext:'ogg', type:'video/ogg', platform:'native', streamType: ['http', 'httpVideo']},
@@ -365,7 +366,7 @@ $p.newModel({
         $p.utils.blockSelection(destContainer);
     
         // create cover image
-        this.imageElement = this.applyImage(this.pp.getConfig('cover') || this.pp.getConfig('poster'), destContainer);
+        this.imageElement = this.applyImage(this.getPoster('cover') || this.getPoster('poster'), destContainer);
         this.imageElement.css({border: '0px'});
     
         var mediaContainer = $('#'+this.pp.getMediaId()+'_audio_container');
@@ -407,12 +408,12 @@ $p.newModel({
             var dest = this.imageElement.parent(),
             ref = this;
 
-            if (this.imageElement.attr('src') == ref.pp.getConfig('poster'))
+            if (this.imageElement.attr('src') == this.getPoster('cover') || this.getPoster('poster'))
                 return;
             
             this.imageElement.fadeOut('fast', function() {
                 $(this).remove();
-                ref.imageElement = ref.applyImage(ref.pp.getConfig('poster'), dest );
+                ref.imageElement = ref.applyImage(ref.getPoster('cover') || ref.getPoster('poster'), dest );
             });
         }
     }

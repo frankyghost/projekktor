@@ -399,7 +399,8 @@ jQuery(function ($) {
         },
 
         getPoster: function () {      
-            var result = this.pp.getConfig('poster'),
+            var type = 'poster', 
+                result = this.pp.getConfig(type),
                 qual = 'default',
                 quals = [];
 
@@ -413,9 +414,9 @@ jQuery(function ($) {
             }
 
             qual = this.pp.getAppropriateQuality(quals);
-            for (var j in this.pp.getConfig('poster')) {
-                if (this.pp.getConfig('poster')[j].quality == qual) {
-                    result = this.pp.getConfig('poster')[j].src || null;
+            for (var j in this.pp.getConfig(type)) {
+                if (this.pp.getConfig(type)[j].quality == qual) {
+                    result = this.pp.getConfig(type)[j].src || null;
                     break;
                 }
             }

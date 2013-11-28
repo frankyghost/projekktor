@@ -387,13 +387,16 @@ jQuery(function ($) {
 
 
             // loop button
-            this._active('loop', this.pp.getConfig('loop'));
+            this._active('loop', true);
+            this.controlElements.loop
+                .addClass( this.pp.getConfig('loop') ? 'on' : 'off' )
+                .removeClass( !this.pp.getConfig('loop') ? 'on' : 'off' );
 
             // hd / sd toggl
             this.displayQualityToggle();
 
             // init time display
-            this.displayTime()
+            this.displayTime();
 
             // init volume display
             this.displayVolume(this._getVolume());

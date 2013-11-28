@@ -423,6 +423,22 @@ background: url("maccaco.png") no-repeat -91px top transparent;
 }
 
 
+.pploop,
+.pploop .on,
+.pploop .off {
+    display:block;
+    line-height: 30px;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    border-left:1px solid #413e3e;
+    border-right:1px solid #000;
+}
+
+.pploop.off {
+    color: #ccc;
+}
 
 /* Scrubber, Playhead and fluff */
 .ppscrubber {
