@@ -1,12 +1,11 @@
 /*
- * this file is part of: 
+ * this file is part of:
  * projekktor zwei
  * http://www.projekktor.com
  *
- * Copyright 2013 Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com
-
- * Use of this software is NOT free and requires permission of the copyright owner.
- * Unlicensed use is forbidden and subject to severe penalties of law.
+ * Copyright 2010, 2011, Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com
+ * under GNU General Public License
+ * http://www.filenew.org/projekktor/license/
  */
 jQuery(function($) {
 $p.newModel({
@@ -53,6 +52,7 @@ $p.newModel({
         currentTimeChange: "OSMF_currentTimeChange",
         loadStateChange: "OSMF_loadStateChange",
         bufferingChange: "OSMF_bufferingChange",
+        bytesLoadedChange: "OSMF_bytesLoadedChange",
         playStateChange: "OSMF_playerStateChange",
         seekingChange: "OSMF_seekingChange",
         canPlayChange: "OSMF_seekingChange",
@@ -83,7 +83,7 @@ $p.newModel({
             quality: "high",
             menu: false,
             allowFullScreen: 'true',
-            wmode: 'direct',
+            wmode: ($p.utils.ieVersion()) ? 'transparent' : 'opaque',
             SeamlessTabbing: 'false',
             bgcolor: '#000000',
             FlashVars: $.extend({
@@ -105,6 +105,8 @@ $p.newModel({
     // 
     removeListeners: function() {},
     
+    loadProgressUpdate: function () {},
+    
     // disable default addListener method
     addListeners: function() {},
         
@@ -115,22 +117,21 @@ $p.newModel({
         this.mediaElement.get(0).setMediaResourceURL(sources[0].src);
         
         this.streamType = sources[0].streamType || this.pp.getConfig('streamType') || 'http';
-
         if (this.getState('PLAYING')) {
             this.setPlay();
             if (ref.isPseudoStream!==true)
                 this.setSeek(this.media.position || 0);
         }
         
-        if(this.pp.getConfig('streamType')=='pseudo') {
+        if(this.streamType=='pseudo') {
             this.isPseudoStream = true;
             this.allowRandomSeek = true;
             this.media.loadProgress = 100;
         }
-        
-        if (this.pp.getConfig('streamType').indexOf('live')) {
+
+        if (this.streamType.indexOf('live')>-1 ) {
             this.allowRandomSeek = true;
-            this.media.loadProgress = 100;         
+            this.media.loadProgress = 100;
         }
     }, 
 
@@ -154,14 +155,7 @@ $p.newModel({
             // ther is no public event-hook for this:
             case 'loadedmetadata':
                 this.metaDataListener(value);
-                break;        
-            
-            case 'progress':
-                this.progressListener({
-                    loaded: value.buffered._end,
-                    total: this.media.duration
-                });
-                break;
+                break;                    
         }           
     },
     
@@ -170,7 +164,21 @@ $p.newModel({
     OSMF_isRecordingChange: function() {},
     
     OSMF_PlayerCapabilityChange: function(state) {},        
-    
+ 
+    OSMF_bytesLoadedChange: function() {
+        var me = this.mediaElement.get(0),
+            progress = 0;
+            
+        progress = me.getBytesLoaded() * 100 / me.getBytesTotal();
+
+        if (this.media.loadProgress > progress) return;
+
+        this.media.loadProgress = (this.allowRandomSeek === true) ? 100 : -1;
+        this.media.loadProgress = (this.media.loadProgress < 100 || this.media.loadProgress === undefined) ? progress : 100;
+
+        this.sendUpdate('progress', this.media.loadProgress);
+    },
+        
     OSMF_durationChange: function(value) {
         if (isNaN(value)) return;
         this.timeListener({position: this.media.position, duration: value || 0 });
@@ -206,9 +214,14 @@ $p.newModel({
                 if (this.getState('starting')) {
                     this.setPlay();
                 }
+                if (this.mediaElement.get(0).getStreamType().indexOf('dvr')>-1) {
+                    this.allowRandomSeek = true;
+                    this.media.loadProgress = 100;
+                }                        
                 break;
             case 'loadError':
-                this.errorListener(80);
+                // causes false positive in case of dynamically loaded plugins
+                // this.errorListener(80);                
                 break;
         }
     },
@@ -462,10 +475,6 @@ $p.newModel({
             seamlesstabbing: 'false',
             bgcolor: '#ccc',
             FlashVars: $.extend({      
-                controlBarMode: 'none',
-                playButtonOverlay: false,
-                showVideoInfoOverlayOnStartUp: true,
-                bufferingOverlay: false,
                 javascriptCallbackFunction: 'window.projekktorOSMFReady'+this.pp.getId()               
             }, this.pp.getConfig('OSMFVars'))
             };
