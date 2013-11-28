@@ -1,6 +1,14 @@
 PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
+V1.3.07
+=======
+
+  fixes:
+  * [core] quality toggled audio covers
+  * [plugin:controlbar] loop button behavior
+  
+
 V1.3.06
 =======
 
