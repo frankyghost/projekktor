@@ -1,6 +1,12 @@
 PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
+V1.3.06
+=======
+
+ fixes:
+ * [core] OSMF model: fixed problems with not or not properly promoted load progress information 
+
 
 V1.3.05
 =======

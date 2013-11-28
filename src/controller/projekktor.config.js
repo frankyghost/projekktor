@@ -163,10 +163,10 @@ projekktorConfig.prototype = {
     videoScaling:                   'aspectratio',
         
     /* path to the MP4 Flash-player fallback component */
-    playerFlashMP4:                 'jarisplayer.swf',
+    playerFlashMP4:                 '',
         
     /* path to the MP3 Flash-player fallback component */
-    playerFlashMP3:                 'jarisplayer.swf',  
+    playerFlashMP3:                 '',  
             
     /* defines the streamtype of the current item.
         'http':  http  streaming
