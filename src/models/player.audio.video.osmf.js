@@ -99,7 +99,7 @@ $p.newModel({
     
     flashReadyListener: function() {        
         this.applySrc();
-        this.displayReady();
+        this.displayReady();         
     },    
 
     // 
@@ -119,8 +119,9 @@ $p.newModel({
         this.streamType = sources[0].streamType || this.pp.getConfig('streamType') || 'http';
         if (this.getState('PLAYING')) {
             this.setPlay();
-            if (ref.isPseudoStream!==true)
-                this.setSeek(this.media.position || 0);
+            if (ref.isPseudoStream!==true && this.media.position>0) {
+                this.setSeek(this.media.position);
+            }
         }
         
         if(this.streamType=='pseudo') {
@@ -139,7 +140,7 @@ $p.newModel({
         var event = arguments[0][1],
             value = arguments[0][2],
             ref = this;
-        
+ 
         this.mediaElement = $('#' +  this.pp.getMediaId()+"_flash"); // IE 10 sucks
         
         switch(event) {
@@ -155,6 +156,14 @@ $p.newModel({
             // ther is no public event-hook for this:
             case 'loadedmetadata':
                 this.metaDataListener(value);
+                break;
+                
+            case 'progress':
+            break;
+                this.progressListener({
+                    loaded: value.buffered._end,
+                    total: this.media.duration
+                });
                 break;                    
         }           
     },
@@ -182,6 +191,7 @@ $p.newModel({
     OSMF_durationChange: function(value) {
         if (isNaN(value)) return;
         this.timeListener({position: this.media.position, duration: value || 0 });
+        this.seekedListener();
     },
     
     OSMF_currentTimeChange: function(value) {
@@ -222,7 +232,7 @@ $p.newModel({
             case 'loadError':
                 // causes false positive in case of dynamically loaded plugins
                 // this.errorListener(80);                
-                break;
+                break;            
         }
     },
     
@@ -308,7 +318,7 @@ $p.newModel({
             case 15:
                 this.sendUpdate('error', 5);
                 break;
-            case 16:
+            // case 16:
             case 80:
                 this.sendUpdate('error', 80);
                 break;

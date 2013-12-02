@@ -38,7 +38,7 @@ projekktorConfig.prototype = {
     _ns:                            'pp',
     
     /* a priorised array of available platforms */
-    _platforms:                     ['browser', 'android', 'ios', 'native', 'vlc', 'flash'],
+    _platforms:                     ['browser', 'android', 'ios', 'native', 'flash', 'vlc'],
     
     /* if set to true, projekktor assumes to live within an iframe and will act accordingly (used for embedding) */
     _iframe:                        false,
