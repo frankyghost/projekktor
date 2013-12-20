@@ -1,6 +1,13 @@
 PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
+V1.3.08
+=======
+
+  fixes:
+  * [core] general scrubbing issues after dynamic change of platforms
+  
+  
 V1.3.07
 =======
 

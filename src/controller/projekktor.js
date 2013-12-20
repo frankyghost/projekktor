@@ -131,7 +131,7 @@ projekktor = $p = function() {
 
     function PPlayer(srcNode, cfg, onReady) {
 
-    this.config = new projekktorConfig('1.3.07');
+    this.config = new projekktorConfig('1.3.08');
 
     this.env = {
         muted: false,
@@ -1053,7 +1053,7 @@ projekktor = $p = function() {
                 iframeWidth: target.attr('width') || 0,
                 iframeHeight: target.attr('height') || 0
             }).css({
-        position: 'fixed',
+        position: 'absolute',
         display: 'block',
         top: 0,
         left: 0,
@@ -1384,7 +1384,7 @@ projekktor = $p = function() {
         try {
             var result = false;
             if(this.config._iframe)
-                parent.location.host || false;
+                result = parent.location.host || false;
             return (result===false) ? false : $(parent.window);
         } catch(e) { return false; }        
     };
@@ -2967,25 +2967,25 @@ projekktor = $p = function() {
     this._start = function(data) {
 
         var ref = this,
-                files=[];
+            iframeParent = this.getIframeParent();
 
         // load and initialize plugins
         this._registerPlugins();
 
 
         // set up iframe environment
-        if (this.config._iframe===true) {        
-        if (this.getIframeParent()) {
-            this.getIframeParent().ready(function() {
-            ref._enterFullViewport(true);
-            });
-        } else {
-            ref._enterFullViewport(true);
-        }
+        if (this.config._iframe === true) {
+            if (iframeParent) {
+                iframeParent.ready(function() {
+                    ref._enterFullViewport(true);
+                });
+            } else {
+                ref._enterFullViewport(true);
+            }
         }
 
             // cross domain
-            if (this.getIframeParent()===false) {
+            if (iframeParent===false) {
                 this.config._isCrossDomain = true;
             }
      
