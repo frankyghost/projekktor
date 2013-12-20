@@ -164,17 +164,19 @@ projekktor = $p = function() {
             itemIdx = null,
             data = obj || [{}],
             files = data.playlist || data;
-            
+
         this.env.loading = true;
         this.media = [];
 
         // gather and set alternate config from reel:
-        try {
+        try {         
             for(var props in data.config) {
-                if (typeof data.config[props].indexOf('objectfunction')>-1) {
-                    continue; // IE SUCKZ
+                if (data.config.hasOwnProperty(props)) {
+                    if (typeof data.config[props].indexOf('objectfunction')>-1) {
+                        continue; // IE SUCKZ
+                    }
+                    this.config[props] = eval( data.config[props] );
                 }
-                this.config[props] = eval( data.config[props] );
             }
                 
             if (data.config!=null) {
@@ -183,18 +185,17 @@ projekktor = $p = function() {
                 delete(data.config);
             }                
         } catch(e) {}
-       
+
         // add media items
-        $.each(files, function() {
-            itemIdx = ref._addItem(ref._prepareMedia({file:this, config:this.config || {}, errorCode: this.errorCode || 0}));
-            
+        $.each(files, function() {  
+            itemIdx = ref._addItem(ref._prepareMedia({file:this, config:this.config || {}, errorCode: this.errorCode || 0}));      
             // set cuepoints from reel:
             $.each(this.cuepoints || [], function() {
                 this.item = itemIdx;                    
                 ref.setCuePoint(this);        
             });            
         });
-
+    
         if (itemIdx===null) {
             this._addItem(this._prepareMedia({file:'', config:{}, errorCode: 97}));
         }
@@ -261,7 +262,7 @@ projekktor = $p = function() {
         return resultIdx;
     };
 
-    this._canPlay = function(mediaType, platform, streamType) {    
+    this._canPlay = function(mediaType, platform, streamType) {
         var ref = this,
             checkIn = [],
             checkFor = [],
@@ -269,12 +270,14 @@ projekktor = $p = function() {
             pltfrm = (typeof platform=='object') ? platform : [platform],
             type = (mediaType) ? mediaType.replace(/x-/, '') : undefined,
             tm = ref._testMediaSupport();
-            
+
         $.each(pltfrm, function(nothing, plt) {
             $.each($.extend(tm[st], tm['*'] || []) || [], function(thisPlatform, val) {
-                if (plt!=null)
-                    if (thisPlatform!=plt)
-                        return true;               
+                if (plt!=null) {
+                    if (thisPlatform!=plt) {
+                        return true;
+                    }
+                }
                 checkIn = $.merge(checkIn, this);
                 return true;
             });
@@ -296,7 +299,7 @@ projekktor = $p = function() {
                 checkFor = type;
                 break;
         }
-              
+
         for(var i in checkFor) {
             if ($p.mmap.hasOwnProperty(i)) {
                 if (typeof checkFor[i] !== 'string') break;
@@ -327,14 +330,12 @@ projekktor = $p = function() {
             if ($p.mmap.hasOwnProperty(mmapIndex)) {
                 platforms = (typeof $p.mmap[mmapIndex].platform=='object') ? $p.mmap[mmapIndex].platform : [ $p.mmap[mmapIndex].platform ];
                 $.each(platforms, function(_na, platform) {
-            
                     var k = 0,
                         streamType = 'http';
-                    
+              
                     for (var j in data.file) {
                         if (data.file.hasOwnProperty(j)) {
                             if (j==='config') continue;
-                            
                             streamType = data.file[j].streamType || ref.getConfig('streamType') || 'http';
 
                             if ( ref._canPlay($p.mmap[mmapIndex].type, platform, streamType) ) {
@@ -345,11 +346,11 @@ projekktor = $p = function() {
                             if (k===0) {
                                 continue;
                             }
-                      
+                     
                             // set priority level
                             $p.mmap[mmapIndex].level = $.inArray(platform, ref.config._platforms);
                             $p.mmap[mmapIndex].level = ($p.mmap[mmapIndex].level<0) ? 100 : $p.mmap[mmapIndex].level;
-                            
+                           
                             // upcoming fun:
                             extRegEx.push( '.'+$p.mmap[mmapIndex].ext );
                             
@@ -359,7 +360,7 @@ projekktor = $p = function() {
                             }                            
                             extTypes[$p.mmap[mmapIndex].ext].push( $p.mmap[mmapIndex] );
                             
-                            if ($p.mmap[mmapIndex].streamType===null || $p.mmap[mmapIndex].streamType=='*' || $.inArray(streamType, $p.mmap[mmapIndex].streamType)>-1) {
+                            if ($p.mmap[mmapIndex].streamType===null || $p.mmap[mmapIndex].streamType=='*' || $.inArray(streamType  || [], $p.mmap[mmapIndex].streamType || '')>-1) {
 
                                 if (!typesModels[$p.mmap[mmapIndex].type]) {
                                     typesModels[$p.mmap[mmapIndex].type] = [];
@@ -378,15 +379,14 @@ projekktor = $p = function() {
                                 }
                                 
                             }
-                            continue;                            
+                            continue;
                         }
                     }
-                    
                     return true;
-                });
+                });                
             }
+           
         }
-
         extRegEx = '^.*\.(' + extRegEx.join('|') + ")$";
 
         // incoming file is a string only, no array
@@ -580,6 +580,7 @@ projekktor = $p = function() {
                             this._promote('done', {});
                             if (this.getConfig('leaveFullscreen')) {
                                 this.reset(); // POW, crowba-method for Firefox!
+                                return;
                             }
                         }
                         // next one, pls:
@@ -2334,7 +2335,6 @@ projekktor = $p = function() {
     */
     this.reset = function() {
         var ref = this;
-        this.setFullscreen(false);
         this._clearqueue();
         this._enqueue(function() {ref._reset();});
         return this;
@@ -2600,37 +2600,36 @@ projekktor = $p = function() {
         this._processing = true;
 
         (function() {
-        try {modelReady=ref.playerModel.getIsReady();} catch(e) {}
-        if (ref.env.loading!==true && modelReady) {
-
-            try {
-                var msg = ref._queue.shift();
-                if (msg!=null) {
-                    if (typeof msg.command=='string') {
-                    if (msg.delay>0)
-                        setTimeout(function() {
-                        ref.playerModel.applyCommand(msg.command, msg.params);
-                        }, msg.delay);
-                    else
-                        ref.playerModel.applyCommand(msg.command, msg.params);
-                    } else {
-                    msg.command(ref);
+            try {modelReady=ref.playerModel.getIsReady();} catch(e) {}
+            if (ref.env.loading!==true && modelReady) {    
+                try {
+                    var msg = ref._queue.shift();
+                    if (msg!=null) {
+                        if (typeof msg.command=='string') {
+                        if (msg.delay>0)
+                            setTimeout(function() {
+                            ref.playerModel.applyCommand(msg.command, msg.params);
+                            }, msg.delay);
+                        else
+                            ref.playerModel.applyCommand(msg.command, msg.params);
+                        } else {
+                        msg.command(ref);
+                        }
                     }
+                } catch(e) {$p.utils.log("ERROR:", e);}
+    
+                if (ref._queue.length==0){
+                    if (ref._isReady===false ) {
+                        ref._isReady=true;
+                    }
+                    ref._processing = false;
+                    return;
                 }
-            } catch(e) {$p.utils.log("ERROR:", e);}
-
-            if (ref._queue.length==0){
-            if (ref._isReady===false ) {
-                ref._isReady=true;
+    
+                arguments.callee();
+                return;
             }
-            ref._processing = false;
-            return;
-            }
-
-            arguments.callee();
-            return;
-        }
-        setTimeout(arguments.callee,100);
+            setTimeout(arguments.callee,100);
         })();
     };
 
