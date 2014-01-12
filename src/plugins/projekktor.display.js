@@ -35,7 +35,7 @@ projekktorDisplay.prototype = {
         staticControls:     false,
         
         /* time to delay buffering-icon-overlay once "waiting" event has been triggered */
-        bufferIconDelay:    1,
+        bufferIconDelay:    1000,
             
         /* if set the indicator animation is tinkered from a cssprite - must be horizontal */
         spriteUrl:          '',
@@ -129,12 +129,7 @@ projekktorDisplay.prototype = {
                 clearTimeout(this._cursorTimer);
                 this.display.css('cursor', 'pointer');
                 break;
-            
-            case 'STARTING':
-                this.showBufferIcon();
-                this.hideStartButton();
-                break;
-            
+
             case 'PLAYING':
                 this.hideBufferIcon();
                 this.hideStartButton();
@@ -144,6 +139,7 @@ projekktorDisplay.prototype = {
                 this.showStartButton();
                 break;
             
+            case 'STARTING':
             case 'AWAKENING':
                 this.showBufferIcon();
                 this.hideStartButton();

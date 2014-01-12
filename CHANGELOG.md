@@ -1,6 +1,14 @@
 PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
+V1.3.09
+=======
+
+  fixes:
+  * [core] general issues with jQuery oder than V1.6.x
+  * [core] leaving fullscreen on "done" doesn´t make the player stuck in a loop anymore
+  
+
 V1.3.08
 =======
 
