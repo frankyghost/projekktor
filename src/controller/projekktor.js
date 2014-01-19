@@ -533,7 +533,8 @@ projekktor = $p = function() {
 
     /* media element update listener */
     this._modelUpdateListener = function(type, value) {
-        var ref = this;
+        var ref = this,
+            modelRef = this.playerModel;
 
         if (!this.playerModel.init) return;
         if (type!='time' && type!='progress') {
@@ -542,18 +543,17 @@ projekktor = $p = function() {
 
         switch(type) {
             case 'state':
-            
-                this._promote('state', value); // IMPORTANT: STATES must be promoted first!
+                this._promote('state', value); // IMPORTANT: STATES must be promoted before being processed!
                 
                 var classes = $.map(this.getDC().attr("class").split(" "), function(item) {
                     return item.indexOf(ref.getConfig('ns') + "state") === -1 ? item : "";
-                });                    
+                });
+                
                 classes.push(this.getConfig('ns') + "state" + value.toLowerCase() );
                 this.getDC().attr("class", classes.join(" "));
-                                        
+
                 switch (value) {
                     case 'AWAKENING':
-                        var modelRef = this.playerModel;
                         this._syncPlugins(function() {
                         if (modelRef.getState('AWAKENING'))
                             modelRef.displayItem(true);
@@ -563,11 +563,7 @@ projekktor = $p = function() {
                     case 'ERROR':
                         this._addGUIListeners();
                         break;
-        
-                    case 'STOPPED':
-                        this._promote('stopped', {});
-                        break;
-        
+                
                     case 'PAUSED':
                         if (this.getConfig('disablePause')===true) {
                         this.playerModel.applyCommand('play', 0);
@@ -596,7 +592,6 @@ projekktor = $p = function() {
 
             case 'displayReady':
                 this._promote('displayReady', true);
-                modelRef = this.playerModel;
                 this._syncPlugins(function() {
                 ref._promote('ready');
                 ref._addGUIListeners();
@@ -1149,14 +1144,14 @@ projekktor = $p = function() {
 
     this.getConfig = function(name, itemIdx) {
         var idx = itemIdx || this._currentItem,
-            result = this.config['_'+name] || this.config[name];
+            result = (this.config['_'+name]!=null) ? this.config['_'+name] : this.config[name];
 
         if (name==null) {
-            return  this.media[idx]['config'];
+            return this.media[idx]['config'];
         }
 
         // get value from item-specific config (beats them all)
-        if (this.config['_'+name]==undefined) {        
+        if (this.config['_'+name]==null) {        
             try {
                 if (this.media[idx]['config'][name]!==undefined) {
                     result = this.media[idx]['config'][name];            
@@ -1848,7 +1843,7 @@ projekktor = $p = function() {
         // always "loop" playlist and disallow illegal indexes:
         if (newItem >= this.getItemCount() || newItem<0) {
             ap = this.config._loop;
-            newItem = 0;
+            newItem = 0;          
         }
 
         // set new item
@@ -2363,6 +2358,8 @@ projekktor = $p = function() {
             cleanConfig[(i.substr(0,1)=='_') ? i.substr(1) : i] = this.config[i];
         }
 
+        cleanConfig['autoplay'] = false;
+        
         if (typeof this.env.onReady==='function') {
             this._enqueue(ref.env.onReady(ref));
         }
@@ -2910,8 +2907,8 @@ projekktor = $p = function() {
                 theNode = null;
                 
         } else {
-                this.env.playerDom = theNode;    
-            }
+            this.env.playerDom = theNode;    
+        }
 
         // merge configs we got so far:
         theCfg = $.extend(true, {}, cfgByTag, theCfg);
@@ -2932,8 +2929,8 @@ projekktor = $p = function() {
             
         // force autoplay false on mobile devices:
         if  (this.getIsMobileClient()) {
-        this.config._autoplay = false;
-        this.config.fixedVolume = true;
+            this.config._autoplay = false;
+            this.config.fixedVolume = true;
         }
 
 
