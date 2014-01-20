@@ -41,7 +41,7 @@ $p.newModel({
     },    
     
     isGingerbread: false,
-    isAndroid: false,
+    isAndroid: false, 
     allowRandomSeek: false,
     videoWidth: 0,
     videoHeight: 0,
@@ -49,7 +49,7 @@ $p.newModel({
     isPseudoStream: false,
     
     init: function() {                 
-        var ua = navigator.userAgent;
+        var ua = navigator.userAgent; // TODO: global platform and feature detection
         if( ua.indexOf("Android") >= 0 ) {
             this.isAndroid = true;
           if (parseFloat(ua.slice(ua.indexOf("Android")+8)) < 3) {
@@ -59,10 +59,12 @@ $p.newModel({
         this.ready();
     },
         
-    applyMedia: function(destContainer) {    
-        this._androidHLSWorkaround();
-        if ($('#'+this.pp.getMediaId()+"_html").length===0) {
+    applyMedia: function(destContainer) { 
+        
+        if ($('#'+this.pp.getMediaId()+"_html").length === 0) {
+            
             this.wasPersistent = false;
+            
             destContainer.html('').append(
                 $('<video/>')
                 .attr({
@@ -70,6 +72,7 @@ $p.newModel({
                     "poster": $p.utils.imageDummy(),
                     "loop": false,
                     "autoplay": false,
+                    "preload": "none",
                     "x-webkit-airplay": "allow"
                 }).prop({
                     controls: false,
@@ -81,44 +84,58 @@ $p.newModel({
                     'top': 0,
                     'left': 0
                 })
-        );
-    }
+            );
+        }
 
-    this.mediaElement = $('#'+this.pp.getMediaId()+"_html");
+        this.mediaElement = $('#'+this.pp.getMediaId()+"_html");
         this.applySrc();
     },
-    
+        
     applySrc: function() {
         var ref = this,
+            media = this.getSource(),
             wasAwakening = ref.getState('AWAKENING');
-    
-            this.removeListener('error');
-            this.removeListener('play');
-            this.removeListener('loadstart');
-            this.removeListener('canplay');           
-    
-        this.mediaElement.find('source').remove();
-
-        $.each(this.getSource(), function() {
-            var src = $('<source/>');            
-            src.attr('src', this.src);
-            if (!ref.isGingerbread) {
-                src.attr('type', this.originalType );
-            }
-            src.appendTo(ref.mediaElement);
-        });
+        
+        /* 
+         * Using 'src' attribute directly in <video> element is safer than using it inside <source> elements.
+         * Some of the mobile browsers (e.g. Samsung Galaxy S2, S3 Android native browsers <= 4.2.2)
+         * will not initialize video playback with <source> elements at all, displaying only gray screen instead.
+         * HLS stream on iOS and Android will not work if its URL is defined through <source> 'src' attribute
+         * instead of <video> 'src' attribute.
+         */
+        this.mediaElement.attr('src', media[0].src);
+        
+        /* Some Android Gingerbread devices will not play video when
+         * the <video> 'type' attribute is set explicitly 
+         */
+        if (!this.isGingerbread) {
+            this.mediaElement.attr('type', media[0].originalType );
+        }
+        
+        /*
+         * Some of the mobile browsers (e.g. Android native browsers <= 4.2.x, Opera Mobile) 
+         * have by default play/pause actions bound directly to click/mousedown events of <video>.
+         * That causes conflict with display plugin play/pause actions, which makes it impossible 
+         * to pause the currently playing video. Precisely _setState is called twice: 
+         * first by pauseListener triggered by <video> default click/mousedown action, 
+         * secondly by display plugin actions bound to mousedown events. The result is that 
+         * the video is paused by native <video> events and then immediately started by display 
+         * plugin that uses the setPlayPause function. setPlayPause function toggles between 
+         * "PAUSED" and "PLAYING" states, so when a video is being played, the function causes its pausing.
+         */
+        this.mediaElement.bind('mousedown.projekktorqs'+this.pp.getId(), this.disableDefaultVideoElementActions);
+        this.mediaElement.bind('click.projekktorqs'+this.pp.getId(), this.disableDefaultVideoElementActions);
         
         var func = function(){
-
+            
             ref.mediaElement.unbind('loadstart.projekktorqs'+ref.pp.getId());
             ref.mediaElement.unbind('loadeddata.projekktorqs'+ref.pp.getId());
-            ref.mediaElement.unbind('canplay.projekktorqs'+ref.pp.getId());            
+            ref.mediaElement.unbind('canplay.projekktorqs'+ref.pp.getId());
             
             ref.addListeners('error');
             ref.addListeners('play');
-            ref.addListeners('loadstart');
-            ref.addListeners('canplay');                   
-
+            ref.addListeners('canplay');
+            
             ref.mediaElement = $('#'+ref.pp.getMediaId()+"_html");            
 
             if (wasAwakening) {
@@ -127,41 +144,48 @@ $p.newModel({
             }
 
             if (ref.getSeekState('SEEKING')) {
-                if (ref._isPlaying)
+                if (ref._isPlaying){
                     ref.setPlay();
-           
+                }
+                
                 ref.seekedListener();
                 return;
             }
        
-            if (!ref.isPseudoStream)
+            if (!ref.isPseudoStream) {
                 ref.setSeek(ref.media.position || 0);
+            }
 
-            if (ref._isPlaying)
+            if (ref._isPlaying){
                 ref.setPlay();
-                
+            }
+            
         };
 
         this.mediaElement.bind('loadstart.projekktorqs'+this.pp.getId(), func);
         this.mediaElement.bind('loadeddata.projekktorqs'+this.pp.getId(), func);
         this.mediaElement.bind('canplay.projekktorqs'+this.pp.getId(), func);
         
-        this.mediaElement.get(0).load();
-        
-        func();
+        this.mediaElement[0].load(); // important especially for iOS devices
         
         // F*CK!!!!
         if (this.isGingerbread)
         {
             func();
         }
+        
     },
     
     detachMedia: function() {
         try {
-            this.mediaElement[0].pause(); 
-            this.mediaElement.find('source').remove(); 
-            this.mediaElement.load();
+            this.removeListener('error');
+            this.removeListener('play');
+            this.removeListener('canplay');
+            this.mediaElement.unbind('mousedown.projekktorqs'+this.pp.getId()); 
+            this.mediaElement.unbind('click.projekktorqs'+this.pp.getId());
+            this.mediaElement[0].pause();
+            this.mediaElement.attr('src','');
+            this.mediaElement[0].load();
         } catch(e){}
     },
    
@@ -176,7 +200,7 @@ $p.newModel({
 
         $.each(this._eventMap, function(key, value){
             if ((key==evt || evt=='*') && value!=null) {
-                ref.mediaElement.bind(key + id, function(evt) {ref[value](this, evt)});
+                ref.mediaElement.bind(key + id, function(evt) { ref[value](this, evt); });
             }
         });       
     },
@@ -206,8 +230,6 @@ $p.newModel({
         }
     },
     
-    _androidHLSWorkaround: function() {},
-    
     playingListener: function(obj) {
         var ref = this;
         if (!this.isGingerbread) {
@@ -229,17 +251,17 @@ $p.newModel({
 
     errorListener: function(obj, evt) {
         try {
-            switch (event.target.error.code) {
-                case event.target.error.MEDIA_ERR_ABORTED:
+            switch (evt.target.error.code) {
+                case evt.target.error.MEDIA_ERR_ABORTED:
                     this.sendUpdate('error', 1);
                     break;
-                case event.target.error.MEDIA_ERR_NETWORK:
+                case evt.target.error.MEDIA_ERR_NETWORK:
                     this.sendUpdate('error', 2);        
                     break;
-                case event.target.error.MEDIA_ERR_DECODE:
+                case evt.target.error.MEDIA_ERR_DECODE:
                     this.sendUpdate('error', 3);        
                     break;
-                case event.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                case evt.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
                     this.sendUpdate('error', 4);        
                     break;
                 default:
@@ -249,8 +271,6 @@ $p.newModel({
         } catch(e) {}
     },
     
-    
-      
     canplayListener: function(obj) {
         var ref = this;
         // pseudo streaming
@@ -269,7 +289,11 @@ $p.newModel({
         }        
         this._setBufferState('full');
     },
-
+    
+     disableDefaultVideoElementActions: function(evt){
+            evt.preventDefault();
+            evt.stopPropagation();
+    }, 
     
     /*****************************************
      * Setters
@@ -328,26 +352,6 @@ $p.newModel({
     
 });
 
-$p.newModel({    
-    modelId: 'VIDEOHLS',    
-    androidVersion: 3,
-    iosVersion: 4,    
-    iLove: [
-        {ext:'m3u8', type:'application/mpegURL', platform: ['ios', 'android'], streamType: ['http','httpVideo', 'httpVideoLive']},
-        {ext:'m3u', type:'application/mpegURL', platform: ['ios', 'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']},
-        {ext:'m3u8', type:'application/vnd.apple.mpegURL', platform: ['ios', 'android'], streamType: ['http','httpVideo', 'httpVideoLive']},
-        {ext:'m3u', type:'application/vnd.apple.mpegURL', platform: ['ios', 'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']},             
-        {ext:'ts', type:'video/MP2T', platforms: ['ios' ,'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']}        
-    ],
-    
-    _androidHLSWorkaround: function() {
-        if (this.isAndroid) {
-            window.location.href = this.getSource()[0].src;
-        }
-    }
-    
-}, 'VIDEO');
-
 $p.newModel({
     
     modelId: 'AUDIO',
@@ -368,36 +372,30 @@ $p.newModel({
         // create cover image
         this.imageElement = this.applyImage(this.getPoster('cover') || this.getPoster('poster'), destContainer);
         this.imageElement.css({border: '0px'});
-    
-        var mediaContainer = $('#'+this.pp.getMediaId()+'_audio_container');
         
-        if (mediaContainer.length===0) {
-            mediaContainer = $('<div/>')
-                .css({width: '1px', height: '1px', marginBottom: '-1px'})
-                .attr('id', this.pp.getMediaId()+"_audio_container")
-                .prependTo( this.pp.getDC() );
+        if ($('#'+this.pp.getMediaId()+"_html").length===0) {
+            this.wasPersistent = false;
+            destContainer.html('').append(
+                $((this.isGingerbread) ? '<video/>' : '<audio/>')
+                .attr({
+                    "id": this.pp.getMediaId()+"_html",         
+                    "poster": $p.utils.imageDummy(),
+                    "loop": false,
+                    "autoplay": false,
+                    "preload": "none",
+                    "x-webkit-airplay": "allow"
+                }).prop({
+                    controls: false,
+                    volume: this.getVolume()
+                }).css({
+                    'width': '1px',
+                    'height': '1px',
+                    'position': 'absolute',
+                    'top': 0,
+                    'left': 0
+                })
+            );
         }
-        
-        mediaContainer.html('').append(
-            $((this.isGingerbread) ? '<video/>' : '<audio/>')
-            .attr({
-                "id": this.pp.getMediaId()+"_html",         
-                "poster": $p.utils.imageDummy(),
-                "loop": false,
-                "autoplay": false,
-                "x-webkit-airplay": "allow",
-                "preload": "auto"
-            }).prop({
-                controls: false,
-                volume: this.getVolume()
-            }).css({
-                width: '1px',
-                height: '1px',
-                position: 'absolute',
-                top: 0,
-                left: 0                
-            })
-        );
 
         this.mediaElement = $('#'+this.pp.getMediaId()+"_html");
         this.applySrc();        
@@ -419,17 +417,5 @@ $p.newModel({
     }
     
 }, 'VIDEO');
-
-$p.newModel({    
-    modelId: 'AUDIOHLS',    
-    androidVersion: 3,
-    iosVersion: 4,    
-    iLove: [
-        {ext:'m3u8', type:'application/mpegURL', platform: ['ios', 'android', 'native'], streamType: ['http','httpAudio', 'httpAudioLive']},
-        {ext:'m3u', type:'application/mpegURL', platform: ['ios', 'android', 'native'], streamType: ['http', 'httpAudio', 'httpAudioLive']},
-        {ext:'mp3', type:'audio/mp3', platform: ['ios', 'android', 'native'], streamType: ['http', 'httpAudio', 'httpAudioLive']},
-        {ext:'mp3', type:'audio/mpeg3', platform: ['ios', 'android', 'native'], streamType: ['http', 'httpAudio', 'httpAudioLive']}
-    ]
-}, 'AUDIO');
 
 });
