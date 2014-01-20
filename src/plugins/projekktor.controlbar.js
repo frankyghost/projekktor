@@ -617,7 +617,7 @@ jQuery(function ($) {
                 this.controlElements['vknob'].css('left', volume * 100 + "%");
             } else {
                 this.controlElements['vmarker'].css('height', volume * 100 + "%");
-                this.controlElements['vknob'].css('bottom', volume * 100 + "%");
+                this.controlElements['vknob'].css('top', (100 - volume * 100) + "%");
             }
 
             // "li" hack
@@ -1157,34 +1157,39 @@ jQuery(function ($) {
                 sliderIdx = (this.pp.getInFullscreen() === true && this.controlElements['vslider'].length > 1) ? 1 : 0,
                 knob = $(domObj[sliderIdx]),
                 slider = $(this.controlElements['vslider'][sliderIdx]),
-                slider = $(this.controlElements['vslider'][sliderIdx]),
-                dx = Math.abs(parseInt(knob.position().left) - event.clientX),
+                dx = Math.abs(parseFloat(knob.position().left) - event.clientX),
+                dy = Math.abs(parseFloat(knob.position().top) - event.clientY),
+                
                 volume = 0,
                 mouseUp = function (mouseupevt) {
-
                     ref.playerDom.unbind('mouseup', mouseUp);
                     slider.unbind('mousemove', mouseMove);
                     slider.unbind('mouseup', mouseUp);
                     knob.unbind('mousemove', mouseMove);
                     knob.unbind('mouseup', mouseUp);
-
                     ref._vSliderAct = false;
 
                     return false;
                 },
 
                 mouseMove = function (dragevent) {
-
                     clearTimeout(ref._cTimer);
-
-                    var newXPos = (dragevent.clientX - dx);
-                    newXPos = (newXPos > slider.width() - knob.width() / 2) ? slider.width() - (knob.width() / 2) : newXPos;
-                    newXPos = (newXPos < 0) ? 0 : newXPos;
-                    knob.css('left', newXPos + 'px');
-                    volume = Math.abs(newXPos / (slider.width() - (knob.width() / 2)));
-                    ref.pp.setVolume(volume);
-                    $(ref.controlElements['vmarker'][sliderIdx]).css('width', volume * 100 + "%");
-                    return false;
+                    var newXPos = (dragevent.clientX - dx),
+                        newXPos = (newXPos > slider.width() - knob.width() / 2) ? slider.width() - (knob.width() / 2) : newXPos,
+                        newXPos = (newXPos < 0) ? 0 : newXPos,
+                        newYPos = (dragevent.clientY - dy),                        
+                        newYPos = (newYPos > slider.height() - knob.height() / 2) ? slider.height() - (knob.height() / 2) : newYPos,
+                        newYPos = (newYPos < 0) ? 0 : newYPos;
+                    
+                    if (ref.controlElements['vslider'].width() > ref.controlElements['vslider'].height()) {                    
+                        knob.css('left', newXPos + 'px');
+                        volume = Math.abs(newXPos / (slider.width() - (knob.width() / 2)));
+                        $(ref.controlElements['vmarker'][sliderIdx]).css('width', volume * 100 + "%");
+                    } else {
+                        knob.css('top', newYPos + 'px');
+                        volume = 1 - Math.abs(newYPos / (slider.height() - (knob.height() / 2)));
+                        $(ref.controlElements['vmarker'][sliderIdx]).css('height', volume * 100 + "%");
+                    }
                 };
 
             // this.playerDom.mousemove(mouseMove);
