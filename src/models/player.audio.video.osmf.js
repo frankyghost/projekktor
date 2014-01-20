@@ -22,12 +22,11 @@ $p.newModel({
         {ext:'f4v', type:'video/mp4', platform:'flash', streamType: ['*']},
         {ext:'mov', type:'video/quicktime', platform:'flash', streamType: ['*']},
         {ext:'m4v', type:'video/mp4', platform:'flash', fixed: true, streamType: ['*']},
-        {ext:'f4m', type:'application/f4m+xml', platform:'flash', fixed: true, streamType: ['*']}
-        // should require an additional config option to activate in order consider strobe.swf variants
-        // {ext:'m3u8', type:'application/mpegURL', platform:'flash', fixed: true, streamType: ['*']},
-        // {ext:'m3u8', type:'application/x-mpegURL', platform:'flash', fixed: true, streamType: ['*']},
-        // {ext:'m3u8', type:'application/vnd.apple.mpegurl', platform:'flash', fixed: true, streamType: ['*']},
-        // {ext:'manifest', type:'application/vnd.ms-ss', platform:'flash', fixed: true, streamType: ['*']}
+        {ext:'f4m', type:'application/f4m+xml', platform:'flash', fixed: true, streamType: ['*']},
+        {ext:'m3u8', type:'application/mpegURL', platform:'flash', fixed: true, streamType: ['*']},
+        {ext:'m3u8', type:'application/x-mpegURL', platform:'flash', fixed: true, streamType: ['*']},
+        {ext:'m3u8', type:'application/vnd.apple.mpegurl', platform:'flash', fixed: true, streamType: ['*']},
+        {ext:'manifest', type:'application/vnd.ms-ss', platform:'flash', fixed: true, streamType: ['*']}
     ],
 
     hasGUI: false,    
@@ -71,7 +70,7 @@ $p.newModel({
         var ref = this; 
         
         window['projekktorOSMFReady'+this.pp.getId()] = function() {
-            ref.pp.playerModel._OSMFListener(arguments);
+            projekktor(ref.pp.getId()).playerModel._OSMFListener(arguments);
         };     
 
         var domOptions = {
