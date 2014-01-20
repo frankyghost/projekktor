@@ -400,24 +400,25 @@ jQuery(function ($) {
 
         getPoster: function () {      
             var type = 'poster', 
-                result = this.pp.getConfig(type),
+                result = null,
+                cfg = this.pp.getConfig(type),
                 qual = 'default',
                 quals = [];
 
-            if (typeof result != 'object')
-                return result;
+            if (typeof cfg != 'object')
+                return cfg;
 
-            for (var i in result) {
-                if (result[i].quality) {
-                    quals.push(result[i].quality);
+            for (var i in cfg) {
+                if (cfg[i].quality) {
+                    quals.push(cfg[i].quality);
                 }
             }
 
             qual = this.pp.getAppropriateQuality(quals);
-            for (var j in this.pp.getConfig(type)) {
-                if (this.pp.getConfig(type)[j].quality == qual) {
-                    result = this.pp.getConfig(type)[j].src || null;
-                    break;
+            
+            for (var j in cfg) {            
+                if (cfg[j].quality == qual || result == "" || qual == "default") {
+                    result = cfg[j].src;                  
                 }
             }
 
