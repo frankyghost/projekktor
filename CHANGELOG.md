@@ -7,7 +7,7 @@ V1.3.09
   fixes:
   * [core] general issues with jQuery older than V1.6.x
   * [core] leaving fullscreen on "done" doesn´t make the player stuck in a loop anymore
-  * [core] alsways get some poster to display in case of invalid or incomplete quality-toggle setups
+  * [core] always get some poster to display in case of invalid or incomplete quality-toggle setups
   * [core] several Android related issues fixed
   
   additions:  
