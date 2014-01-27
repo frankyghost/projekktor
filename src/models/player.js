@@ -417,7 +417,7 @@ jQuery(function ($) {
             qual = this.pp.getAppropriateQuality(quals);
             
             for (var j in cfg) {            
-                if (cfg[j].quality == qual || result == "" || qual == "default") {
+                if (cfg[j].quality == qual || result == "" || qual == "default") {
                     result = cfg[j].src;                  
                 }
             }
