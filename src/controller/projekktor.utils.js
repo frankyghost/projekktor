@@ -130,7 +130,7 @@ jQuery(function ($) {
 				if (p.length > 3)
 					p = p.slice(0, 3);
 
-				for (i = 0; i < p.length; i++)
+				for (var i = 0; i < p.length; i++)
 					s = s * 60 + parseFloat(p[i].replace(',', '.'));
 			}
 
