@@ -1,0 +1,406 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Projekktor DEV</title>
+        
+        <meta http-equiv="CACHE-CONTROL" content="NO-CACHE">
+        <meta charset="utf-8">
+        <!-- <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, width=device-width">-->
+         
+        <script type="text/javascript" src="libs/jquery-1.7.2.min.js"></script>
+        
+        <!-- theme 
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/normalize.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/main.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/typo.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/tables.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/forms_buttons.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/slideshow.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/usercomments.css" media="screen" />
+
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/navigation.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/footer.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/styles.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/favoriten.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/ndrslider3.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/marktplatz.css" media="screen" />
+        <link type="text/css" rel="stylesheet" href="http://local.intern.ndr-net.de/resources/css/generated/telefon.css" media="screen" />        
+        -->
+        <link rel="stylesheet" href="themes/maccaco/projekktor.style.css" type="text/css" media="screen" />
+        
+        <!-- core -->
+        <script type="text/javascript" src="src/controller/projekktor.js"></script>
+        <script type="text/javascript" src="src/controller/projekktor.config.js"></script>
+        <script type="text/javascript" src="src/controller/projekktor.messages.js"></script>        
+        <script type="text/javascript" src="src/controller/projekktor.plugininterface.js"></script>
+        <script type="text/javascript" src="src/controller/projekktor.utils.js"></script>
+        
+        <!-- plugins -->
+        <script type="text/javascript" src="src/plugins/projekktor.contextmenu.js"></script>
+        <script type="text/javascript" src="src/plugins/projekktor.controlbar.js"></script>
+        <script type="text/javascript" src="src/plugins/projekktor.display.js"></script>
+        <script type="text/javascript" src="src/plugins/projekktor.settings.js"></script>       
+        
+        <!-- models -->
+        <script type="text/javascript" src="src/models/player.js"></script>
+        <script type="text/javascript" src="src/models/player.NA.js"></script>
+        <script type="text/javascript" src="src/models/player.playlist.js"></script>
+        <script type="text/javascript" src="src/models/player.audio.video.osmf.js"></script>
+        <script type="text/javascript" src="src/models/player.audio.video.js"></script>
+        <script type="text/javascript" src="src/models/player.audio.video.vlc.js"></script>
+        <script type="text/javascript" src="src/models/player.image.html.js"></script>
+        
+
+        
+        
+        
+        <style type="text/css">
+            body, video {margin:0; padding:0;}
+        </style>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $("#jver").html($().jquery);
+            });
+        </script>
+    </head>
+    
+    <body>
+        
+<div class="projekktor" id="projekktor_a" tabindex="0" style="margin: 30px;"></div>
+        
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+        
+            var trackData = {
+                evt:[{
+                    n: 'track',
+                    pbt: '%{ts}',
+                    tidx: '%{pos}',
+                    v: ''
+                }],
+                // general
+                id: 1,
+                uid: '%{uid}',
+                sid: '%{sid}',        
+                // media info:
+                i: {
+                    id: '%{mid}',
+                    d: '%{dur}',
+                    l: '',
+                    m: '%{mt}',
+                    t: '%{mf}'
+                },
+                // client info
+                ci: {
+                    nat: '%{cpl}',
+                    pl: '%{pltfrm}',
+                    fl: '%{fl}',
+                    mod: '%{mod}',
+                    err: '%{err}'
+                }
+            }
+        
+        console.log( $.param(trackData) );       
+        try {
+            
+            
+        var playlist = [            
+            {
+                0: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.mp4', type: 'video/mp4' },
+                1: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.webm', type: 'video/webm' }
+                // 0: { src: 'http://www.projekktor.com/intro.webm?hi', type: 'video/webm', quality: "hi" },
+                // 1: { src: 'http://www.projekktor.com/intro.webm?lo', type: 'video/webm', quality: "lo" },
+                // 1: { src: 'http://www.rob-coenen.nl/lab/html5/frame_accuracy/video/perfect-timecoded.webm', type: 'video/webm'},
+                // 2: { src: 'http://www.rob-coenen.nl/lab/html5/frame_accuracy/video/perfect-timecoded.mp4', type: 'video/x-mp4'},
+                
+                // 2: { src: 'http://cdn-d.vixlet.com/c3b968d47b481e4a9395a35b4ba9b45d-1366136943_e.mp4', type: 'video/x-mp4'},
+                // 1: { src: 'http://media.tagesschau.de/video/2014/0114/TV-20140114-1213-1401.webm.h264.mp4', type: 'video/mp4', streamType: 'rtmp'},
+                // 2: { src: 'rtsp://62.75.141.31/dss-1.sdp', type: 'video/mp4', streamType: 'rtsp'}
+                // 1: { src: 'http://www.projekktor.com/video/hoppe.webm', type: 'video/webm'},
+                // 2: { src: 'http://www.heise.de/videout/m3u8/52642256_92dad9ff62.jom.086d33b9a6377a4f84e44207fb032e06_360.m3u8', type: 'video/mp4'},        
+                // 3: { src: 'http://www.heise.de/videout/m3u8/52642256_92dad9ff62.jom.086d33b9a6377a4f84e44207fb032e06_360.m3u8', type: 'application/mpegURL'},
+        
+        
+            }
+            /*,
+            {
+                // 0: { src: 'flv.flv', type: 'video/flv' },
+                0: { src: 'http://www.projekktor.com/intro.mp4', type: 'video/mp4' },
+                config: {
+                    title: 'Alles hatein Ende nur die Wurst hat Zwei, Adieu mein Schatz, es ist vorbei.',
+                    poster: 'http://www.projekktor.com/intro.png'
+                }
+            }
+            */
+        ];
+        
+        var playlist_b = [
+            {
+                0: {src: "http://media.ndr.de/progressive/2012/0925/TV-20120925-1857-4924.hq.mp4", type:"video/mp4"},
+               // 1: {src: "http://www.projekktor.com/webmvp8.webm", type:"video/webm"},
+                config: {
+                    tracks: [
+                        { src: "http://localhost/projekktor/feeds/s2.srt", srclang:"de"}
+                    ]
+                      
+                }
+            }
+        ];
+        
+        
+        var playlist_image = [{
+            0:{src:'layout-grid.gif', type:'image/png'},
+            config: {
+                duration: 200,
+                title: 'Lorem Ipsum TV'
+            }
+        }];
+        
+        var playlist_c = [
+        {
+        1: {src:'http://ndr_hds_od-f.akamaihd.net/z/2012/1029/TV-20121029-1556-1342.,hi,hq,.mp4.csmil/manifest.f4m?hdnea=st=1356002215~exp=1356602215~acl=/z/2012/1029/TV-20121029-1556-1342.*~hmac=26a1a832122a028ac1419842339ce15fde7441705fe2dcc8ffdb88ecc6a9b3ac', type:"application/f4m+xml"},
+        2:{src:'http://ndr_hls_od-i.akamaihd.net/i/2012/1029/TV-20121029-1556-1342.,lo,hi,hq,.mp4.csmil/master.m3u8?hdnea=st=1356002215~exp=1356602215~acl=/i/2012/1029/TV-20121029-1556-1342.*~hmac=bf07ce6b6f70192234f5b6e5f37e969df8aa01f87c96ac98ee9abdfb6b9aefb5', type:"application/x-mpegURL"},    config: {
+                streamType: 'httpVideo',
+                title: ''
+            }
+        }
+        ]
+        
+        
+        var playlist_d = [
+            {
+                0: {src:'http://clubbingtv.live.cdn.bitgravity.com/clubbingtv/secure/live/feed01?e=1357740736%26h=6f44309717d6d9c9c2bcbe9bec8750d7', type:"video/flv"},      
+                config: {
+                    tracks: [
+                        { src: "http://localhost/projekktor/feeds/verwurzelt.xml", srclang:"de"}
+                    ]
+                }
+            }
+        ];
+        
+        var playlist_e = [
+            {
+                1: {src:'rtmp://cp160542.live.edgefcs.net/live/ndr_fs_nds_hi_flv@19435', type:"video/mp4", quality: 'lo'},
+                2: {src:'rtmp://cp160542.live.edgefcs.net/live/ndr_fs_nds_hi_flv@19435', type:"video/mp4", quality: 'hi'},
+                config: {streamType: 'rtmpVideoLive',	title: ''}
+            }    
+        ];
+        
+        var playlist_f = [
+            {
+                0: {src: 'http://www.projekktor.com/intro.mp4', type: 'video/mp4'},
+                config: {loop: true, title: 'none'}
+            }  ,    
+            {
+                0: {src: 'http://vdl1.pcgames.de/videos/2013/3/50620_sd.mp4', type: 'video/mp4', quality: 'medium'},
+                1: {src: 'http://vdl1.pcgames.de/videos/2013/3/50620_hd.mp4', type: 'video/mp4', quality: 'high'},
+                config: {streamType: 'pseudo', startParameter: 'start'}
+            }    
+        ];
+        
+        var playlist_g = [
+            {
+                0: {src: 'http://download.media.tagesschau.de/video/2013/0727/TV-20130727-0138-3201.podm.h264.mp4?' + (new Date().getTime()), type: 'video/mp4'}
+                // 1: {src: 'http://media.tagesschau.de/video/2013/0422/TV-20130422-1119-1801.webm.webm?' + (new Date().getTime()), type: 'video/webm'},
+            }  
+        ];
+        
+        var playlist_c =  [
+            {
+                0: {src: 'mp4:ad', type: 'video/mp4'},
+                config:{
+                    streamType: 'rtmp',
+                    streamServer: 'rtmp://streaming.lzplay.de/cfx/st'
+                }
+            }
+        ];
+            
+        var playlist_audio = [
+            { 0: {src:"http://media.tagesschau.de/audio/2013/0726/AU-20130726-1054-3901.mp3", type:"audio/mp3"}}
+        ]    
+            
+        var playlist_timeshift = [
+            {
+                0: {src:"http://tagesschau-lh.akamaihd.net/z/tagesschau_1@119231/manifest.f4m?start=2014-01-29T12:30:00+01:00&end=2014-01-29T12:35:00+01:00", type:"application/f4m+xml"},
+                // 0: {src:"http://tagesschau-lh.akamaihd.net/z/tagesschau_1@119231/manifest.f4m", type:"application/f4m+xml"},
+                config: {
+                    streamType: 'httpVideoLive',
+                    OSMFVars: {
+                        plugin_AkamaiAdvancedStreamingPlugin: 'http://players.edgesuite.net/flash/plugins/osmf/advanced-streaming-plugin/v3.1/osmf2.0/AkamaiAdvancedStreamingPlugin.swf'
+                    },
+                    foo: "bar"
+                }
+            }
+        ]            
+            
+        var playlist_live = [
+            {
+                0: {src:"http://tagesschau_hds-lh.akamaihd.net/z/stream_live@100217/manifest.f4m", type:"application/f4m+xml"},
+                // 0: {src:"http://tagesschau-lh.akamaihd.net/z/tagesschau_1@119231/manifest.f4m", type:"application/f4m+xml"},
+                config: {
+                    streamType: 'httpVideoLive',
+                    OSMFVars: {
+                        plugin_AkamaiAdvancedStreamingPlugin: 'http://players.edgesuite.net/flash/plugins/osmf/advanced-streaming-plugin/v3.1/osmf2.0/AkamaiAdvancedStreamingPlugin.swf'
+                    },
+                    foo: "bar"
+                }
+            }
+        ]
+        
+        
+        
+        
+        var playlist_live_7 = [
+            {
+                0: {src:"http://tagesschau-lh.akamaihd.net/z/tagesschau_2@119232/manifest.f4m", type:"application/f4m+xml"},
+                config: {
+                    streamType: 'httpVideoLive',
+                    OSMFVars: {
+                        plugin_AkamaiAdvancedStreamingPlugin: 'http://players.edgesuite.net/flash/plugins/osmf/advanced-streaming-plugin/v3.1/osmf2.0/AkamaiAdvancedStreamingPlugin.swf'
+                    }
+                }
+            }
+        ]
+        var playlist_livea = [
+            {
+                0: {src:"http://tagesschau_hds-lh.akamaihd.net/z/stream_live@100217/manifest.f4m", type:"application/f4m+xml"},
+                config: {
+                    streamType: 'httpVideoLive'
+                }
+            }
+        ]  
+        
+            
+            var player = projekktor('.projekktor', {
+                // ratio: 16/9,
+                width: 760,
+                // autoplay: true,
+                height: 426,
+                cookiePath: '/projekktor/',
+                // height: false,
+                imageScaling: "fixed",
+                debug: true,
+                // addplugins: ['Settings'],
+                // forceFullViewport: true,
+                // debug: true,        
+                // loop: true,
+                // height: Math.ceil(638 / 16*3),
+                // platforms: ['browser', 'android', 'ios', 'vlc', 'flash'],
+                // plugins: ['Display', 'Controlbar'],
+                enableNATIVEPlatform: false,
+                // plugins: ['display'],
+                // autoplay: true,
+                loop: false,
+                // title: "alles hat ein ende nur die wurst hat zwei",
+              /*
+                playbackQualities: [
+                    {key: 'xs', minHeight: 0, minWidth: 0},
+                    {key: 's', minHeight: 0, minWidth: 10},
+                    {key: 'm', minHeight: 0, minWidth: 100},
+                    {key: 'l', minHeight: 0, minWidth: 959},
+                    {key: 'xl', minHeight: 0, minWidth: 1023}
+                ],                
+
+                poster: {
+                    1: {src: "", quality: 'xs'},
+                    2: {src: "http://local.intern.ndr-net.de//mein_unternehmen/brandschutz116~_clientId-f9e591cc-e972-4f2c-ad80-304e0a08b9b9_v-zweispaltig.jpg?s", quality: 's'},
+                    3: {src: "", quality: 'm'},
+                    4: {src: "", quality: 'l'},
+                    5: {src: "http://local.intern.ndr-net.de//mein_unternehmen/brandschutz116~_clientId-f9e591cc-e972-4f2c-ad80-304e0a08b9b9_v-original.jpg?xl", quality: 'xl'}
+                },
+*/                
+                // poster:                         "http://192.168.0.105/testfiles/poster.jpg",
+                // playerFlashMP4: 'http://www.ndr.de/flash/OSMFPlayer.swf',
+                // playerFlashMP3: 'http://www.ndr.de/flash/OSMFPlayer.swf',
+                // playerFlashMP4: 'coreSVN/trunk/swf/jarisplayer.swf',
+                // playerFlashMP3: 'coreSVN/trunk/swf/jarisplayer.swf',
+                playerFlashMP3: 'swf/StrobeMediaPlayback/StrobeMediaPlayback.swf',
+                playerFlashMP4: 'swf/StrobeMediaPlayback/StrobeMediaPlayback.swf',
+                 playlist: playlist
+                /*
+                ,        
+                playlist: [
+                            {
+                                0: {src: 'http://video.golem.de/download/7211?q=medium', type: 'video/mp4', quality: "high"},
+                                1: {src: 'http://video.golem.de/download/7211?q=heigh', type: 'video/mp4', quality: "low"},
+                                // 1: {src: 'http://www.projekktor.com/intro.webm?high', type: 'video/webm', quality: "high"},
+                                // 2: {src: 'http://www.projekktor.com/intro.webm?low', type: 'video/webm', quality: "low"},
+                                // 3: {src: 'http://www.projekktor.com/intro.mp4?high', type: 'video/mp4', quality: "high"},
+                                // 4: {src: 'http://www.projekktor.com/intro.mp4?low', type: 'video/mp4', quality: "low"},
+                                
+                                // 0: {src:'http://metafiles.gl-systemhaus.de/ndr/hls/olympia6.m3u8', type:"application/x-mpegURL"},
+                                // 1: {src:'http://uberelectron.s3.amazonaws.com/uberelectron1.mp4?hi', type:'video/mp4', quality:'high'},
+                                // 2: {src:'http://uberelectron.s3.amazonaws.com/uberelectron1.mp4?lo', type:'video/mp4', quality:'low'},
+                              
+                                config: {
+                                    // title: 'Games Culture Circle - Gamer stinken (Diskussionsrunde)',
+                                    plugin_ima: {
+                                        adblockCallback: function() {alert("Adblocker detected - SNAFU");},
+                                        title: 'Werbung',
+                                        // url: '/feedproxy.php?id=4',
+                                        type: 'application/xml'
+                                    },
+                                    streamType: 'pseudo',
+                                    startParameter: 'start'                            
+                                }
+                                
+                            },
+                            {
+                                //0: {src: 'http://video.golem.de/download/7211?q=medium', type: 'video/mp4', quality: "low"},
+                                // 1: {src: 'http://video.golem.de/download/7211?q=heigh', type: 'video/mp4', quality: "high"},
+                                1: {src: 'http://www.projekktor.com/intro.webm?high', type: 'video/webm', quality: "high"},
+                                2: {src: 'http://www.projekktor.com/intro.webm?low', type: 'video/webm', quality: "low"},
+                                3: {src: 'http://www.projekktor.com/intro.mp4?high', type: 'video/mp4', quality: "high"},
+                                4: {src: 'http://www.projekktor.com/intro.mp4?low', type: 'video/mp4', quality: "low"},
+                                
+                                // 0: {src:'http://metafiles.gl-systemhaus.de/ndr/hls/olympia6.m3u8', type:"application/x-mpegURL"},
+                                // 1: {src:'http://uberelectron.s3.amazonaws.com/uberelectron1.mp4?hi', type:'video/mp4', quality:'high'},
+                                // 2: {src:'http://uberelectron.s3.amazonaws.com/uberelectron1.mp4?lo', type:'video/mp4', quality:'low'},
+                              
+                                config: {
+                                    // title: 'Games Culture Circle - Gamer stinken (Diskussionsrunde)',
+                                    plugin_ima: {
+                                        adblockCallback: function() {alert("Adblocker detected - SNAFU");},
+                                        title: 'Werbung',
+                                        // url: '/feedproxy.php?id=4',
+                                        type: 'application/xml'
+                                    }
+                                    // streamType: 'pseudo',
+                                    // startParameter: 'start'                            
+                                }
+                            }                    
+        
+                ]
+                */
+        
+        
+            }, function(player) {
+            console.log("on ready")
+                return;
+                player.addListener('key', function() {console.log("intro.inc.html", arguments);})
+                // player.setFullscreen(true);        
+                player.addListener('state', function(state) {
+                    console.log(state)
+                    if (state=='COMPLETED')
+                        player.setFile(playlist_b);
+                })
+            }
+            );
+        } catch(e) {}
+        
+        function handleMouseGrab(event,X,Y) {
+        
+            if (!event)
+        
+                event = window.event; // IE
+        
+                alert("new position (" + X + "," + Y + ")");
+        
+        }
+        
+        
+        
+        });
+        </script>
+    </body>
+</html>
