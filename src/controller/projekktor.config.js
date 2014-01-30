@@ -26,7 +26,7 @@ projekktorConfig.prototype = {
     The order how the plugins are set here is important because they are added from z-index 0 to n one by one to the player DOM.
     As such it is usefull to add the "Display" plugin always first.
     */
-    _plugins:                       ['display', 'controlbar', 'contextmenu'],
+    _plugins:                       ['display', 'controlbar',  'settings', 'contextmenu'],
     
     /* Add one plugin or more plugins to the player. Alternative to "plugins" above. Will be merged with it. */
     _addplugins:                    [], 
@@ -56,7 +56,7 @@ projekktorConfig.prototype = {
     _continuous:                    true,
     
     /* "true" will stop all other player instances but the one the user clicked play on. */
-    _thereCanBeOnlyOne:             true,
+    _thereCanBeOnlyOne:             true, 
     
     /* on "true" try to leave fullscreen on player "complete" - does not seem to work properly in Firefox... yeah! */
     _leaveFullscreen:               true,
@@ -99,6 +99,7 @@ projekktorConfig.prototype = {
     
     /* debug on / off */
     _debug:                         false,
+    debugLevel:                    1,
     
     /* the width of the player - >0= overwrite destNodes width, 0= keep dest node width, false=maintain ratio */
     _width:                         null,

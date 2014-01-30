@@ -200,7 +200,7 @@ projekktor = $p = function() {
             this._addItem(this._prepareMedia({file:'', config:{}, errorCode: 97}));
         }
 
-        this.env.loading = false;
+        // this.env.loading = false;
         this._promote('scheduled', this.getItemCount());
         this._syncPlugins(function(){ref.setActiveItem(0);});     
     };
@@ -225,9 +225,9 @@ projekktor = $p = function() {
         }
 
         // report schedule modifications after initial scheduling only:
-        if (this.env.loading===false) {
+        // if (this.env.loading===false) {
             this._promote('scheduleModified', this.getItemCount());
-        }
+        // }
         
         return resultIdx;
     };
@@ -255,9 +255,9 @@ projekktor = $p = function() {
             resultIdx = idx;
         }
 
-        if (this.env.loading===false) {
+        // if (this.env.loading===false) {
             this._promote('scheduleModified', this.getItemCount());
-        }
+        // }
 
         return resultIdx;
     };
@@ -474,7 +474,7 @@ projekktor = $p = function() {
         });
             
 
-        var modelSet = (modelSets && modelSets.length>0) ? modelSets[0] : {type:'none/none', model: 'NA', errorCode:11};
+        var modelSet = (modelSets && modelSets.length>0) ? modelSets[0] : {type:'none/none', model: 'NA', errorCode: data.errorCode || 11};
 
         types = $p.utils.unique(types);
 
@@ -526,10 +526,52 @@ projekktor = $p = function() {
             mediaModel: modelSet.model || 'NA', 
             errorCode: modelSet.errorCode || data.errorCode || 7,   
             config:  data.config || {}                   
-        }
+        } 
 
         return result;
     };
+    
+    
+    /********************************************************************************************
+        Event Handlers:   
+    *********************************************************************************************/
+     
+    /* Event Handlers */
+
+    this.displayReadyHandler = function() {
+        
+        this._syncPlugins(function() {
+            ref._promote('ready');
+            ref._addGUIListeners();
+            if (!modelRef.getState('IDLE')) {
+                modelRef.start();
+            }
+        });        
+    }
+    
+    
+
+    this.readyHandler = function() {
+        if (typeof onReady==='function') {
+            onReady(this);
+        }
+        
+        console.log(this.env.loading)
+    };
+    
+
+    
+    this.volumeHandler = function() {
+        this.setConfig({volume: value});
+
+        if (value<=0) {
+            this.env.muted = true;
+            this._promote('mute', value);
+        } else if (this.env.muted===true) {
+            this.env.muted = false;
+            this._promote('unmute', value);
+        }        
+    }
 
     /* media element update listener */
     this._modelUpdateListener = function(type, value) {
@@ -592,11 +634,13 @@ projekktor = $p = function() {
 
             case 'displayReady':
                 this._promote('displayReady', true);
+                break;
                 this._syncPlugins(function() {
-                ref._promote('ready');
-                ref._addGUIListeners();
-                if (!modelRef.getState('IDLE'))
-                    modelRef.start();
+                    ref._promote('ready');
+                    ref._addGUIListeners();
+                    if (!modelRef.getState('IDLE')) {
+                        modelRef.start();
+                    }
                 });
             break;
             
@@ -625,16 +669,7 @@ projekktor = $p = function() {
                 */
                 
             case 'volume':
-                this.setConfig({volume: value});
                 this._promote('volume', value);
-    
-                if (value<=0) {
-                    this.env.muted = true;
-                    this._promote('mute', value);
-                } else if (this.env.muted===true) {
-                    this.env.muted = false;
-                    this._promote('unmute', value);
-                }
                 break;
 
             case 'playlist':
@@ -700,7 +735,6 @@ projekktor = $p = function() {
     this._syncPlugins = function(callback) {
         // wait for all plugins to re-initialize properly
         var ref = this;        
-        this.env.loading = true;
         (function() {
             try{
                 if (ref._plugins.length>0) {
@@ -711,10 +745,8 @@ projekktor = $p = function() {
                         }
                     }
                 }
-                        
-                ref.env.loading = false;
-                ref._promote('pluginsReady', {});
-
+                
+                ref._promote('pluginsReady', {});                        
                 try {callback();}catch(e){}
             } catch(e) {}
         })();
@@ -868,6 +900,9 @@ projekktor = $p = function() {
         if (event!='time' && event!='progress' && event!='mousemove') 
         $p.utils.log("Event: ["+event+"]", value, this.listeners);
 
+        // fire on self:
+        try {this[evt + 'Handler'](value); } catch(e){}
+        
         // fire on plugins
         if (this._pluginCache[event+"Handler"] && this._pluginCache[event+"Handler"].length>0) {
             for (var i = 0; i < this._pluginCache[event+"Handler"].length; i++) {
@@ -1828,7 +1863,7 @@ projekktor = $p = function() {
         }
 
         this._detachplayerModel();
-        this.env.loading = false;
+        // this.env.loading = false;
 
         // do we have an autoplay situation?
         // regular "autoplay" on:
@@ -2157,9 +2192,9 @@ projekktor = $p = function() {
     };
 
     this.setDebug = function(value) {
-        $p.utils.logging = value || !$p.utils.logging;
+        $p.utils.logging = (value!==undefined) ? value : !$p.utils.logging;
         if ($p.utils.logging)
-            $p.utils.log('DEBUG MODE for player #' + this.getId());
+            $p.utils.log('DEBUG MODE for player #' + this.getId() + " // Level: " + this.getConfig('debugLevel') );
     };
 
     this.addListener = function(evt, callback) {
@@ -2230,8 +2265,8 @@ projekktor = $p = function() {
             dataType = arguments[1] || this._getTypeFromFileExtension( fileNameOrObject ),
             result = [];
 
-        if (this.env.loading===true)
-                return this;
+        // if (this.env.loading===true)
+        //         return this;
             
         this._clearqueue();
         this.env.loading = true;
@@ -2251,10 +2286,10 @@ projekktor = $p = function() {
 
         // incoming playlist
         if (result[0].file.type.indexOf('/xml')>-1 || result[0].file.type.indexOf('/json') >-1) {
-        $p.utils.log('Loading external data from '+result[0].file.src+' supposed to be '+result[0].file.type );
-        this._playlistServer = result[0].file.src;
-        this.getFromUrl(result[0].file.src, this, '_reelUpdate', this.getConfig('reelParser'), result[0].file.type );
-        return this;
+            $p.utils.log('Loading external data from '+result[0].file.src+' supposed to be '+result[0].file.type );
+            this._playlistServer = result[0].file.src;
+            this.getFromUrl(result[0].file.src, this, '_reelUpdate', this.getConfig('reelParser'), result[0].file.type );
+            return this;
         }
 
         // incoming single file:
@@ -2359,10 +2394,6 @@ projekktor = $p = function() {
         }
 
         cleanConfig['autoplay'] = false;
-        
-        if (typeof this.env.onReady==='function') {
-            this._enqueue(ref.env.onReady(ref));
-        }
 
         this._init(this.env.playerDom, cleanConfig);
 
@@ -2593,12 +2624,13 @@ projekktor = $p = function() {
         var ref = this,
             modelReady = false;
                 
-        if (this._processing===true || this.env.loading===true) return;        
+        // if (this._processing===true || this.env.loading===true) return;
+        if (this._processing===true) return;        
         this._processing = true;
 
         (function() {
             try {modelReady=ref.playerModel.getIsReady();} catch(e) {}
-            if (ref.env.loading!==true && modelReady) {    
+            if (modelReady) {    
                 try {
                     var msg = ref._queue.shift();
                     if (msg!=null) {
@@ -2884,27 +2916,28 @@ projekktor = $p = function() {
         // remember initial classes
         this.env.className = theNode.attr('class') || '';
         
-            // remember ID
-            this._id = theNode[0].id || $p.utils.randomId(8);            
+        // remember ID
+        this._id = theNode[0].id || $p.utils.randomId(8);            
 
         if (cfgByTag!==false) {
-        // swap videotag->playercontainer
-        this.env.playerDom = $('<div/>')
-            .attr({
-            'class': theNode[0].className,
-            'style': theNode.attr('style')
-            })
-        theNode.replaceWith( this.env.playerDom );
+            // swap videotag->playercontainer
+            this.env.playerDom = $('<div/>')
+                .attr({
+                'class': theNode[0].className,
+                'style': theNode.attr('style')
+                })
+            
+            theNode.replaceWith( this.env.playerDom );
                 
-                // destroy theNode            
-                theNode.empty().removeAttr('type').removeAttr('src');
-                try {
-                    theNode.get(0).pause();
-                    theNode.get(0).load();
-                } catch(e) {}
-                
-                $('<div/>').append(theNode).get(0).innerHTML='';
-                theNode = null;
+            // destroy theNode            
+            theNode.empty().removeAttr('type').removeAttr('src');
+            try {
+                theNode.get(0).pause();
+                theNode.get(0).load();
+            } catch(e) {}
+            
+            $('<div/>').append(theNode).get(0).innerHTML='';
+            theNode = null;
                 
         } else {
             this.env.playerDom = theNode;    
@@ -2914,18 +2947,18 @@ projekktor = $p = function() {
         theCfg = $.extend(true, {}, cfgByTag, theCfg);
             
         for (var i in theCfg) {
-        if (this.config['_'+i]!=null) {
-            this.config['_'+i] = theCfg[i];
-        } else {
-                    if (i.indexOf('plugin_')>-1) this.config[i] = $.extend(this.config[i], theCfg[i]);
-                    else this.config[i] = theCfg[i];
-        }
+            if (this.config['_'+i]!=null) {
+                this.config['_'+i] = theCfg[i];
+            } else {
+                if (i.indexOf('plugin_')>-1) this.config[i] = $.extend(this.config[i], theCfg[i]);
+                else this.config[i] = theCfg[i];
+            }
         }
 
-            $p.utils.logging = this.config._debug;
+        this.setDebug(this.getConfig('debug'));
             
-            // initial DOM scaling
-            this.setSize();
+        // initial DOM scaling
+        this.setSize();
             
         // force autoplay false on mobile devices:
         if  (this.getIsMobileClient()) {
@@ -2991,10 +3024,7 @@ projekktor = $p = function() {
                 this.config.enableFullscreen = false;              
             }
              
-        if (typeof onReady==='function') {
-            // this._queue.unshift({command:function() {onReady(ref);}});
-            this._enqueue(function() {onReady(ref);});
-        }
+
 
         // playlist?
         for (var i in this.config._playlist[0]) {

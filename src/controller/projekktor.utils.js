@@ -124,7 +124,7 @@ jQuery(function ($) {
 		 */
 		toSeconds: function (t) {
 			var s = 0.0;
-			if (typeof t != 'string') return t;
+			if (typeof t != 'string') return t; 
 			if (t) {
 				var p = t.split(':');
 				if (p.length > 3)

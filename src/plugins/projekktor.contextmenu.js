@@ -25,7 +25,7 @@ projekktorContextmenu.prototype = {
             },
             open: function() {
                 if (ref.getConfig('playerHome')!=null) {
-                    target.get(0).location.href = ref.getConfig('playerHome');
+                    target.get(0).location.href = ref.getConfig('playerHome'); 
                     ref.pp.setPause();
                 }
             }            
@@ -91,9 +91,8 @@ projekktorContextmenu.prototype = {
         
         this.setInactive();
         this._dest.html('');        
-        
+
         for (var i in this._items) {
-        
             span = $('<span/>')
                 .data('plugin', i)
                 .html(this._items[i].getContextTitle() || i);

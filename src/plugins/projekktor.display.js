@@ -58,9 +58,7 @@ projekktorDisplay.prototype = {
     
         // create buffericon
         this.buffIcn = this.applyToPlayer( $('<div/>').addClass('buffering'), 'buffericn');
-        
-        this.imaContainer = this.applyToPlayer( $('<div/>').addClass('ima'), 'ima');
-        
+
         this.setActive();
 
         // add spritelayer to buffericon (if required)

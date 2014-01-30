@@ -1,7 +1,7 @@
 /*
  * this file is part of: 
  * projekktor zwei
- * http://www.projekktor.com
+ * http://www.projekktor.com 
  *
  * Copyright 2010-2013 Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com
  * under GNU General Public License
@@ -76,6 +76,15 @@ projekktorPluginInterface.prototype = {
         $.each(this._appliedDOMObj, function() {
             $(this).unbind(); 
         });
+    },
+    
+    i18n: function(str) {
+        var results = [], re = /%{([^}]+)}/g, text;
+        while(text = re.exec(str)) {
+            str = str.replace(new RegExp('%{' + text[1] + '}', 'gi'), (projekktorMessages[text[1]]!=undefined) ? projekktorMessages[text[1]] : text[1]);
+            // results.push(text[1]);
+        }
+        return str;
     },
     
     /**

@@ -146,7 +146,7 @@ jQuery(function ($) {
                    ref.setPlay();
                 }, 500);
             }
-            this.setPlay();
+            this.setPlay(); 
         },
 
         addListeners: function () {},
