@@ -2186,7 +2186,7 @@ projekktor = $p = function() {
         for (var i=0; i<len;i++) {
             if (this.listeners[i]==undefined) continue;
             if (this.listeners[i].event!=evt[0] && evt[0]!=='*') continue;                
-                if ( (this.listeners[i].ns!=evt[1] && evt[1]!=='*') || (this.listeners[i].callback!=callback && callback!=null) ) continue;        
+                if ( (this.listeners[i].ns!=evt[1] && evt[1]!=='*') || (this.listeners[i].callback+''!=callback+'' && callback!=null) ) continue;        
                 this.listeners.splice(i,1);
         }
         return this;
