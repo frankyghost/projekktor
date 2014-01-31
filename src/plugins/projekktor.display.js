@@ -146,7 +146,6 @@ projekktorDisplay.prototype = {
                 break;
             
             case 'COMPLETED':
-            case 'STOPPED':
                 this.hideBufferIcon();
                 break;            
             
@@ -162,6 +161,10 @@ projekktorDisplay.prototype = {
     
     startHandler: function() {
         this.mousemoveHandler();  
+    },
+  
+    stoppedHandler: function() {
+        this.hideBufferIcon();
     },
   
     scheduleLoadingHandler: function() {
