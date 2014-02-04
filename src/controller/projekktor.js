@@ -162,6 +162,8 @@ projekktor = $p = function() {
     this._reelUpdate = function(obj) {
         var ref = this,
             itemIdx = null,
+			itemId = null,
+			itemData = null,
             data = obj || [{}],
             files = data.playlist || data;
 
@@ -185,16 +187,20 @@ projekktor = $p = function() {
                 delete(data.config);
             }                
         } catch(e) {}
-
+        
         // add media items
-        $.each(files, function() {  
-            itemIdx = ref._addItem(ref._prepareMedia({file:this, config:this.config || {}, errorCode: this.errorCode || 0}));      
-            // set cuepoints from reel:
-            $.each(this.cuepoints || [], function() {
-                this.item = itemIdx;                    
-                ref.setCuePoint(this);        
-            });            
+        $.each(files, function() {
+            itemData = ref._prepareMedia({file: this, config: this.config || {}, errorCode: this.errorCode || 0});
+            itemIdx = ref._addItem(itemData);
+            itemId = itemData.ID;
+            
+            // set cuepoints from reel:   
+            ref.setCuePoints(this.cuepoints, itemId);
         });
+        
+        this.removeListener('*.cuepointsystem');
+        this.addListener('cuepointsAdd.cuepointsystem', this._cuepointsChangeEventHandler);
+        this.addListener('cuepointsRemove.cuepointsystem', this._cuepointsChangeEventHandler);
     
         if (itemIdx===null) {
             this._addItem(this._prepareMedia({file:'', config:{}, errorCode: 97}));
@@ -1884,7 +1890,7 @@ projekktor = $p = function() {
         
         this._promote('syncing', 'display');
 
-        this._enqueue(function() { try {ref._applyCuePoints();} catch(e) {} } );
+        this.syncCuePoints();
 
         this.playerModel._init({
             media: $.extend(true, {}, this.media[this._currentItem]),
@@ -2183,17 +2189,32 @@ projekktor = $p = function() {
         return this;
     };
 
-    /* removes an JS object from the event queue */
+    /**
+     * removes an JS object from the event queue
+     * 
+     * @param {String} name of event to remove 
+     * @param {Function} [callback]
+     * @returns {PPlayer} reference to the current instance of projekktor
+     */
     this.removeListener = function(event, callback) {
         var len = this.listeners.length,
-                evt = (event.indexOf('.')>-1) ? event.split('.') : [event, '*'];
-
-        for (var i=0; i<len;i++) {
+            evt = (event.indexOf('.')>-1) ? event.split('.') : [event, '*'],
+            toKill = [];
+        
+        // gather listners to remove
+        for (var i=0; i<len; i++) {
             if (this.listeners[i]==undefined) continue;
             if (this.listeners[i].event!=evt[0] && evt[0]!=='*') continue;                
-                if ( (this.listeners[i].ns!=evt[1] && evt[1]!=='*') || (this.listeners[i].callback+''!=callback+'' && callback!=null) ) continue;        
-                this.listeners.splice(i,1);
+            if ( (this.listeners[i].ns!=evt[1] && evt[1]!=='*') || (this.listeners[i].callback!==callback && callback!=null) ) continue;        
+            
+            toKill.push(i);
         }
+        
+        // than remove them
+        for (var i = 0, l=toKill.length; i<l; i++){
+            this.listeners.splice(toKill[i]-i,1);
+        }
+        
         return this;
     };
 
@@ -2363,11 +2384,13 @@ projekktor = $p = function() {
             cleanConfig[(i.substr(0,1)=='_') ? i.substr(1) : i] = this.config[i];
         }
 
+        cleanConfig['autoplay'] = false;
+
+        this._init(this.env.playerDom, cleanConfig);
+        
         if (typeof this.env.onReady==='function') {
             this._enqueue(ref.env.onReady(ref));
         }
-
-        this._init(this.env.playerDom, cleanConfig);
 
         return this;
     },
@@ -2376,15 +2399,17 @@ projekktor = $p = function() {
      /********************************************************************************************
         Queue Points
     *********************************************************************************************/
-    this.setCuePoint = function(obj, opt) {
-        var item = (obj.item!==undefined) ? obj.item : this.getItemIdx(),
+    this.setCuePoint = function(obj, opt, stopPropagation) {
+        var item = (obj.item!==undefined) ? obj.item : this.getItemId(),
             options = $.extend(true, {
                 offset: 0
             }, opt),
-        ref = this,
+            ref = this,
+            stopPropagation = stopPropagation || false, //should we propagate cuepointsAdd event after cuepoint was added
+        
         cuePoint = {
             id: obj.id || $p.utils.randomId(8),
-            group: obj.group || $p.utils.randomId(8),
+            group: obj.group || 'default',
             item: item,
             on: ($p.utils.toSeconds(obj.on) || 0) + options.offset,
             off: ($p.utils.toSeconds(obj.off) || $p.utils.toSeconds(obj.on) || 0)  + options.offset,
@@ -2392,6 +2417,7 @@ projekktor = $p = function() {
             callback: obj.callback || function(){},
             precision: (obj.precision==null) ? 1 : obj.precision,
             title: (obj.title==null) ? '' : obj.title,
+            once: obj.once || false,
             
             _listeners: [],
             _unlocked: false,
@@ -2401,138 +2427,272 @@ projekktor = $p = function() {
             isAvailable: function() {return this._unlocked;},
                     
             _stateListener: function(state, player) {
-            if ('STOPPED|COMPLETED|DESTROYING'.indexOf(state)>-1) {
-                if (this._active)
-                try {  this.callback(false, this, player); } catch(e) {}
-                this._active = false;
-                this._lastTime = -1;
-            }
-
-            },
-            _timeListener: function(time, player) {
-
-                        if (player.getItemIdx()!==this.item && this.item!='*')
-                            return;
-                        
-            var timeIdx = (this.precision==0) ? Math.round(time) : $p.utils.roundNumber(time, this.precision),                           
-                            ref = this;
-
-                        // are we already unlocked?
-                        // consider buffer state to unlock future cuepoints for user interactions
-                        if (this._unlocked===false) {
-                            var approxMaxTimeLoaded = player.getDuration() * player.getLoadProgress() / 100;
-                       
-                            if (this.on<=approxMaxTimeLoaded || this.on<=timeIdx ) {
-                                
-                                // trigger unlock-listeners
-                                $.each(this._listeners['unlock'] || [], function() {            
-                                    this(ref, player);
-                                })
-                                
-                                this._unlocked = true;
-                                
-                            } else { return; }
-                            
-                        }
-
-                        // something to do?
-            if (this._lastTime==timeIdx)
-                return;
-
-            var nat = (timeIdx-this._lastTime<=1 && timeIdx-this._lastTime>0);
-
-            // trigger ON
-            if ( ( (timeIdx >= this.on && timeIdx <= this.off) || (timeIdx >= this.on && this.on == this.off && timeIdx <= this.on+1) ) && this._active!==true) {               
-                            
-                            this._active = true;
-                $p.utils.log("Cue Point: [ON " + this.on +"] at "+timeIdx,  this);
-                try { this.callback({
-                                id: this.id,
-                                enabled: true,
-                                value: this.value,
-                                seeked: !nat,
-                                player: player}); } catch(e) {}
-            }
-            
-                        // trigger OFF
-            else if ( (timeIdx < this.on || timeIdx > this.off) && this.off!=this.on && this._active==true) {
-                    this._active = false;
-                            $p.utils.log("Cue Point: [OFF] at " + this.off, this);
-                            try { this.callback({
-                                id: this.id,
-                                enabled: false,
-                                value: this.value,
-                                seeked: !nat,
-                                player: player}); } catch(e) {}                                    
-            }                        
-                        
-                        if ( this.off==this.on && this._active && new Number(timeIdx-this.on).toPrecision(this.precision)>=1 ) {
-                            this._active = false;
-                        }
-
-            this._lastTime = timeIdx;
-            },
-                    addListener: function(event, func) {
-                        if (this._listeners[event]==null)
-                            this._listeners[event] = [];
-                        this._listeners[event].push( func || function(){} );
+                if ('STOPPED|COMPLETED|DESTROYING'.indexOf(state)>-1) {
+                    if (this._active){
+                        try {  this.callback(false, this, player); } catch(e) {}
                     }
+                    this._active = false;
+                    this._lastTime = -1;
+                    this._unlocked = false;
+                }
+            },
+            
+            _timeListener: function(time, player) {
+                
+                if (player.getItemId() !== this.item && this.item !== '*')
+                    return;
+
+                var timeIdx = (this.precision==0) ? Math.round(time) : $p.utils.roundNumber(time, this.precision),                           
+                ref = this;
+
+                // are we already unlocked?
+                // consider buffer state to unlock future cuepoints for user interactions
+                if (this._unlocked===false) {
+                    var approxMaxTimeLoaded = player.getDuration() * player.getLoadProgress() / 100;
+
+                    if (this.on<=approxMaxTimeLoaded || this.on<=timeIdx ) {
+
+                        // trigger unlock-listeners
+                        $.each(this._listeners['unlock'] || [], function() {            
+                            this(ref, player);
+                        });
+
+                        this._unlocked = true;
+
+                    } else { return; }
+
+                }
+
+                // something to do?
+                if (this._lastTime==timeIdx)
+                    return;
+
+                var nat = (timeIdx-this._lastTime<=1 && timeIdx-this._lastTime>0);
+
+                // trigger ON
+                if ( ( (timeIdx >= this.on && timeIdx <= this.off) || (timeIdx >= this.on && this.on == this.off && timeIdx <= this.on+1) ) && this._active!==true) {               
+
+                                this._active = true;
+                                $p.utils.log("Cue Point: [ON " + this.on +"] at "+timeIdx,  this);
+                                var cp = $.extend(this, {
+                                    enabled: true,
+                                    seeked: !nat,
+                                    player: player});
+                                player._promote('cuepoint', cp);
+                                try {
+                                    this.callback(cp);
+                                } 
+                                catch (e) {}
+
+                                // remove cue point if it shoud be triggered only once
+                                if(this.once){
+                                    player.removeCuePointById(this.id, this.item);
+                                }
+                }
+                
+                // trigger OFF
+                else if ( (timeIdx < this.on || timeIdx > this.off) && this.off!=this.on && this._active==true) {
+                                this._active = false;
+                                $p.utils.log("Cue Point: [OFF] at " + this.off, this);
+                                var cp = $.extend(this, {
+                                    enabled: false,
+                                    seeked: !nat,
+                                    player: player});
+                                player._promote('cuepoint', cp);
+                                try {
+                                    this.callback(cp);
+                                } 
+                                catch (e) {
+                                }
+
+                                // remove cue point if it shoud be triggered only once
+                                if(this.once){
+                                    player.removeCuePointById(this.id, this.item);
+                                }
+                }                        
+
+                if ( this.off==this.on && this._active && new Number(timeIdx-this.on).toPrecision(this.precision)>=1 ) {
+                    this._active = false;
+                }
+
+                this._lastTime = timeIdx;
+            },
+            
+            addListener: function(event, func) {
+                if (this._listeners[event]==null)
+                    this._listeners[event] = [];
+                this._listeners[event].push( func || function(){} );
+            }
         }
 
-            if(obj.unlockCallback!=null)
-                cuePoint.addListener('unlock', obj.unlockCallback);
+        if(obj.unlockCallback!=null){
+            cuePoint.addListener('unlock', obj.unlockCallback);
+        }
                 
         // create itemidx key
-        if (this._cuePoints[item]==null)
-        this._cuePoints[item] = [];
+        if (this._cuePoints[item]==null) {
+            this._cuePoints[item] = [];
+        }
 
         this._cuePoints[item].push(cuePoint);
         
-        if (!this.getState('IDLE'))
-        this._promote('cuepointAdded')
+        if (!stopPropagation){
+            this._promote('cuepointsAdd', [cuePoint]);
+        }
         
-        return this;
-
+        return this._cuePoints[item];
+    },
+            
+    this.setCuePoints = function(cuepoints, itemId, forceItemId, options){
+        var cuepoints = cuepoints || [],
+            itemId = itemId || this.getItemId(),
+            forceItemId = forceItemId || false,
+            ref = this;
+    
+        $.each(cuepoints, function() {
+                this.item = forceItemId ? itemId : this.item || itemId; // use given itemId if there is no item id specified per cuepoint or forceItemId is true
+                ref.setCuePoint(this,options,true); // set cuepoint and suppress event propagation after every addition
+        });
+        
+        if(cuepoints.length){
+            this._promote('cuepointsAdd', cuepoints);
+        }
+        
+        return this._cuePoints;
     },
         
-    this.setGotoCuePoint = function(idx, itemIdx) {
-        var cuePoints = this.getCuePoints(itemIdx);
-        this.setPlayhead(cuePoints[idx].on);
+    this.setGotoCuePoint = function(cuePointId, itemId) {
+        var currentItemId = this.getItemId(),
+            itemId = itemId || currentItemId;
+        
+        if(itemId==currentItemId){
+            this.setPlayhead(this.getCuePointById(cuePointId,itemId).on);
+        }
+        else {
+            //TODO: change playlist item and setPlayhead position
+        }
+        
         return this;
     },        
-
-    this.getCuePoints = function(idx) {            
-        return this._cuePoints[ idx || this.getItemIdx() ] || this._cuePoints || {};
+    
+    /**
+     * Gets cuepoints for specified playlist item
+     * 
+     * @param {String} itemId Playlist item ID or wildcard '*' for universal cuepoint added to all of items on the playlist
+     * @param {Boolean} withWildcarded Should it get wildcarded ('*') cuepoints too
+     * @param {Array} groups Get cuepoints only from given cuepoint groups
+     * @returns {Array} Returns array of cuepoints which satisfies the given criteria 
+     */
+    this.getCuePoints = function(itemId, withWildcarded, groups) {
+        var itemId = itemId || this.getItemId(),
+            cuePoints = withWildcarded && itemId != '*' ? $.merge($.merge([], this._cuePoints[ itemId ] || [] ), this._cuePoints['*'] || []) : this._cuePoints[itemId] || [],
+            cuePointsGroup = [];
+            
+        if(groups && !$.isEmptyObject(cuePoints)){
+            for (var cIdx=0; cIdx < cuePoints.length; cIdx++ ) {
+                if (groups.indexOf(cuePoints[cIdx].group)>-1) {  
+                    cuePointsGroup.push(cuePoints[cIdx]);
+                }
+            }
+            return cuePointsGroup;
+        }
+        
+        return cuePoints;
     },
-
-    this.getCuePointById = function(id, idx) {
+    /**
+     * Gets cuepoint with given id from specified playlist item
+     * 
+     * @param {String} cuePointId
+     * @param {String} [itemId=currentItemId]
+     * @returns {Object} Returns cuepoint object if the cuepoint exists otherwise false
+     */
+    this.getCuePointById = function(cuePointId, itemId) {
         var result = false,
-            cuePoints = this.getCuePoints(idx);
+            itemId = itemId || this.getItemId(),
+            cuePoints = this.getCuePoints(itemId);
         
         for (var j=0; j<cuePoints.length; j++){
-            if (cuePoints.id==id) {
-                result = this;
+            if (cuePoints[j].id == cuePointId) {
+                result = cuePoints[j];
                 break;
             }
         }
         return result;
     },
-
-    this.removeCuePoints = function(idx, group) {
-        var cuePoints = this.getCuePoints(idx || 0) || {},
-        kill = [];        
-        for (var cIdx=0; cIdx < cuePoints.length; cIdx++ ) {
-            if (cuePoints[cIdx].group==group) {
-                this.removeListener('time', cuePoints[cIdx].timeEventHandler);
-                this.removeListener('state', cuePoints[cIdx].stateEventHandler);            
-                kill.push(cIdx);
+            
+    /**
+     * 
+     * @param {String} [itemId=currentItemId]
+     * @param {Boolean} [withWildcarded=false]
+     * @param {Array} [cuePointGroups]
+     * @returns {Array} Array of removed cuepoints
+     */
+    this.removeCuePoints = function(itemId, withWildcarded, cuePointGroups) {
+        var itemId = itemId || this.getItemId(),
+            cuePoints = this._cuePoints,
+            itemKey = {},
+            cpForItem = [],
+            toKill = [],
+            removed = [];        
+       
+        // remove cuepoints and relevant event listeners
+        for(var itemKey in cuePoints){
+            if (cuePoints.hasOwnProperty(itemKey) && ( itemKey == itemId || (withWildcarded ? itemKey == '*' : false) ) ){
+                cpForItem = cuePoints[itemKey];
+                for (var cIdx=0, cL=cpForItem.length; cIdx < cL; cIdx++ ) {
+                    if (cuePointGroups === undefined || cuePointGroups.indexOf(cpForItem[cIdx].group) > -1 ) {
+                        this.removeListener('time', cpForItem[cIdx].timeEventHandler);
+                        this.removeListener('state', cpForItem[cIdx].stateEventHandler);
+                        toKill.push(cIdx);
+                    }
+                }
+                
+                for (var i = 0, l=toKill.length; i<l; i++){
+                    removed.push( cpForItem.splice(toKill[i]-i,1)[0] );
+                }
+                
+                if(!cpForItem.length){
+                    delete cuePoints[itemKey];
+                }
+                toKill = [];
             }
         }
-
-        for (var i = 0; i < kill.length; i++) {
-            cuePoints.splice(kill[i] - i, 1);        
+        
+        if(removed.length){
+            this._promote('cuepointsRemove', removed);
         }
-        return this;
+        
+        return removed;
+    },
+    /**
+     * Remove cuepoint with given id from specified playlist item
+     * 
+     * @param {String} cuePointId
+     * @param {String} [itemId=currentItemId]
+     * @returns {Array} Array with removed cuepoint if it was found or empty array otherwise
+     */        
+    this.removeCuePointById = function(cuePointId, itemId) {
+        if(!cuePointId) return;
+        
+        var itemId = itemId || this.getItemId(),
+        cuePoints = this.getCuePoints(itemId),
+        removed = [];
+
+        for (var cIdx=0; cIdx < cuePoints.length; cIdx++ ) {
+            if (cuePoints[cIdx].id == cuePointId) {
+                this.removeListener('time', cuePoints[cIdx].timeEventHandler);
+                this.removeListener('state', cuePoints[cIdx].stateEventHandler);            
+                
+                removed = cuePoints.splice(cIdx, 1);
+                break;
+            }
+        }
+        
+        if(removed.length){
+            this._promote('cuepointsRemove', removed);
+        }
+        
+        return removed;
     },
     
     this.syncCuePoints = function() {
@@ -2540,39 +2700,35 @@ projekktor = $p = function() {
         this._enqueue(function() { try {ref._applyCuePoints();} catch(e) {} } );
         return this;
     },
-
-    this._applyCuePoints = function(resync) {
-
-        var ref = this;
-
-        if (this._cuePoints[this._currentItem]==null && this._cuePoints['*']==null) {
-            return;
-        }
-
-        $.each( $.merge(this._cuePoints[this._currentItem] || [], this._cuePoints['*'] || []), function(key, cuePointObj) {
-            try {
-                ref.removeListener('time', cuePointObj.timeEventHandler);
-                ref.removeListener('state', cuePointObj.stateEventHandler);
-            } catch(e) {}
             
+    this._cuepointsChangeEventHandler = function(cuepoints, player){
+        var ref = player;
+        ref._enqueue(function() { try {ref._applyCuePoints();} catch(e) {} } );
+    },
+
+    this._applyCuePoints = function() {
+
+        var ref = this,
+            cuePoints = this.getCuePoints(this.getItemId(),true) || [];
+
+        // remove all cuepoint listeners
+        ref.removeListener('*.cuepoint');
+        
+        $.each( cuePoints, function(key, cuePointObj) {          
+            // attach cuepoint event handlers
             cuePointObj.timeEventHandler = function(time, player) {
                 try {cuePointObj._timeListener(time, player);} catch(e){}
-            },
+            };
     
             cuePointObj.stateEventHandler = function(state, player) {
                 try {cuePointObj._stateListener(state, player);} catch(e){}
-            },
+            };
     
-    
-            ref.addListener('time', cuePointObj.timeEventHandler);
-            ref.addListener('state', cuePointObj.stateEventHandler);
-    
-            ref.addListener('item', function() {
-                ref.removeListener('time', cuePointObj.timeEventHandler);
-                ref.removeListener('state', cuePointObj.stateEventHandler);
-            });
-        })
-
+            ref.addListener('time.cuepoint', cuePointObj.timeEventHandler);
+            ref.addListener('state.cuepoint', cuePointObj.stateEventHandler);
+        });
+        
+        this._promote('cuepointsSync', cuePoints);
     },
 
 
