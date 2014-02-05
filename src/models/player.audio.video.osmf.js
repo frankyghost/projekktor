@@ -63,7 +63,8 @@ $p.newModel({
         MBRItemChange: "OSMF_universal",
         isDynamicStreamChange: "OSMF_updateDynamicStream",
         autoSwitchChange: "OSMF_updateDynamicStream",
-        switchingChange: "OSMF_updateDynamicStream"
+        switchingChange: "OSMF_updateDynamicStream",
+        canSeekChange: "OSMF_canSeekChange"
     },    
     
     applyMedia: function(destContainer) {
@@ -298,6 +299,16 @@ $p.newModel({
         
         this._isDynamicStream = true; // important: set this before sending the update
         this.sendUpdate('availableQualitiesChange', result);        
+    },
+    
+    OSMF_canSeekChange: function(enabled) {
+        if(enabled){
+            this.allowRandomSeek = true;
+            this.media.loadProgress = 100;
+        }
+        else {
+            this.allowRandomSeek = false;
+        }
     },
     
     /* todo */
