@@ -200,9 +200,7 @@ projekktor = $p = function() {
             this._addItem(this._prepareMedia({file:'', config:{}, errorCode: 97}));
         }
 
-        // this.env.loading = false;
-        this._promote('scheduled', this.getItemCount());
-        this._syncPlugins(function(){ref.setActiveItem(0);});     
+        this._syncPlugins('reelupdate');     
     };
 
 
@@ -224,11 +222,8 @@ projekktor = $p = function() {
             resultIdx = idx;
         }
 
-        // report schedule modifications after initial scheduling only:
-        // if (this.env.loading===false) {
-            this._promote('scheduleModified', this.getItemCount());
-        // }
-        
+        this._promote('scheduleModified', this.getItemCount());
+ 
         return resultIdx;
     };
 
@@ -255,9 +250,7 @@ projekktor = $p = function() {
             resultIdx = idx;
         }
 
-        // if (this.env.loading===false) {
-            this._promote('scheduleModified', this.getItemCount());
-        // }
+        this._promote('scheduleModified', this.getItemCount());
 
         return resultIdx;
     };
@@ -539,18 +532,43 @@ projekktor = $p = function() {
     /* Event Handlers */
 
     this.displayReadyHandler = function() {
-        
-        this._syncPlugins(function() {
-            ref._promote('ready');
-            ref._addGUIListeners();
-            if (!modelRef.getState('IDLE')) {
-                modelRef.start();
-            }
-        });        
-    }
+        var ref = this,
+            modelRef = this.playerModel;      
+        this._syncPlugins('displayready');        
+    };
     
+    this.modelReadyHandler = function() {
+        this._maxElapsed = 0;
+        this._promote('item', ref._currentItem);
+    };
     
-
+    this.pluginsReadyHandler = function(hook) {
+        switch (hook) {
+            case 'reelupdate':
+                this.setActiveItem(0);
+                break;
+            
+            case 'displayready':
+                this._addGUIListeners();
+                if (!this.getState('IDLE')) {
+                    this.playerModel.start();
+                }
+                if (!this._isReady) {
+                    this._promote('ready');
+                    this._isReady = true;
+                }
+                
+                break;
+            
+            case 'awakening':
+            
+                if (this.getState('AWAKENING')) {
+                    this.playerModel.displayItem(true);
+                }
+                break;
+        }
+    };
+    
     this.readyHandler = function() {
         if (typeof onReady==='function') {
             onReady(this);
@@ -559,8 +577,39 @@ projekktor = $p = function() {
         console.log(this.env.loading)
     };
     
-
-    
+    this.stateHandler = function(stateValue) {
+        var ref = this,
+            modelRef = this.playerModel;
+            
+        // change player css classes in order to reflect current state:
+        var classes = $.map(this.getDC().attr("class").split(" "), function(item) {
+            return item.indexOf(ref.getConfig('ns') + "state") === -1 ? item : null;
+        });
+        console.log("state", classes);
+        classes.push(this.getConfig('ns') + "state" + stateValue.toLowerCase() );
+        this.getDC().attr("class", classes.join(" "));
+        
+        
+        switch (stateValue) {
+            case 'AWAKENING':
+                this._syncPlugins('awakening');
+                break;
+        
+            case 'ERROR':
+                this._addGUIListeners();
+                break;
+        
+            case 'PAUSED':
+                if (this.getConfig('disablePause')===true) {
+                    this.playerModel.applyCommand('play', 0);
+                }
+                break;
+        
+            case 'COMPLETED':                           
+                this.setActiveItem('next');
+        }
+    };
+        
     this.volumeHandler = function() {
         this.setConfig({volume: value});
 
@@ -571,168 +620,63 @@ projekktor = $p = function() {
             this.env.muted = false;
             this._promote('unmute', value);
         }        
-    }
-
-    /* media element update listener */
-    this._modelUpdateListener = function(type, value) {
-        var ref = this,
-            modelRef = this.playerModel;
-
-        if (!this.playerModel.init) return;
-        if (type!='time' && type!='progress') {
-            $p.utils.log("Update: '"+type, this.playerModel.getSrc(), this.playerModel.getModelName(), value);
-        }
-
-        switch(type) {
-            case 'state':
-                this._promote('state', value); // IMPORTANT: STATES must be promoted before being processed!
-                
-                var classes = $.map(this.getDC().attr("class").split(" "), function(item) {
-                    return item.indexOf(ref.getConfig('ns') + "state") === -1 ? item : "";
-                });
-                
-                classes.push(this.getConfig('ns') + "state" + value.toLowerCase() );
-                this.getDC().attr("class", classes.join(" "));
-
-                switch (value) {
-                    case 'AWAKENING':
-                        this._syncPlugins(function() {
-                        if (modelRef.getState('AWAKENING'))
-                            modelRef.displayItem(true);
-                        });
-                        break;
-        
-                    case 'ERROR':
-                        this._addGUIListeners();
-                        break;
-                
-                    case 'PAUSED':
-                        if (this.getConfig('disablePause')===true) {
-                        this.playerModel.applyCommand('play', 0);
-                        }
-                        break;
-        
-                    case 'COMPLETED':                           
-                        // all items in PL completed:
-                        if (this._currentItem+1>=this.media.length && !this.getConfig('loop')) {
-                            this._promote('done', {});
-                            if (this.getConfig('leaveFullscreen')) {
-                                this.reset(); // POW, crowba-method for Firefox!
-                                return;
-                            }
-                        }
-                        // next one, pls:
-                        this.setActiveItem('next');
-                        break;
-                }
-                break;
-
-            case 'modelReady':
-                this._maxElapsed = 0;
-                this._promote('item', ref._currentItem);
-                break;
-
-            case 'displayReady':
-                this._promote('displayReady', true);
-                break;
-                this._syncPlugins(function() {
-                    ref._promote('ready');
-                    ref._addGUIListeners();
-                    if (!modelRef.getState('IDLE')) {
-                        modelRef.start();
-                    }
-                });
-            break;
-            
-            case 'availableQualitiesChange':
-                this.media[this._currentItem].qualities = value;
-                this._promote('availableQualitiesChange', value);            
-                break;
-
-            case 'qualityChange':
-                this.setConfig({playbackQuality: value});            
-                this._promote('qualityChange', value);
-                break;
-                
-                /*
-                case 'durationChange':
-                    console.log( this.getConfig('start')>0, this.playerModel.allowRandomSeek )
-                    if (this.playerModel.allowRandomSeek==true) {
-                        if (this.getConfig('start')>0) {
-                            console.log("setPLay")
-                            this.setPlayhead(this.getConfig('start'));
-                            this.setConfig({start: 0});
-                        }
-                    }
-                    console.log( this.getConfig('start') )
-                    break;
-                */
-                
-            case 'volume':
-                this._promote('volume', value);
-                break;
-
-            case 'playlist':
-                this.setFile(value.file, value.type);
-                break;
-    
-            case 'config':
-                this.setConfig(value);
-                break;
-            
-            case 'time':
-                // track quartiles
-                if (this._maxElapsed<value) {
-                    var pct = Math.round(value * 100 / this.getDuration()),
-                        evt=false;
-                    
-                    if (pct < 25) {pct=25;}
-                    if (pct > 25 && pct < 50) {evt='firstquartile'; pct=50;}
-                    if (pct > 50 && pct < 75) {evt='midpoint'; pct=75;}
-                    if (pct > 75 && pct < 100) {evt='thirdquartile'; pct=100;}
-                    
-                    if (evt!==false) this._promote(evt, value);
-                    this._maxElapsed = (this.getDuration() * pct / 100);
-                }
-                this._promote(type, value);
-                break;
-    
-            case 'fullscreen':
-                if (value===true) {
-                    this.getDC().addClass('fullscreen');
-                    this._enterFullViewport();
-                }
-                else {
-                    this.getDC().removeClass('fullscreen');
-                    this._exitFullViewport();
-                }
-                this._promote(type, value);
-                break;
-                
-            case 'error':
-                this._promote(type, value);
-                if (this.getConfig('skipTestcard') && this.getItemCount() > 1) {        
-                   this.setActiveItem('next');
-                } else {                
-                    this.playerModel.applyCommand("error", value);
-                    this._addGUIListeners();                      
-                }
-                break;
-                                          
-            case 'streamTypeChange':
-                if (value=='dvr') {
-                    this.getDC().addClass(this.getNS() + 'dvr');
-                }
-                this._promote(type, value);
-                break;
-            default:                    
-                this._promote(type, value);
-                break;                
-        }
-
     };
+    
+    this.playlistHandler = function(value) {
+        this.setFile(value.file, value.type);      
+    };    
+    
+    this.fullscreenHandler = function(value) {
+        if (value===true) {
+            this.getDC().addClass('fullscreen');
+            this._enterFullViewport();
+        }
+        else {
+            this.getDC().removeClass('fullscreen');
+            this._exitFullViewport();
+        }    
+    };
+    
+    this.configHandler = function(value) {
+        this.setConfig(value);
+    };
+    
+    this.timeHandler = function(value) {
+        if (this._maxElapsed<value) {
+            var pct = Math.round(value * 100 / this.getDuration()),
+                evt=false;
+            
+            if (pct < 25) {pct=25;}
+            if (pct > 25 && pct < 50) {evt='firstquartile'; pct=50;}
+            if (pct > 50 && pct < 75) {evt='midpoint'; pct=75;}
+            if (pct > 75 && pct < 100) {evt='thirdquartile'; pct=100;}
+            
+            if (evt!==false) this._promote(evt, value);
+            this._maxElapsed = (this.getDuration() * pct / 100);
+        }
+    };
+    
+    this.availableQualitiesChangeHandler = function(value) {
+        this.media[this._currentItem].qualities = value;
+    };
+    
+    this.qualitiyChangeHandler = function(value) {
+        this.setConfig({playbackQuality: value});          
+    };
+    
+    this.streamTypeChangeHandler = function(value) {
+        if (value=='dvr') {
+            this.getDC().addClass(this.getNS() + 'dvr');
+        }        
+    };
+    
+    this.errorHandler = function(value) {
+        if (this.getConfig('skipTestcard') && this.getItemCount() > 1) {        
+           this.setActiveItem('next');
+        } 
+    }; 
 
-    this._syncPlugins = function(callback) {
+    this._syncPlugins = function(callee) {
         // wait for all plugins to re-initialize properly
         var ref = this;        
         (function() {
@@ -746,8 +690,7 @@ projekktor = $p = function() {
                     }
                 }
                 
-                ref._promote('pluginsReady', {});                        
-                try {callback();}catch(e){}
+                ref._promote('pluginsReady', callee);                        
             } catch(e) {}
         })();
     };
@@ -880,9 +823,16 @@ projekktor = $p = function() {
     };
 
     
+    /* media element update listener */
+    this._modelUpdateListener = function(evtName, value) {
+        if (this.playerModel.init) {
+            this.__promote(evtName, value);
+        }
+    };
+    
     this._promote = function(evt, value) {
         var ref = this;
-        this._enqueue(function() { try {ref.__promote(evt, value);} catch(e) {} } );
+        this._enqueue(function() { try {ref.__promote(evt, value);} catch(e) {} });
         // this._enqueue(function() {onReady(ref);});
     };
     
@@ -1403,7 +1353,7 @@ projekktor = $p = function() {
     };
 
     this.getUsesFlash = function() {
-        return (this.playerModel.modelId.indexOf('FLASH')>-1)
+        // return (this.getPlatform)
     };
 
     this.getModel = function() {
@@ -1853,6 +1803,16 @@ projekktor = $p = function() {
             // default
             newItem = 0;
         }
+        
+        // all items in PL completed:
+        if (this._currentItem+1>=this.media.length && !this.getConfig('loop') && !this.getState('IDLE')) {
+            this._promote('done', {});
+            if (this.getConfig('leaveFullscreen')) {
+                this.reset(); // POW, crowbar-method for Firefox!
+            }
+            return this;            
+        }
+       
 
         // item change requested...
         if (newItem!=this._currentItem) {
@@ -2193,8 +2153,9 @@ projekktor = $p = function() {
 
     this.setDebug = function(value) {
         $p.utils.logging = (value!==undefined) ? value : !$p.utils.logging;
-        if ($p.utils.logging)
+        if ($p.utils.logging) {
             $p.utils.log('DEBUG MODE for player #' + this.getId() + " // Level: " + this.getConfig('debugLevel') );
+        }
     };
 
     this.addListener = function(evt, callback) {
@@ -2265,9 +2226,6 @@ projekktor = $p = function() {
             dataType = arguments[1] || this._getTypeFromFileExtension( fileNameOrObject ),
             result = [];
 
-        // if (this.env.loading===true)
-        //         return this;
-            
         this._clearqueue();
         this.env.loading = true;
         this._detachplayerModel();
@@ -2375,6 +2333,8 @@ projekktor = $p = function() {
         var cleanConfig = {},
             ref = this;
               
+        this._isReady = false;
+        
         this.setFullscreen(false);
         
         $(this).unbind();
@@ -2614,7 +2574,7 @@ projekktor = $p = function() {
         }
     };
 
-    this._clearqueue = function(command, params)  {
+    this._clearqueue = function(command, params)  {        
         if (this._isReady===true) {
             this._queue = [];
         }
@@ -2629,7 +2589,9 @@ projekktor = $p = function() {
         this._processing = true;
 
         (function() {
-            try {modelReady=ref.playerModel.getIsReady();} catch(e) {}
+            // try {modelReady=ref.playerModel.getIsReady();} catch(e) {}
+            modelReady = true;
+            
             if (modelReady) {    
                 try {
                     var msg = ref._queue.shift();
@@ -2637,20 +2599,17 @@ projekktor = $p = function() {
                         if (typeof msg.command=='string') {
                         if (msg.delay>0)
                             setTimeout(function() {
-                            ref.playerModel.applyCommand(msg.command, msg.params);
+                                ref.playerModel.applyCommand(msg.command, msg.params);
                             }, msg.delay);
                         else
                             ref.playerModel.applyCommand(msg.command, msg.params);
                         } else {
-                        msg.command(ref);
+                            msg.command(ref);
                         }
                     }
                 } catch(e) {$p.utils.log("ERROR:", e);}
     
-                if (ref._queue.length==0){
-                    if (ref._isReady===false ) {
-                        ref._isReady=true;
-                    }
+                if (ref._queue.length==0){                    
                     ref._processing = false;
                     return;
                 }
@@ -2978,16 +2937,16 @@ projekktor = $p = function() {
         // - 3. INIT THEME LOADER ------------------------------------------------------
         // -----------------------------------------------------------------------------
         if (this.config._theme) {
-        switch(typeof this.config._theme) {
-            case 'string':
-            // later: this.getFromUrl(this.parseTemplate(this.config._themeRepo, {id:this.config._theme, ver:this.config._version}), this, "_applyTheme", false, 'jsonp');
-            break;
-            case 'object':
-            this._applyTheme(this.config._theme)
-        }
+            switch(typeof this.config._theme) {
+                case 'string':
+                    // later: this.getFromUrl(this.parseTemplate(this.config._themeRepo, {id:this.config._theme, ver:this.config._version}), this, "_applyTheme", false, 'jsonp');
+                    break;
+                case 'object':
+                    this._applyTheme(this.config._theme)
+            }
         }
         else {
-        this._start(false);
+            this._start(false);
         }
 
         return this;
@@ -3028,13 +2987,13 @@ projekktor = $p = function() {
 
         // playlist?
         for (var i in this.config._playlist[0]) {
-        // we prefer playlists - search one:
-        if (this.config._playlist[0][i].type) {
-            if (this.config._playlist[0][i].type.indexOf('/json')>-1 || this.config._playlist[0][i].type.indexOf('/xml')>-1 ) {
-            this.setFile(this.config._playlist[0][i].src, this.config._playlist[0][i].type);
-            return this;
+            // we prefer playlists - search one:
+            if (this.config._playlist[0][i].type) {
+                if (this.config._playlist[0][i].type.indexOf('/json')>-1 || this.config._playlist[0][i].type.indexOf('/xml')>-1 ) {
+                    this.setFile(this.config._playlist[0][i].src, this.config._playlist[0][i].type);
+                    return this;
+                }
             }
-        }
         }
 
         this.setFile(this.config._playlist);

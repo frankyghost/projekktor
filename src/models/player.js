@@ -105,9 +105,6 @@ jQuery(function ($) {
             // media
             $('#' + this.pp.getMediaId() + "_image").remove();
 
-            // remove testcard (if any)
-            $("#" + this.pp.getId() + '_testcard_media').remove();
-
             // apply media
             this.applyMedia(this.pp.getMediaContainer());
         },
@@ -115,13 +112,13 @@ jQuery(function ($) {
         applyMedia: function () {},
 
         sendUpdate: function (type, value) {
-            if(this._currentState == 'ERROR') {
-                return;
-            }                
-            if (type=='error') {
-                this._setState('error');                                
-            }
+            type = type.toLowerCase();
             this.pp._modelUpdateListener(type, value);
+            if (type=='error') {
+                this.removeListeners();
+                this.detachMedia();                            
+                this._setState('error');
+            }
         },
 
         /* wait for the playback element to initialize */
@@ -207,8 +204,9 @@ jQuery(function ($) {
                     this.setQuality(value);
                     break;
                 case 'error':
+                    console.log("COMMAND ERRROR");
                     this._setState('error');
-                    this.setTestcard(value);
+                    this.pp._modelUpdateListener('error', value);
                     break;
                 case 'play':
                     if (this.getState('ERROR')) break;
@@ -662,46 +660,6 @@ jQuery(function ($) {
             this._scaleVideo();
         },
 
-        setTestcard: function (no, txt) {
-            var destContainer = this.pp.getMediaContainer().html('').css({
-                    width: '100%',
-                    height: '100%'
-                }),
-                messages = $.extend(this.pp.getConfig('messages'), this.pp.getConfig('msg')),
-                code = (messages[no]==null) ? 0 : no,
-                msgTxt = (txt !== undefined && txt !== '') ? txt : messages[code];
-            
-            this.removeListeners();
-            this.detachMedia();            
-
-            if (this.pp.getItemCount() > 1) {
-                // "press next to continue"
-                msgTxt += ' ' + messages[99];
-            }
-
-            if (msgTxt.length < 3) {
-                msgTxt = 'ERROR';
-            }
-
-            if (code == 100) {
-                msgTxt = txt;
-            }
-
-            msgTxt = $p.utils.parseTemplate(msgTxt, $.extend({}, this.media, {
-                title: this.pp.getConfig('title')
-            }));
-
-            this.mediaElement = $('<div/>')
-                .addClass(this.pp.getNS() + 'testcard')
-                .attr('id', this.pp.getId() + '_testcard_media')
-                .html('<p>' + msgTxt + '</p>')
-                .appendTo(destContainer);
-                
-            if (this.pp.getConfig('msg')[code]!=null) {
-                this.mediaElement.addClass(this.pp.getNS() + 'customtestcard');
-            }
-        },
-
         applySrc: function () {},
         
         applyImage: function (url, destObj) {
@@ -812,12 +770,10 @@ jQuery(function ($) {
                 }
 
                 dest = ref.mediaElement;
-
-                try {
-                    if ($(dest).attr('id').indexOf('testcard') > -1) {
-                        return;
-                    }
-                } catch (e) {console.log(e);}
+    
+                if (ref.getState('ERROR')) {
+                    return;
+                }
 
                 counter++;
                 try {

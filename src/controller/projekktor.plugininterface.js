@@ -79,10 +79,15 @@ projekktorPluginInterface.prototype = {
     },
     
     i18n: function(str) {
-        var results = [], re = /%{([^}]+)}/g, text;
+        var results = [],
+            re = /%{([^}]+)}/g,
+            text,
+            custom = this.getConfig('messages') || {},
+            msg = ''; 
+
         while(text = re.exec(str)) {
-            str = str.replace(new RegExp('%{' + text[1] + '}', 'gi'), (projekktorMessages[text[1]]!=undefined) ? projekktorMessages[text[1]] : text[1]);
-            // results.push(text[1]);
+            msg = custom[text[1]] || ((projekktorMessages[text[1]]!=undefined) ? projekktorMessages[text[1]] : text[1]);
+            str = str.replace(new RegExp('%{' + text[1] + '}', 'gi'), msg);
         }
         return str;
     },

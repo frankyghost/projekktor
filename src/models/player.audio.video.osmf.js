@@ -320,6 +320,7 @@ $p.newModel({
                 break;
             // case 16:
             case 80:
+            case 7:
                 this.sendUpdate('error', 80);
                 break;
                 

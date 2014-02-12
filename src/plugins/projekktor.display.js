@@ -121,6 +121,7 @@ projekktorDisplay.prototype = {
     },    
     
     stateHandler: function(state) {
+        console.log(arguments)
         switch(state) {
         
             case 'IDLE':
@@ -153,9 +154,13 @@ projekktorDisplay.prototype = {
         }
     },
     
-    errorHandler: function() {
+    errorHandler: function(errorCode) {
         this.hideBufferIcon();
-        this.hideStartButton();    
+        this.hideStartButton();
+        if (!this.getConfig('skipTestcard')) {
+            this.testCard(errorCode);
+        }
+       
     },
     
     startHandler: function() {
@@ -202,8 +207,8 @@ projekktorDisplay.prototype = {
     
     mousedownHandler: function(evt) {
         var ref = this;     
-                
-        if( ($(evt.target).attr('id') || '').indexOf('_media')==-1)
+
+        if( ($(evt.target).attr('id') || '').indexOf('_media')==-1 && !$(evt.target).hasClass(this.pp.getNS() + 'testcard') )
             return;
     
         clearTimeout(this._cursorTimer);
@@ -216,6 +221,7 @@ projekktorDisplay.prototype = {
             case 'ERROR':
                 this.pp.setConfig({disallowSkip: false});
                 this.pp.setActiveItem('next');
+                this.display.html('').removeClass(this.pp.getNS() + 'testcard');
                 return;
             case 'IDLE':
                 this.pp.setPlay();
@@ -307,7 +313,33 @@ projekktorDisplay.prototype = {
     
             setTimeout(arguments.callee,60);
         })(); 
+    },
+    
+    testCard: function(errorCode) {
+        
+        messages = $.extend(this.getConfig('messages'), this.pp.getConfig('msg')),
+        msgTxt = this.i18n("%{error"+errorCode+"}");
 
+        if (this.pp.getItemCount() > 1) {
+            // "press next to continue"
+            msgTxt += ' ' + this.i18n("%{error99}");
+        }
+
+        if (msgTxt.length < 3) {
+            msgTxt = 'ERROR #' + errorCode;
+        }
+
+        msgTxt = $p.utils.parseTemplate(msgTxt, $.extend({}, this.media, {
+            title: this.pp.getConfig('title')
+        }));
+
+        this.display
+            .html('')
+            .addClass(this.pp.getNS() + 'testcard')
+            .html('<p>' + msgTxt + '</p>');
+        
     }
+    
+
 };
 });

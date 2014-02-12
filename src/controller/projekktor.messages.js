@@ -18,31 +18,30 @@ projekktorMessages = {
     "high": "high",
     "medium": "medium",
     "low": "low",
-    
-    errorMessages:  {
-        /* flash & native: */
-        0: '#0 An (unknown) error occurred.',
-        1: '#1 You aborted the media playback. ',
-        2: '#2 A network error caused the media download to fail part-way. ',
-        3: '#3 The media playback was aborted due to a corruption problem. ',
-        4: '#4 The media (%{title}) could not be loaded because the server or network failed.',
-        5: '#5 Sorry, your browser does not support the media format of the requested file.',
-        6: '#6 Your client is in lack of the Flash Plugin V%{flashver} or higher.',
-        7: '#7 No media scheduled.',
-        8: '#8 ! Invalid media model configured !',
-        9: '#9 File (%{file}) not found.',
-        10: '#10 Invalid or missing quality settings for %{title}.',
-        11: '#11 Invalid streamType and/or streamServer settings for %{title}.',
-        12: '#12 Invalid or inconsistent quality setup for %{title}.',
-        80: '#80 The requested file does not exist or is delivered with an invalid content-type.',
-        97: 'No media scheduled.',
-        98: 'Invalid or malformed playlist data!',
-        99: 'Click display to proceed. ',
-        100: 'Keyboard Shortcuts',
-            
-        /* youtube errors: */
-        500: 'This Youtube video has been removed or set to private',
-        501: 'The Youtube user owning this video disabled embedding.',
-        502: 'Invalid Youtube Video-Id specified.'
-    }
+
+    /* flash & native: */
+    "error0": '#0 An (unknown) error occurred.',
+    "error1": '#1 You aborted the media playback. ',
+    "error2": '#2 A network error caused the media download to fail part-way. ',
+    "error3": '#3 The media playback was aborted due to a corruption problem. ',
+    "error4": '#4 The media (%{title}) could not be loaded because the server or network failed.',
+    "error5": '#5 Sorry, your browser does not support the media format of the requested file.',
+    "error6": '#6 Your client is in lack of the Flash Plugin V%{flashver} or higher.',
+    "error7": '#7 No media scheduled.',
+    "error8": '#8 ! Invalid media model configured !',
+    "error9": '#9 File (%{file}) not found.',
+    "error10": '#10 Invalid or missing quality settings for %{title}.',
+    "error11": '#11 Invalid streamType and/or streamServer settings for %{title}.',
+    "error12": '#12 Invalid or inconsistent quality setup for %{title}.',
+    "error80": '#80 The requested file does not exist or is delivered with an invalid content-type.',
+    "error97": 'No media scheduled.',
+    "error98": 'Invalid or malformed playlist data!',
+    "error99": 'Click display to proceed. ',
+    "error100": 'Keyboard Shortcuts',
+        
+    /* youtube errors: */
+    "error500": 'This Youtube video has been removed or set to private',
+    "error501": 'The Youtube user owning this video disabled embedding.',
+    "error502": 'Invalid Youtube Video-Id specified.'
+
 };

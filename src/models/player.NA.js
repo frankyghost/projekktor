@@ -19,7 +19,12 @@ $p.newModel({
         var ref = this;
 
         destContainer.html('');
-
+        this.displayReady();
+        console.log("HIER")
+        this.sendUpdate( 'error', (this.media.file[0].src!=null && this.media.errorCode===7) ? 5 : this.media.errorCode );
+        return;
+    
+        
         var mouseClick = function(evt, player){
             if (!player.getState('AWAKENING')) {
                 ref.pp.removeListener('mousedown', arguments.callee);
