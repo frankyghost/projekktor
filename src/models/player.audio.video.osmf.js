@@ -63,7 +63,8 @@ $p.newModel({
         MBRItemChange: "OSMF_universal",
         isDynamicStreamChange: "OSMF_updateDynamicStream",
         autoSwitchChange: "OSMF_updateDynamicStream",
-        switchingChange: "OSMF_updateDynamicStream"
+        switchingChange: "OSMF_updateDynamicStream,
+        canSeekChange: "OSMF_canSeekChange"
     },    
     
     applyMedia: function(destContainer) {
@@ -300,6 +301,16 @@ $p.newModel({
         this.sendUpdate('availableQualitiesChange', result);        
     },
     
+    OSMF_canSeekChange: function(enabled) {
+        if(enabled){
+            this.allowRandomSeek = true;        
+            this.media.loadProgress = 100;        
+        }
+        else {
+            this.allowRandomSeek = false;
+        }
+    },
+
     /* todo */
     switchDynamicStreamIndex: function(index) {
         if (index==-1) {

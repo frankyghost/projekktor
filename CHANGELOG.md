@@ -1,6 +1,21 @@
 PROJEKKTOR - simply mighty <video>
 http://www.projekktor.com
 
+V1.4.00
+=======
+
+  additions:
+  * [core] "messages" can be overwritten by custom strings on player- and item- config-level
+
+  changes:
+  * [core] dumped "scheduled" event due to redundancy (scheduleModified)
+  * [core] i18n relevant strings (error messages, menu descriptors etc.) are now moved into external controller/projekktor.messages.js
+  
+  fixes:
+  * [core] Fixed streams random seeking with OSMFVIDEO model
+  * [core] css class reflecting the player state is no longer blown up by blanks
+  
+
 V1.3.09
 =======
 
