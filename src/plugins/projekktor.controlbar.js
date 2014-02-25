@@ -318,7 +318,7 @@ jQuery(function ($) {
                         }
                     });
                 }
-                console.log(templateString)
+
                 dest.html(templateString);
             }
         },

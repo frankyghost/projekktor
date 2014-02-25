@@ -14,6 +14,7 @@ V1.4.00
   fixes:
   * [core] Fixed streams random seeking with OSMFVIDEO model
   * [core] css class reflecting the player state is no longer blown up by blanks
+  * [core] fixed flash syncing issues resulting in random player crashes on init
   
 
 V1.3.09

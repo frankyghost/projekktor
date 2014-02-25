@@ -77,6 +77,7 @@ jQuery(function ($) {
 
         ready: function () {
             this.sendUpdate('modelReady');
+            
             if (this._ap) {
                 this.sendUpdate('autostart', true);
                 this._setState('awakening');
@@ -85,7 +86,6 @@ jQuery(function ($) {
 
         /* apply poster while sleeping or get ready for true multi media action */
         displayItem: function (showMedia) {
-
             // reset
             this._displayReady = false;
             this._isPoster = false;
@@ -104,7 +104,6 @@ jQuery(function ($) {
 
             // media
             $('#' + this.pp.getMediaId() + "_image").remove();
-
             // apply media
             this.applyMedia(this.pp.getMediaContainer());
         },
@@ -129,21 +128,21 @@ jQuery(function ($) {
 
         start: function () {
             var ref = this;
-
             if (this.mediaElement == null && this.modelId != 'PLAYLIST') return;
             if (this.getState('STARTING')) return;
 
             this._setState('STARTING');
 
-            if (!this.getState('STOPPED'))
+            if (!this.getState('STOPPED')) {
                 this.addListeners();
+            }
 
             if (this.pp.getIsMobileClient('ANDROID') && !this.getState('PLAYING')) {
                 setTimeout(function () {
                    ref.setPlay();
-                }, 500);
+                }, 50);
             }
-            this.setPlay(); 
+            this.setPlay();
         },
 
         addListeners: function () {},
@@ -204,7 +203,6 @@ jQuery(function ($) {
                     this.setQuality(value);
                     break;
                 case 'error':
-                    console.log("COMMAND ERRROR");
                     this._setState('error');
                     this.pp._modelUpdateListener('error', value);
                     break;
@@ -638,8 +636,8 @@ jQuery(function ($) {
             this._setState('paused');
         },
 
-        seekedListener: function (obj) {
-            this._setSeekState('SEEKED', this.media.position);
+        seekedListener: function (value) {          
+            this._setSeekState('SEEKED', value || this.media.position);
         },
 
         volumeListener: function (obj) {
@@ -800,15 +798,18 @@ jQuery(function ($) {
 
         _setState: function (state) {
             var ref = this;
-            state = state.toUpperCase();
+                state = state.toUpperCase(),
+                old = this._currentState;
 
-            if (this._currentState != state && this._currentState != 'ERROR') {
-                if (this._currentState == 'PAUSED' && state == 'PLAYING') {
+            this._currentState = state.toUpperCase();                
+
+            if (old != state && old != 'ERROR') {
+                if (old == 'PAUSED' && state == 'PLAYING') {
                     this.sendUpdate('resume', this.media);
                     this._isPlaying = true;
                 }
 
-                if ((this._currentState == 'IDLE' || this._currentState == 'STARTING') && state == 'PLAYING') {
+                if ((old== 'IDLE' || old == 'STARTING') && state == 'PLAYING') {                
                     this.sendUpdate('start', this.media);
                     this._isPlaying = true;
                 }
@@ -821,7 +822,7 @@ jQuery(function ($) {
                         ref.sendUpdate('start');
                     };
                 }
-                this._currentState = state.toUpperCase();
+
                 this.sendUpdate('state', this._currentState);
             }
         },
@@ -836,7 +837,7 @@ jQuery(function ($) {
         _setSeekState: function (state, value) {
             if (this._currentSeekState != state.toUpperCase()) {
                 this._currentSeekState = state.toUpperCase();
-                this.sendUpdate('seek', this._currentSeekState);
+                this.sendUpdate('seek', this._currentSeekState, value);
             }
         },        
 

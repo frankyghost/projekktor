@@ -550,8 +550,8 @@ projekktor = $p = function() {
             
             case 'displayready':
                 this._addGUIListeners();
-                if (!this.getState('IDLE')) {
-                    this.playerModel.start();
+                if (!this.getState('STARTING')) {
+                    this.playerModel.start(); 
                 }
                 if (!this._isReady) {
                     this._promote('ready');
@@ -573,8 +573,6 @@ projekktor = $p = function() {
         if (typeof onReady==='function') {
             onReady(this);
         }
-        
-        console.log(this.env.loading)
     };
     
     this.stateHandler = function(stateValue) {
@@ -585,7 +583,7 @@ projekktor = $p = function() {
         var classes = $.map(this.getDC().attr("class").split(" "), function(item) {
             return item.indexOf(ref.getConfig('ns') + "state") === -1 ? item : null;
         });
-        console.log("state", classes);
+
         classes.push(this.getConfig('ns') + "state" + stateValue.toLowerCase() );
         this.getDC().attr("class", classes.join(" "));
         
@@ -689,7 +687,6 @@ projekktor = $p = function() {
                         }
                     }
                 }
-                
                 ref._promote('pluginsReady', callee);                        
             } catch(e) {}
         })();
@@ -1303,38 +1300,37 @@ projekktor = $p = function() {
     this.getMediaContainer = function() {
         // return "buffered" media container
         if (this.env.mediaContainer==null) {
-        this.env.mediaContainer = $('#'+this.getMediaId());
+            this.env.mediaContainer = $('#'+this.getMediaId());
         }
+        
         // if mediacontainer does not exist ...
-        if (this.env.mediaContainer.length==0) {
-        // and there is a "display", injectz media container
-        if ( this.env.playerDom.find('.'+this.getNS()+'display').length>0 ) {
-            this.env.mediaContainer = $(document.createElement('div'))
-            .attr({'id':this.getId()+"_media"}) // IMPORTANT IDENTIFIER
-            .css({
-               // position: 'absolute',
-                overflow: 'hidden',
-                height: '100%',
-                width: '100%',
-                top: 0,
-                left: 0,
-                padding: 0,
-                margin: 0,
-                display: 'block'
-            })
-            .appendTo( this.env.playerDom.find('.'+this.getNS()+'display') );
+        if (this.env.mediaContainer.length==0 || !$.contains(document.body, this.env.mediaContainer[0])) {
+            // and there is a "display", injectz media container
+            if ( this.env.playerDom.find('.'+this.getNS()+'display').length>0 ) {
+                this.env.mediaContainer = $(document.createElement('div'))
+                    .attr({'id':this.getId()+"_media"}) // IMPORTANT IDENTIFIER
+                    .css({
+                       // position: 'absolute',
+                        overflow: 'hidden',
+                        height: '100%',
+                        width: '100%',
+                        top: 0,
+                        left: 0,
+                        padding: 0,
+                        margin: 0,
+                        display: 'block'
+                    })
+                    .appendTo( this.env.playerDom.find('.'+this.getNS()+'display') );
+            }    
+            // elsewise create a 1x1 pixel dummy somewhere
+            else {
+                this.env.mediaContainer = $(document.createElement('div'))
+                    .attr({id: this.getMediaId()})
+                    .css({width: '1px', height: '1px'})
+                    .appendTo( $(document.body) );
+            }
         }
-
-        // elsewise create a 1x1 pixel dummy somewhere
-        else {
-            this.env.mediaContainer = $(document.createElement('div'))
-            .attr({id: this.getMediaId()})
-            .css({width: '1px', height: '1px'})
-            .appendTo( $(document.body) );
-        }
-
-        }
-
+        
         // go for it
         return this.env.mediaContainer;
     };
