@@ -241,10 +241,10 @@ jQuery(function ($) {
                     break;
                 case 'fullscreen':
                     if (value == this._isFullscreen) break;
-                    this._isFullscreen = value;
-                    this.sendUpdate('fullscreen', this._isFullscreen);
+                    this._isFullscreen = value;                    
                     this.reInit();
                     this.setFullscreen();
+                    this.sendUpdate('fullscreen', this._isFullscreen);
                     break;
                 case 'resize':
                     this.setResize();
@@ -411,13 +411,12 @@ jQuery(function ($) {
             }
 
             qual = this.pp.getAppropriateQuality(quals);
-            
+          
             for (var j in cfg) {            
-                if (cfg[j].quality == qual || result == "" || qual == "default") {
+                if (cfg[j].src != undefined && (cfg[j].quality == qual || result == "" || qual == "default"))  {
                     result = cfg[j].src;                  
                 }
             }
-
             return result;
         },
 
@@ -661,7 +660,7 @@ jQuery(function ($) {
         applySrc: function () {},
         
         applyImage: function (url, destObj) {
-
+console.log("APPLY IMAGE");
             var imageObj = $('<img/>').hide(),
                 ref = this;
 
@@ -710,6 +709,10 @@ jQuery(function ($) {
                     th = destObj.height(),
                     wid = imgObj.width(),
                     hei = imgObj.height();
+                    
+                if (imgObj.attr('src') != ref.getPoster()) {
+                    imgObj.attr('src', ref.getPoster());
+                }                    
 
                 if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), imgObj, destObj.width(), destObj.height())) {
                     try {
@@ -721,16 +724,17 @@ jQuery(function ($) {
                         });
                     } catch (e) {}
                 }
+                
+                console.log("hier", ref.getPoster(), imgObj.attr('src'), ref.pp.getAppropriateQuality() );
 
-                if (imgObj.attr('src') != ref.getPoster()) {
-                    imgObj.attr('src', ref.getPoster());
-                }
             };
 
             this.pp.addListener('fullscreen.poster', function () {
+                console.log("fullscreen");
                 onReFull(imageObj, destObj);
             });
             this.pp.addListener('resize.poster', function () {
+                console.log("resize");
                 onReFull(imageObj, destObj);
             });
 

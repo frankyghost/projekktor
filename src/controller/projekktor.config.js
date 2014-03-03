@@ -70,7 +70,7 @@ projekktorConfig.prototype = {
     _themeRepo:                     false, 
         
     /* debug on / off */
-    _debug:                         true,
+    _debug:                         false,
     debugLevel:                     'plugins,events,',
     
     /* the width of the player - >0= overwrite destNodes width, 0= keep dest node width, false=maintain ratio */
