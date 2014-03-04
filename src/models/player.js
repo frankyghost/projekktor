@@ -240,11 +240,17 @@ jQuery(function ($) {
                     this.setSeek(value);
                     break;
                 case 'fullscreen':
-                    if (value == this._isFullscreen) break;
-                    this._isFullscreen = value;                    
-                    this.reInit();
-                    this.setFullscreen();
-                    this.sendUpdate('fullscreen', this._isFullscreen);
+                    /* 
+                    * It´s vital to first tell the controller what happened in order to have an already altered DOM
+                    * before processing further scaling processes.
+                    * This is a break in the logic but seems to work.
+                    */                    
+                    if (value != this._isFullscreen) {
+                        this._isFullscreen = value;                    
+                        this.sendUpdate('fullscreen', this._isFullscreen);
+                        this.reInit();
+                        this.setFullscreen();
+                    }                    
                     break;
                 case 'resize':
                     this.setResize();
@@ -275,10 +281,17 @@ jQuery(function ($) {
 
         setVolume: function (volume) {},
 
-        setFullscreen: function (inFullscreen) {
-            this.setResize();
+        setFullscreen: function(inFullscreen) {
+            if (this.element=='audio') return;
+            this._scaleVideo();
+        }, 
+
+        setResize: function() {
+            if (this.element=='audio') return;
+            this._scaleVideo(false);
         },
 
+        /*
         setResize: function () {
             var destContainer = this.pp.getMediaContainer();
             this.sendUpdate('scaled', {
@@ -288,7 +301,7 @@ jQuery(function ($) {
                 displayHeight: destContainer.height()
             });
         },
-
+*/
         setPosterLive: function () {},
 
         setQuality: function (quality) {
@@ -660,11 +673,13 @@ jQuery(function ($) {
         applySrc: function () {},
         
         applyImage: function (url, destObj) {
-console.log("APPLY IMAGE");
+
             var imageObj = $('<img/>').hide(),
                 ref = this;
 
             $p.utils.blockSelection(imageObj);
+            
+            $("#" + this.pp.getMediaId() + "_image").remove();
 
             // empty URL... apply placeholder
             if (url == null || url === false) {
@@ -686,35 +701,13 @@ console.log("APPLY IMAGE");
 
             imageObj.load(function (event) {
                 var dest = event.currentTarget;
-                if (!imageObj.data('od')) {
-                    imageObj.data('od', {
-                        width: dest.naturalWidth,
-                        height: dest.naturalHeight
-                    });
-                }
+                
+                if (!imageObj.attr("data-od-width")) imageObj.attr("data-od-width", dest.naturalWidth);
+                if (!imageObj.attr("data-od-height")) imageObj.attr("data-od-height", dest.naturalHeight);
+                
                 imageObj.show();
-                $p.utils.stretch(ref.pp.getConfig('imageScaling'), imageObj, destObj.width(), destObj.height());
-            });
 
-            // IE<9 trap:
-            imageObj.attr('src', url);
-
-            var onReFull = function (imgObj, destObj) {
-
-                if (destObj.is(':visible') === false) {
-                    ref.pp.removeListener('fullscreen', arguments.callee);
-                }
-
-                var tw = destObj.width(),
-                    th = destObj.height(),
-                    wid = imgObj.width(),
-                    hei = imgObj.height();
-                    
-                if (imgObj.attr('src') != ref.getPoster()) {
-                    imgObj.attr('src', ref.getPoster());
-                }                    
-
-                if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), imgObj, destObj.width(), destObj.height())) {
+                if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), imageObj, destObj.width(), destObj.height())) {
                     try {
                         ref.sendUpdate('scaled', {
                             realWidth: imgObj._originalDimensions.width,
@@ -724,18 +717,23 @@ console.log("APPLY IMAGE");
                         });
                     } catch (e) {}
                 }
-                
-                console.log("hier", ref.getPoster(), imgObj.attr('src'), ref.pp.getAppropriateQuality() );
+            });
 
-            };
+            imageObj.removeData('od');
+            
+            // IE<9 trap:
+            imageObj.attr('src', url);
+
+
+            this.pp.removeListener('fullscreen.poster');
+            this.pp.removeListener('resize.poster');
 
             this.pp.addListener('fullscreen.poster', function () {
-                console.log("fullscreen");
-                onReFull(imageObj, destObj);
+                ref.applyImage(ref.getPoster(), destObj);  
             });
+            
             this.pp.addListener('resize.poster', function () {
-                console.log("resize");
-                onReFull(imageObj, destObj);
+                ref.applyImage(ref.getPoster(), destObj);  
             });
 
             return imageObj;
@@ -847,14 +845,20 @@ console.log("APPLY IMAGE");
 
         _scaleVideo: function (promote) {
             var destContainer = this.pp.getMediaContainer();
+
             if (this.pp.getIsMobileClient()) return;
+        
             try {
                 var wid = destContainer.width(),
                     hei = destContainer.height(),
                     tw = this.media.videoWidth,
                     th = this.media.videoHeight;
 
-                if ($p.utils.stretch(this.pp.getConfig('videoScaling'), this.mediaElement, wid, hei, tw, th)) {
+                if (!this.mediaElement.attr("data-od-width")) this.mediaElement.attr("data-od-width", this.media.videoWidth);
+    		if (!this.mediaElement.attr("data-od-height")) this.mediaElement.attr("data-od-height", this.media.videoHeight);                    
+
+                // if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), imageObj, destObj.width(), destObj.height())) {
+                if ($p.utils.stretch(this.pp.getConfig('videoScaling'), this.mediaElement, wid, hei)) {
                     this.sendUpdate('scaled', {
                         realWidth: tw,
                         realHeight: th,
@@ -862,7 +866,7 @@ console.log("APPLY IMAGE");
                         displayHeight: hei
                     });
                 }
-            } catch (e) {}
+            } catch (e) { console.log(e) }
         },
 
         _isFF: function () {

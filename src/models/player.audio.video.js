@@ -338,16 +338,6 @@ $p.newModel({
             }
         
         })();
-    },           
-
-    setFullscreen: function(inFullscreen) {
-        if (this.element=='audio') return;
-        this._scaleVideo();
-    }, 
-
-    setResize: function() {
-        if (this.element=='audio') return;
-        this._scaleVideo(false);
     }
     
 });

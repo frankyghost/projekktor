@@ -280,7 +280,11 @@ jQuery(function ($) {
 		 * @param (Float) A forced asumed height of the target object (optional)
 		 * @return (Boolean) Returns TRUE if <target> was resized in any way, otherwise FALSE
 		 */
-		stretch: function (stretchStyle, target, wid, hei, twf, thf) {
+		stretch: function (stretchStyle, target, owid, ohei, twf, thf) {
+			var unti = "%",
+				wid = owid,
+				hei = ohei;
+				
 			if (target == null)
 				return false;
 
@@ -288,15 +292,11 @@ jQuery(function ($) {
 				target = $(target);
 			}
 
-			if (!target.data('od')) {
-				target.data('od', {
-					width: target.width(),
-					height: target.height()
-				});
-			}
-
-			var tw = (twf !== undefined) ? twf : target.data('od').width,
-				th = (thf !== undefined) ? thf : target.data('od').height,
+            if (!target.attr("data-od-width")) target.attr("data-od-width",  target.width());
+			if (!target.attr("data-od-height")) target.attr("data-od-height", target.height());
+				
+			var tw = (twf !== undefined) ? twf : target.attr("data-od-width"),
+				th = (thf !== undefined) ? thf : target.attr("data-od-height"),
 				xsc = (wid / tw),
 				ysc = (hei / th),
 				rw = wid,
@@ -304,35 +304,41 @@ jQuery(function ($) {
 
 			// fill area
 			switch (stretchStyle) {
-			case 'none':
-				rw = tw;
-				rh = th;
-				break;
-
-			case 'fill':
-				if (xsc > ysc) {
-					rw = tw * xsc;
-					rh = th * xsc;
-				} else if (xsc < ysc) {
-					rw = tw * ysc;
-					rh = th * ysc;
-				}
-				break;
-
-			case 'aspectratio':
-			default:
-				// scale, keep aspect ratio
-				if (xsc > ysc) {
-					rw = tw * ysc;
-					rh = th * ysc;
-				} else if (xsc < ysc) {
-					rw = tw * xsc;
-					rh = th * xsc;
-				}
-				break;
+				case 'none':
+					wid = tw;
+					hei = th;
+					unit = "px";
+					
+					break;
+	
+				case 'fill':
+					if (xsc > ysc) {
+						rw = tw * xsc;
+						rh = th * xsc;
+					} else if (xsc < ysc) {
+						rw = tw * ysc;
+						rh = th * ysc;
+					}
+					wid = $p.utils.roundNumber((rw / wid) * 100, 0);
+					hei = $p.utils.roundNumber((rh / hei) * 100, 0);
+					unit = "%";
+					break;
+	
+				case 'aspectratio':
+				default:
+					// scale, keep aspect ratio
+					if (xsc > ysc) {
+						rw = tw * ysc;
+						rh = th * ysc;
+					} else if (xsc < ysc) {
+						rw = tw * xsc;
+						rh = th * xsc;
+					}
+					wid = $p.utils.roundNumber((rw / wid) * 100, 0);
+					hei = $p.utils.roundNumber((rh / hei) * 100, 0);
+					unit = "%";
+					break;
 			}
-			wid = $p.utils.roundNumber((rw / wid) * 100, 0);
-			hei = $p.utils.roundNumber((rh / hei) * 100, 0);
 
 			if (wid===0 || hei===0) {
 				return false;
@@ -341,13 +347,13 @@ jQuery(function ($) {
 			target.css({
 				'margin': 0,
 				'padding': 0,
-				'width': wid + "%",
-				'height': hei + "%",
-				'left': (100 - wid) / 2 + "%",
-				'top': (100 - hei) / 2 + "%"
+				'width': wid + unit,
+				'height': hei + unit,
+				'left': ( ((unit=="%") ? 100 : owid) - wid) / 2 + unit,
+				'top': ( ((unit=="%") ? 100 : ohei) - hei) / 2 + unit
 			});
 
-			if (target.data('od').width != target.width() || target.data('od').height != target.height()) {
+			if (target.attr("data-od-width") != target.width() || target.attr("data-od-height") != target.height()) {
 				return true;
 			}
 

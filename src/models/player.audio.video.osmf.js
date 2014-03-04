@@ -65,7 +65,13 @@ $p.newModel({
         autoSwitchChange: "OSMF_updateDynamicStream",
         switchingChange: "OSMF_updateDynamicStream",
         canSeekChange: "OSMF_canSeekChange"
-    },    
+    },
+    
+    _scalingMap: {
+        none: 'none',
+        fill: 'zoom',
+        aspectratio: 'letterbox'
+    },
     
     applyMedia: function(destContainer) {
         var ref = this; 
@@ -74,14 +80,25 @@ $p.newModel({
             projekktor(ref.pp.getId()).playerModel._OSMFListener(arguments);
         };     
 
+        destContainer
+            .html('')
+            .css({
+                'width': '100%',
+                'height': '100%',
+                'position': 'absolute',
+                'top': 0,
+                'left': 0
+            })        
+        
         var domOptions = {
             id: this.pp.getMediaId()+"_flash",
             name: this.pp.getMediaId()+"_flash",
             src: this.pp.getConfig('playerFlashMP4'),
             width: '100%',
             height: '100%',
+            style: "position: absolute;",
             allowScriptAccess: "always",
-            quality: "high",
+            quality: "high", 
             menu: false,
             allowFullScreen: 'true',
             wmode: ($p.utils.ieVersion()) ? 'transparent' : 'opaque', // must be either transparent (ie) or opaque in order to allow HTML overlays
@@ -89,11 +106,12 @@ $p.newModel({
             bgcolor: '#000000',
             FlashVars: $.extend({
                 // streamType: this.pp.getConfig('streamType', ''), // "dvr", //  "live" "recorded", "dvr"
+                scaleMode: this._scalingMap[this.pp.getConfig('videoScaling')],
                 enableStageVideo: this._hardwareAcceleration,
                 disableHardwareAcceleration: !this._hardwareAcceleration,
                 javascriptCallbackFunction: 'window.projekktorOSMFReady'+this.pp.getId()               
             }, this.pp.getConfig('OSMFVars'))
-            };
+        };
 
         this.createFlash(domOptions, destContainer);
     },
@@ -145,7 +163,7 @@ $p.newModel({
                 if (this.mediaElement!==null && this.getState('AWAKENING') ) {                
                     $.each(this._eventMap, function(key, value){
                         ref.mediaElement.get(0).addEventListener(key, "projekktor('"+ref.pp.getId()+"').playerModel." + value);
-                    });
+                    });                    
                     this.applySrc();
                     this.displayReady();      
                 }
@@ -430,7 +448,7 @@ $p.newModel({
     /************************************************
      * disablers
      ************************************************/    
-    _scaleVideo: function(){}
+    // _scaleVideo: function(){}
     
 });
 

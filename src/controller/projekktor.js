@@ -1572,17 +1572,20 @@ projekktor = $p = function() {
             
             // create fullscreen change listener on the fly:
             $(dest).bind(this.prefix + "fullscreenchange.projekktor", function(evt) {
-                if (!apiRef.isFullScreen(true)) {
-                    apiRef.ref.playerModel.applyCommand('fullscreen', false);
+                console.log("FULLSCREEN CHANGE")
+                if (!apiRef.isFullScreen(true)) {                    
                     var win = apiRef.ref.getIframeParent() || $(window),
                         fsData = win.data('fsdata');
                     if (fsData!=null) {
                         win.scrollTop(fsData.scrollTop);
                         win.scrollLeft(fsData.scrollLeft);
+                        apiRef.ref.playerModel.applyCommand('fullscreen', false);
                     }
                 } else {
                     apiRef.ref.playerModel.applyCommand('fullscreen', true);
                 }
+                
+                $( (ref.getIframe()) ? parent.window.document : document).unbind(this.prefix + "fullscreenchange.projekktor");                
             });
 
         }
@@ -1593,8 +1596,7 @@ projekktor = $p = function() {
             var target = ref.getIframe() ? parent.window.document : document,
                 win = ref.getIframeParent() || $(window),
                 fsData = win.data('fsdata');
-            
-            $( (ref.getIframe()) ? parent.window.document : document).unbind(this.prefix + "fullscreenchange.projekktor");
+                        
 
             // seems to cause errors in FF           
             if (target.exitFullScreen) {
@@ -1613,7 +1615,7 @@ projekktor = $p = function() {
                 win.scrollLeft(fsData.scrollLeft);
             }
                     
-            ref.playerModel.applyCommand('fullscreen', false);
+            // ref.playerModel.applyCommand('fullscreen', false);
         }
 
         return fullScreenApi;
@@ -2140,7 +2142,7 @@ projekktor = $p = function() {
             if (h) target.css({height: h + "px" });        
         }
         
-        try {this.playerModel.applyCommand('resize'); } catch(e) {}                            
+        try {this.playerModel.applyCommand('resize', {width: w, height: h}); } catch(e) {}                            
     };
 
     this.setLoop = function(value) {

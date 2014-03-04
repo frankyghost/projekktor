@@ -6,6 +6,7 @@ V1.4.00
 
   additions:
   * [core] "messages" can be overwritten by custom strings on player- and item- config-level
+  * [core] posters / images are now dynamically replaced on player resize and case a valid quality-set is applied
 
   changes:
   * [core] dumped "scheduled" event due to redundancy (scheduleModified)
@@ -15,6 +16,8 @@ V1.4.00
   * [core] Fixed streams random seeking with OSMFVIDEO model
   * [core] css class reflecting the player state is no longer blown up by blanks
   * [core] fixed flash syncing issues resulting in random player crashes on init
+  * [core] fixed image / poster scaling
+  * [core] fixed "fill" and "none" scaling while in flashfallback
   
 
 V1.3.09
