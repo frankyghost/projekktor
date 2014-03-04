@@ -14,6 +14,7 @@ jQuery(function ($) {
         version: '1.1.01',
 
         _cTimer: null,
+        _lastPos: 0,
         _isDVR: false,
         _noHide: false,
         _vSliderAct: false,
@@ -548,21 +549,26 @@ jQuery(function ($) {
 
             if (this.pp.getHasGUI()) return;
 
-            var percent = Math.round((pct || this.pp.getLoadPlaybackProgress() || 0) * 10) / 10,
+            var percent = ((pct || this.pp.getLoadPlaybackProgress() || 0) * 10) / 10,
                 duration = dur || this.pp.getDuration() || 0,
                 position = pos || this.pp.getPosition() || 0,
+                times;
+
+            // limit updates to one per second
+            if (Math.abs(this._lastPos - position) >= 1) {
+                
                 times = $.extend({}, this._clockDigits(duration, 'dur'), this._clockDigits(position, 'elp'), this._clockDigits(duration - position, 'rem'));
-
-            // limit updates
-            if (this.controlElements['playhead'].data('pct') != percent) {
-
+                
                 // update scrubber:
-                this.controlElements['playhead'].data('pct', percent).css({
+                this.controlElements['playhead'].css({
                     width: percent + "%"
                 });
                 this.controlElements['scrubberknob'].css({
                     left: percent + "%"
                 });
+                
+                // update last position value
+                this._lastPos = position;
 
                 // update numeric displays
                 for (var key in this.controlElements) {
