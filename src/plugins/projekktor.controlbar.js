@@ -14,7 +14,7 @@ jQuery(function ($) {
         version: '1.1.01',
 
         _cTimer: null,
-        _lastPos: 0,
+        _lastPos: -1,
         _isDVR: false,
         _noHide: false,
         _vSliderAct: false,
