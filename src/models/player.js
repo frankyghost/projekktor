@@ -25,6 +25,7 @@ jQuery(function ($) {
 
         _displayReady: false,
         _isPlaying: false,
+        _isReady: false,
 
         _id: null,
 
@@ -77,7 +78,7 @@ jQuery(function ($) {
 
         ready: function () {
             this.sendUpdate('modelReady');
-            
+            this._isReady = true;
             if (this._ap) {
                 this.sendUpdate('autostart', true);
                 this._setState('awakening');
@@ -404,7 +405,7 @@ jQuery(function ($) {
         },
 
         getIsReady: function () {
-            return this._displayReady;
+            return this._isReady;
         },
 
         getPoster: function () {      

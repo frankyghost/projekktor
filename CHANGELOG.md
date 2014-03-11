@@ -7,10 +7,12 @@ V1.4.00
   additions:
   * [core] "messages" can be overwritten by custom strings on player- and item- config-level
   * [core] posters / images are now dynamically replaced on player resize and case a valid quality-set is applied
+  * [core] new event "synchronized" fired once asynchronous model- and plugins-init process is completed
 
   changes:
   * [core] dumped "scheduled" event due to redundancy (scheduleModified)
   * [core] i18n relevant strings (error messages, menu descriptors etc.) are now moved into external controller/projekktor.messages.js
+  * [core] event "syncing" is now "synchronizing"
   
   fixes:
   * [core] Fixed streams random seeking with OSMFVIDEO model
@@ -18,6 +20,8 @@ V1.4.00
   * [core] fixed flash syncing issues resulting in random player crashes on init
   * [core] fixed image / poster scaling
   * [core] fixed "fill" and "none" scaling while in flashfallback
+  * [core] fixed event stack
+  * [core] fixed setItem()-makes-IDLE-player-play bug
   
 
 V1.3.09

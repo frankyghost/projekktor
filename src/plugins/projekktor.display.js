@@ -92,18 +92,21 @@ projekktorDisplay.prototype = {
     displayReadyHandler: function() {
         var ref = this;
         this.hideStartButton();    
-        
         // the startbutton
         this.startButton.unbind().click(function(){
             ref.pp.setPlay();           
         });
     },
 
-    syncingHandler: function() {
+    synchronizedHandler: function() {        
         this.showBufferIcon();
         if (this.pp.getState('IDLE')) {
             this.hideStartButton();        
         }
+    },
+
+    pluginsReadyHandler: function() {
+        this.readyHandler();  
     },
     
     readyHandler: function() {

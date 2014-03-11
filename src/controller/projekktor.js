@@ -532,9 +532,7 @@ projekktor = $p = function() {
     /* Event Handlers */
 
     this.displayReadyHandler = function() {
-        var ref = this,
-            modelRef = this.playerModel;      
-        this._syncPlugins('displayready');        
+        this._syncPlugins('displayready');
     };
     
     this.modelReadyHandler = function() {
@@ -550,18 +548,17 @@ projekktor = $p = function() {
             
             case 'displayready':
                 this._addGUIListeners();
+                 this._promote('synchronized');
                 if (!this.getState('STARTING')) {
                     this.playerModel.start(); 
                 }
                 if (!this._isReady) {
                     this._promote('ready');
                     this._isReady = true;
-                }
-                
+                }                
                 break;
             
-            case 'awakening':
-            
+            case 'awakening':            
                 if (this.getState('AWAKENING')) {
                     this.playerModel.displayItem(true);
                 }
@@ -676,8 +673,8 @@ projekktor = $p = function() {
 
     this._syncPlugins = function(callee) {
         // wait for all plugins to re-initialize properly
-        var ref = this;        
-        (function() {
+        var ref = this,
+            sync = function() {
             try{
                 if (ref._plugins.length>0) {
                     for(var i=0; i<ref._plugins.length; i++) {
@@ -689,7 +686,8 @@ projekktor = $p = function() {
                 }
                 ref._promote('pluginsReady', callee);                        
             } catch(e) {}
-        })();
+        };
+        setTimeout(sync, 50);
     };
 
     this._MD = function(event) {
@@ -830,7 +828,6 @@ projekktor = $p = function() {
     this._promote = function(evt, value) {
         var ref = this;
         this._enqueue(function() { try {ref.__promote(evt, value);} catch(e) {} });
-        // this._enqueue(function() {onReady(ref);});
     };
     
     /* promote an event to all registered plugins */
@@ -844,19 +841,22 @@ projekktor = $p = function() {
             event = 'plugin_' + event._plugin + $p.utils.capitalise(event._event.toUpperCase());
         }
 
-        if (event!='time' && event!='progress' && event!='mousemove') 
-        $p.utils.log("Event: ["+event+"]", value, this.listeners);
+        if (event!='time' && event!='progress' && event!='mousemove') {
+            $p.utils.log("Event: ["+event+"]", value, this.listeners);
+        }
 
         // fire on self:
-        try {this[evt + 'Handler'](value); } catch(e){}
-        
+        if (this[evt + 'Handler']) {
+            this[evt + 'Handler'](value);
+        }
+
         // fire on plugins
         if (this._pluginCache[event+"Handler"] && this._pluginCache[event+"Handler"].length>0) {
             for (var i = 0; i < this._pluginCache[event+"Handler"].length; i++) {
                 if (this.getConfig('debug')) {
                     try {this._pluginCache[event+"Handler"][i][event+"Handler"](value, this);} catch(e) {$p.utils.log(e)}
                 } else {
-                    this._pluginCache[event+"Handler"][i][event+"Handler"](value, this);
+                    this._pluginCache[event+"Handler"][i][event+"Handler"](value, this);                    
                 }
             }
         }
@@ -888,10 +888,9 @@ projekktor = $p = function() {
     /* destoy, reset, break down to rebuild */
     this._detachplayerModel = function() {
         this._removeGUIListeners();
-
         try {
-        this.playerModel.destroy();
-        this._promote('detach', {});
+            this.playerModel.destroy();
+            this._promote('detach', {});
         } catch(e) {
         // this.playerModel = new playerModel();
         // this.playerModel._init({pp:this, autoplay: false});
@@ -1820,7 +1819,6 @@ projekktor = $p = function() {
             }
         }
 
-        this._detachplayerModel();
         // this.env.loading = false;
 
         // do we have an autoplay situation?
@@ -1838,10 +1836,13 @@ projekktor = $p = function() {
             ap = this.config._loop;
             newItem = 0;          
         }
+      
 
         // set new item
         this._currentItem = newItem;
-
+        
+        this._detachplayerModel();
+        
         // reset player class
         var wasFullscreen = this.getDC().hasClass('fullscreen');
         this.getDC().attr('class', this.env.className)
@@ -1867,10 +1868,11 @@ projekktor = $p = function() {
         }
 
         // start model:
+  
         this.playerModel = new playerModel();
         $.extend(this.playerModel, $p.models[newModel].prototype );
-        
-        this._promote('syncing', 'display');
+              
+        this._promote('synchronizing', 'display');
 
         this._enqueue(function() { try {ref._applyCuePoints();} catch(e) {} } );
 
@@ -1884,6 +1886,7 @@ projekktor = $p = function() {
             fullscreen: this.getInFullscreen()
             // persistent: (ap || this.config._continuous) && (newModel==nextUp)
         });
+
         return this;
     };
 
@@ -2191,15 +2194,19 @@ projekktor = $p = function() {
         // arg1 -> position (int)
         // arg2 -> replace (bool)
 
-        var itemData = arguments[0];
-        var affectedIdx = 0;
+        var itemData = (arguments[0]) ? this._prepareMedia({file:arguments[0], config:arguments[0].config || {}}) : false,
+            affectedIdx = 0;
 
+        if (itemData===false) {
+            return false;
+        }
+        
+        if (itemData.mediaModel=='NA') {
+            return false;
+        }
+                    
         this._clearqueue();
         
-            // if (this.env.loading===true) {
-        // return this;
-        // }
-
         if (itemData==null) {
             // remove item
             affectedIdx = this._removeItem(arguments[1]);
@@ -2209,7 +2216,7 @@ projekktor = $p = function() {
         }
         else {
             // add/set item
-            affectedIdx = this._addItem( this._prepareMedia({file:itemData, config:itemData.config || {}}), arguments[1], arguments[2]);
+            affectedIdx = this._addItem( itemData, arguments[1], arguments[2]);
             if (affectedIdx===this._currentItem) {
                 this.setActiveItem(this._currentItem);
             }
@@ -2583,11 +2590,13 @@ projekktor = $p = function() {
             modelReady = false;
                 
         // if (this._processing===true || this.env.loading===true) return;
-        if (this._processing===true) return;        
+        if (this._processing===true) {
+            return;
+        }
         this._processing = true;
 
         (function() {
-            // try {modelReady=ref.playerModel.getIsReady();} catch(e) {}
+            try {modelReady=ref.playerModel.getIsReady();} catch(e) {console.log(ref.playerModel.modelId)}
             modelReady = true;
             
             if (modelReady) {    
@@ -2606,7 +2615,7 @@ projekktor = $p = function() {
                         }
                     }
                 } catch(e) {$p.utils.log("ERROR:", e);}
-    
+
                 if (ref._queue.length==0){                    
                     ref._processing = false;
                     return;
@@ -2615,7 +2624,7 @@ projekktor = $p = function() {
                 arguments.callee();
                 return;
             }
-            setTimeout(arguments.callee,100);
+            // setTimeout(arguments.callee,100);
         })();
     };
 
