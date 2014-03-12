@@ -250,7 +250,7 @@ projekktor = $p = function() {
             resultIdx = idx;
         }
 
-        this._promote('scheduleModified', this.getItemCount());
+        this._promote('scheduleModified', this.getItemCount(), this.getPlaylist());
 
         return resultIdx;
     };
@@ -572,7 +572,7 @@ projekktor = $p = function() {
         }
     };
     
-    this.stateHandler = function(stateValue) {
+    this.stateHandler = function(stateValue) { 
         var ref = this,
             modelRef = this.playerModel;
             
@@ -594,20 +594,13 @@ projekktor = $p = function() {
                 this._addGUIListeners();
                 break;
         
-            case 'PAUSED':
-                if (this.getConfig('disablePause')===true) {
-                    this.playerModel.applyCommand('play', 0);
-                }
-                break;
-        
             case 'COMPLETED':                           
                 this.setActiveItem('next');
         }
     };
         
-    this.volumeHandler = function() {
+    this.volumeHandler = function(value) {
         this.setConfig({volume: value});
-
         if (value<=0) {
             this.env.muted = true;
             this._promote('mute', value);
@@ -622,14 +615,18 @@ projekktor = $p = function() {
     };    
     
     this.fullscreenHandler = function(value) {
+        var nativeFullscreen = this.getNativeFullscreenSupport(); 
+     
         if (value===true) {
             this.getDC().addClass('fullscreen');
             this._enterFullViewport();
+            nativeFullscreen.requestFullScreen();
         }
         else {
             this.getDC().removeClass('fullscreen');
             this._exitFullViewport();
-        }    
+            nativeFullscreen.cancelFullScreen();
+        }
     };
     
     this.configHandler = function(value) {
@@ -671,6 +668,10 @@ projekktor = $p = function() {
         } 
     }; 
 
+    this.doneHandler = function() {
+        this.reset() // POW, crowbar-method for Firefox!
+    };
+    
     this._syncPlugins = function(callee) {
         // wait for all plugins to re-initialize properly
         var ref = this,
@@ -1544,7 +1545,7 @@ projekktor = $p = function() {
 
         // the browser supports true fullscreen for any DOM container - this is ubercool:
         fullScreenApi.requestFullScreen = function() {
-            if (this.isFullScreen()) return;
+            // if (this.isFullScreen()) return;
                     
             var win = ref.getIframeParent() || $(window),
                 target = (ref.getIframe()) ? ref.getIframe().get(0) : null || ref.getDC().get(0),
@@ -1571,7 +1572,6 @@ projekktor = $p = function() {
             
             // create fullscreen change listener on the fly:
             $(dest).bind(this.prefix + "fullscreenchange.projekktor", function(evt) {
-                console.log("FULLSCREEN CHANGE")
                 if (!apiRef.isFullScreen(true)) {                    
                     var win = apiRef.ref.getIframeParent() || $(window),
                         fsData = win.data('fsdata');
@@ -1591,7 +1591,6 @@ projekktor = $p = function() {
 
         // cancel fullscreen method
         fullScreenApi.cancelFullScreen = function() {
-
             var target = ref.getIframe() ? parent.window.document : document,
                 win = ref.getIframeParent() || $(window),
                 fsData = win.data('fsdata');
@@ -1719,7 +1718,7 @@ projekktor = $p = function() {
 
         if (dataType) {
             if ($.parseJSON==undefined && dataType.indexOf('json')>-1) {
-                this._raiseError("Projekktor requires at least jQuery 1.4.2 in order to handle JSON playlists.");
+                alert("Projekktor requires at least jQuery 1.4.2 in order to handle JSON playlists.");
                 return this;
             }
             dataType = (dataType.indexOf('/')>-1) ? dataType.split('/')[1] : dataType;
@@ -1800,13 +1799,10 @@ projekktor = $p = function() {
             // default
             newItem = 0;
         }
-        
+ 
         // all items in PL completed:
         if (this._currentItem+1>=this.media.length && !this.getConfig('loop') && !this.getState('IDLE')) {
             this._promote('done', {});
-            if (this.getConfig('leaveFullscreen')) {
-                this.reset(); // POW, crowbar-method for Firefox!
-            }
             return this;            
         }
        
@@ -1815,7 +1811,7 @@ projekktor = $p = function() {
         if (newItem!=this._currentItem) {
             // and denied... gnehe
             if ( this.getConfig('disallowSkip')==true && (!this.getState('COMPLETED') && !this.getState('IDLE')) ) {
-                        return this;
+                return this;
             }
         }
 
@@ -1872,7 +1868,7 @@ projekktor = $p = function() {
         this.playerModel = new playerModel();
         $.extend(this.playerModel, $p.models[newModel].prototype );
               
-        this._promote('synchronizing', 'display');
+        this.__promote('synchronizing', 'display');
 
         this._enqueue(function() { try {ref._applyCuePoints();} catch(e) {} } );
 
@@ -2026,7 +2022,7 @@ projekktor = $p = function() {
             return this;
            
         if (this.getConfig('disallowSkip')==true)
-                return this;
+            return this;
 
         if (typeof frame == 'string') {
             var dir = frame.substr(0,1);
@@ -2114,14 +2110,12 @@ projekktor = $p = function() {
         return this;
     };
 
-    this.setFullscreen = function(goFull) {
+    this.setFullscreen = function(goFull) {        
         var nativeFullscreen = this.getNativeFullscreenSupport();
 
-        goFull = (goFull==null) ? !nativeFullscreen.isFullScreen() : goFull;                                
-
-        if (goFull===true) nativeFullscreen.requestFullScreen();
-        else nativeFullscreen.cancelFullScreen();
-
+        goFull = (goFull==null) ? !nativeFullscreen.isFullScreen() : goFull;
+        this.playerModel.applyCommand('fullscreen', goFull);
+        
         return this;
     };
 
@@ -2155,7 +2149,7 @@ projekktor = $p = function() {
     this.setDebug = function(value) {
         $p.utils.logging = (value!==undefined) ? value : !$p.utils.logging;
         if ($p.utils.logging) {
-            $p.utils.log('DEBUG MODE for player #' + this.getId() + " // Level: " + this.getConfig('debugLevel') );
+            $p.utils.log('DEBUG MODE #' + this.getId() + " Level: " + this.getConfig('debugLevel') );
         }
     };
 
@@ -2338,7 +2332,7 @@ projekktor = $p = function() {
         var cleanConfig = {},
             ref = this;
               
-        this._isReady = false;
+        // this._isReady = false;
         
         this.setFullscreen(false);
         
@@ -2596,7 +2590,7 @@ projekktor = $p = function() {
         this._processing = true;
 
         (function() {
-            try {modelReady=ref.playerModel.getIsReady();} catch(e) {console.log(ref.playerModel.modelId)}
+            try {modelReady=ref.playerModel.getIsReady();} catch(e) {}
             modelReady = true;
             
             if (modelReady) {    
@@ -2850,20 +2844,6 @@ projekktor = $p = function() {
 
         return result;
     };        
-        
-    this._raiseError = function(txt) {
-        this.env.playerDom
-        .html(txt)
-        .css({
-            color: '#fdfdfd',
-            backgroundColor: '#333',
-            lineHeight: this.config.height+"px",
-            textAlign: 'center',
-            display: 'block'
-
-        });
-        this._promote('error');
-    };
 
     this._init = function(customNode, customCfg) {
 
@@ -2916,8 +2896,12 @@ projekktor = $p = function() {
             if (this.config['_'+i]!=null) {
                 this.config['_'+i] = theCfg[i];
             } else {
-                if (i.indexOf('plugin_')>-1) this.config[i] = $.extend(this.config[i], theCfg[i]);
-                else this.config[i] = theCfg[i];
+                if (i.indexOf('plugin_')>-1) {
+                    this.config[i] = $.extend(this.config[i], theCfg[i]);                    
+                }
+                else {
+                    this.config[i] = theCfg[i];
+                }
             }
         }
 
@@ -2940,23 +2924,8 @@ projekktor = $p = function() {
         // make sure we can deal with a domID here:
         this.env.playerDom.attr('id', this._id);
 
-        // ----------------------------------------------------------------------------
-        // - 3. INIT THEME LOADER ------------------------------------------------------
-        // -----------------------------------------------------------------------------
-        if (this.config._theme) {
-            switch(typeof this.config._theme) {
-                case 'string':
-                    // later: this.getFromUrl(this.parseTemplate(this.config._themeRepo, {id:this.config._theme, ver:this.config._version}), this, "_applyTheme", false, 'jsonp');
-                    break;
-                case 'object':
-                    this._applyTheme(this.config._theme)
-            }
-        }
-        else {
-            this._start(false);
-        }
 
-        return this;
+        return this._start(false);;
     };
 
 
@@ -3007,81 +2976,6 @@ projekktor = $p = function() {
 
         return this;
     };
-
-    this._applyTheme = function(data) {
-
-        var ref = this;
-
-        // theme could not be loaded => error
-        if (data===false) {
-        this._raiseError('The Projekktor theme-set specified could not be loaded.')
-        return false;
-        }
-
-        /*
-            // check projekktor version
-        if (typeof data. == 'string') {
-        if (
-            (parseInt(this.config._version.split('.')[0]) || 0) < (parseInt(data.version.split('.')[0]) || 0) ||
-            (parseInt(this.config._version.split('.')[1]) || 0) < (parseInt(data.version.split('.')[1]) || 0)
-        ){
-            this._raiseError('You are using Projekktor V'+this.config._version+' but the applied theme requires at least V'+data.version+'.');
-            return false;
-        }
-        }
-        */
-
-
-        // inject CSS & parse {relpath} tag (sprites)
-        if (typeof data.css == 'string') {
-            $('head').append('<style type="text/css">' + $p.utils.parseTemplate(data.css, {'rp':data.baseURL}) + '</style>');
-        }
-
-        // apply html template
-            if (typeof data.html=='string') {
-        this.env.playerDom.html( $p.utils.parseTemplate(data.html, {'p':this.getNS()}) );
-        }
-
-        // apply class            
-        this.env.playerDom.addClass(data.id).addClass(data.variation);
-        this.env.className = this.env.className && this.env.className.length !== 0 ? this.env.className + " " + data.id : data.id;
-        if(data.variation && data.variation.length !== 0) {
-            this.env.className += " " + data.variation;
-        }        
-
-            // apply additional config
-        if (typeof data.config=='object') {
-            for (var i in data.config) {
-    
-                if (this.config['_'+i]!=null) {
-                this.config['_'+i] = data.config[i];
-                } else {
-                            if (i.indexOf('plugin_')>-1) this.config[i] = $.extend(true, {}, this.config[i], data.config[i]);
-                else this.config[i] = data.config[i];
-                }
-            }
-    
-            // check dependencies
-            if (typeof data.config.plugins == 'object' ) {
-                for (var i=0; i<data.config.plugins.length; i++) {
-                try {
-                    typeof eval('projekktor'+data.config.plugins[i]);
-                }
-                catch(e) {
-                    this._raiseError('The applied theme requires the following Projekktor plugin(s): <b>'+data.config.plugins.join(', ')+'</b>');
-                    return false;
-                }
-                }
-            }
-        }
-
-        if (data.onReady) {
-            this._enqueue(function(player){eval(data.onReady);});
-        }
-
-        return this._start();
-    };
-
 
     return this._init();
     };

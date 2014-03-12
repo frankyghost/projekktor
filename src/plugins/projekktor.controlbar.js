@@ -14,6 +14,7 @@ jQuery(function ($) {
         version: '1.1.01',
 
         _cTimer: null,
+        _lastPos: -1,
         _isDVR: false,
         _noHide: false,
         _vSliderAct: false,
@@ -544,12 +545,52 @@ jQuery(function ($) {
                 }, this.getConfig('fadeDelay')
             );            
         },
+        
+        displayTime: function (pct, dur, pos) {
+
+            if (this.pp.getHasGUI()) return;
+
+            var percent = ((pct || this.pp.getLoadPlaybackProgress() || 0) * 10) / 10,
+                duration = dur || this.pp.getDuration() || 0,
+                position = pos || this.pp.getPosition() || 0,
+                times;
+
+            // limit updates to one per second
+            if (Math.abs(this._lastPos - position) >= 1) {
+                
+                times = $.extend({}, this._clockDigits(duration, 'dur'), this._clockDigits(position, 'elp'), this._clockDigits(duration - position, 'rem'));
+                
+                // update scrubber:
+                this.controlElements['playhead'].css({
+                    width: percent + "%"
+                });
+                this.controlElements['scrubberknob'].css({
+                    left: percent + "%"
+                });
+                
+                // update last position value
+                this._lastPos = position;
+
+                // update numeric displays
+                for (var key in this.controlElements) {
+                    if (key == 'cb')
+                        break;
+
+                    if (times[key]) {
+                        $.each(this.controlElements[key], function () {
+                            $(this).html(times[key]);
+                        });
+                    }
+                }
+            }
+
+        },        
 
         displayTime: function (pct, dur, pos) {
 
             if (this.pp.getHasGUI()) return;
 
-            var percent = Math.round((pct || this.pp.getLoadPlaybackProgress() || 0) * 10) / 10,
+            var percent = ((pct || this.pp.getLoadPlaybackProgress() || 0) * 10) / 10,
                 duration = dur || this.pp.getDuration() || 0,
                 position = pos || this.pp.getPosition() || 0,
                 times = $.extend({}, this._clockDigits(duration, 'dur'), this._clockDigits(position, 'elp'), this._clockDigits(duration - position, 'rem'));

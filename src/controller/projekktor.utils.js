@@ -256,7 +256,7 @@ jQuery(function ($) {
 		 * @param (String) Da string to get processed
 		 * @param (Object) Object holding data to fill in
 		 * @return (String) Da parsed string
-		 */
+		 * OBSOLETE
 		parseTemplate: function (template, data, encode) {
 
 			if (data === undefined || data.length == 0 || typeof data != 'object') return template;
@@ -267,7 +267,7 @@ jQuery(function ($) {
 			template = template.replace(/%{(.*?)}/gi, '');
 			return template;
 		},
-
+		*/
 
 		/**
 		 * stretches target to fit into specified dimensions keeping apsect ratio

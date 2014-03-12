@@ -867,7 +867,7 @@ jQuery(function ($) {
                         displayHeight: hei
                     });
                 }
-            } catch (e) { console.log(e) }
+            } catch (e) {}
         },
 
         _isFF: function () {

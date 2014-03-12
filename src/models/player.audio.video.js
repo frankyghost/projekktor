@@ -48,7 +48,7 @@ $p.newModel({
     wasPersistent: true,
     isPseudoStream: false,
     
-    init: function() {                 
+    init: function() {
         var ua = navigator.userAgent; // TODO: global platform and feature detection
         if( ua.indexOf("Android") >= 0 ) {
             this.isAndroid = true;
@@ -56,7 +56,8 @@ $p.newModel({
             this.isGingerbread = true;
           }
         }
-        this.ready();
+        
+        this.ready();    
     },
         
     applyMedia: function(destContainer) { 

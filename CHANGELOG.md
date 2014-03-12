@@ -11,8 +11,9 @@ V1.4.00
 
   changes:
   * [core] dumped "scheduled" event due to redundancy (scheduleModified)
-  * [core] i18n relevant strings (error messages, menu descriptors etc.) are now moved into external controller/projekktor.messages.js
+  * [core] i18n relevant strings (error messages, menu descriptors etc.) are now moved into an external non bundled file => controller/projekktor.messages.js
   * [core] event "syncing" is now "synchronizing"
+  * [core] dumped built in "theme loader" - use additional scripts instead
   
   fixes:
   * [core] Fixed streams random seeking with OSMFVIDEO model
@@ -22,6 +23,7 @@ V1.4.00
   * [core] fixed "fill" and "none" scaling while in flashfallback
   * [core] fixed event stack
   * [core] fixed setItem()-makes-IDLE-player-play bug
+  * [core] "done" event is now properly promoted in case of an "error" with the last item in schedule and "skipTestcard==true"
   
 
 V1.3.09

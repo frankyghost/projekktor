@@ -36,7 +36,7 @@ projekktorPluginInterface.prototype = {
     
     getConfig: function(idx, defaultValue) {	
         var result = null,
-                def = defaultValue || null;
+            def = defaultValue || null;
     
         if (this.pp.getConfig('plugin_'+this.name)!=null) {
             result = this.pp.getConfig('plugin_'+this.name)[idx];
@@ -52,10 +52,13 @@ projekktorPluginInterface.prototype = {
     
         if (typeof result == 'object' && result.length === null)
             result = $.extend(true, {}, result, this.config[idx]);
-            else if (typeof result == 'object') {
+        else if (typeof result == 'object') {
             result = $.extend(true, [], this.config[idx] || [], result || [] );
-            }
-            
+        }
+        
+        if (idx==undefined) {
+            return this.pp.getConfig();
+        }
         return (result==null) ? def : result;
     },
     
@@ -82,13 +85,14 @@ projekktorPluginInterface.prototype = {
         var results = [],
             re = /%{([^}]+)}/g,
             text,
-            custom = this.getConfig('messages') || {},
+            custom = $.extend(true, {}, this.getConfig('messages') || {}, {title: this.getConfig('title')}),
             msg = ''; 
 
         while(text = re.exec(str)) {
             msg = custom[text[1]] || ((projekktorMessages[text[1]]!=undefined) ? projekktorMessages[text[1]] : text[1]);
             str = str.replace(new RegExp('%{' + text[1] + '}', 'gi'), msg);
         }
+
         return str;
     },
     

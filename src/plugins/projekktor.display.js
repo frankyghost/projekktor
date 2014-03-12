@@ -49,7 +49,6 @@ projekktorDisplay.prototype = {
     
     /* triggered on plugin-instanciation */
     initialize: function() {
-    
         // create the display container itself
         this.display = this.applyToPlayer($('<div/>'));
         
@@ -89,26 +88,21 @@ projekktorDisplay.prototype = {
     /*****************************************
         EVENT HANDLERS
     *****************************************/
-    displayReadyHandler: function() {
+    synchronizingHandler: function() {        
         var ref = this;
-        this.hideStartButton();    
+        this.hideStartButton();
+        this.showBufferIcon();
         // the startbutton
         this.startButton.unbind().click(function(){
             ref.pp.setPlay();           
         });
     },
 
-    synchronizedHandler: function() {        
-        this.showBufferIcon();
-        if (this.pp.getState('IDLE')) {
-            this.hideStartButton();        
-        }
-    },
-
-    pluginsReadyHandler: function() {
+    synchronizedHandler: function() {
         this.readyHandler();  
     },
     
+        
     readyHandler: function() {
         this.hideBufferIcon();
         if (this.pp.getState('IDLE')) {
@@ -331,15 +325,10 @@ projekktorDisplay.prototype = {
             msgTxt = 'ERROR #' + errorCode;
         }
 
-        msgTxt = $p.utils.parseTemplate(msgTxt, $.extend({}, this.media, {
-            title: this.pp.getConfig('title')
-        }));
-
         this.display
             .html('')
             .addClass(this.pp.getNS() + 'testcard')
             .html('<p>' + msgTxt + '</p>');
-        
     }
     
 
