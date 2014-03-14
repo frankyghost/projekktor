@@ -33,6 +33,7 @@ projekktorMessages = {
     "error10": '#10 Invalid or missing quality settings for %{title}.',
     "error11": '#11 Invalid streamType and/or streamServer settings for %{title}.',
     "error12": '#12 Invalid or inconsistent quality setup for %{title}.',
+    "error13": '#13 Invalid playlist or missing/broken playlist parser. No media scheduled.',
     "error80": '#80 The requested file does not exist or is delivered with an invalid content-type.',
     "error97": 'No media scheduled.',
     "error98": 'Invalid or malformed playlist data!',

@@ -24,8 +24,9 @@ general
     width: 400px;
 }
 
-.pptestcard {
-    background: url("noise.gif") center center repeat;
+.pptestcard,
+.ppstateidle .pptestcard {
+    background: none;
     width: 100%;
     height: 100%;
     color: #fff;
@@ -33,16 +34,27 @@ general
     overflow: hidden;
 }
 
-.pptestcard p {
+.pptestcard p,
+.ppstateidle .pptestcard p {
     background-color: #3b393e;
     width: 60%;
     margin: auto;
     line-height: 25px;
     position: relative;
-    top: 25%;
+    top: 5%;
     padding: 10px;
-    border:5px solid #000;
+    border:5px solid red;
     text-align: center;
+}
+
+
+.ppstateerror .pptestcard {
+    background: url("noise.gif") center center repeat;
+}
+
+.ppstateerror .pptestcard p {
+    top: 25%;
+    border:5px solid #000;
 }
 
 

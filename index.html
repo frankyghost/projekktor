@@ -31,9 +31,11 @@
         <!-- core -->
         <script type="text/javascript" src="src/controller/projekktor.js"></script>
         <script type="text/javascript" src="src/controller/projekktor.config.js"></script>
-        <script type="text/javascript" src="src/controller/projekktor.messages.js"></script>        
+        <script type="text/javascript" src="src/controller/projekktor.messages.js"></script>         
         <script type="text/javascript" src="src/controller/projekktor.plugininterface.js"></script>
         <script type="text/javascript" src="src/controller/projekktor.utils.js"></script>
+        
+        <script type="text/javascript" src="projekktor.ima.js"></script>
         
         <!-- plugins -->
         <script type="text/javascript" src="src/plugins/projekktor.contextmenu.js"></script>
@@ -51,7 +53,8 @@
         <script type="text/javascript" src="src/models/player.image.html.js"></script>
         
 
-        
+        <!-- parsers -->
+        <script type="text/javascript" src="src/parsers/parser.rss.js"></script>       
         
         
         <style type="text/css">
@@ -69,7 +72,6 @@
 <div class="projekktor" id="projekktor_a" tabindex="0" style="margin: 30px;"></div>
         
         <script type="text/javascript">
-            sdfsdf
         $(document).ready(function() {
         
             var trackData = {
@@ -108,18 +110,14 @@
         var playlist = [            
             {
                 0: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.mp4', type: 'video/mp4' },
-                1: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.webm', type: 'video/webm' }
-                // 0: { src: 'http://www.projekktor.com/intro.webm?hi', type: 'video/webm', quality: "hi" },
-                // 1: { src: 'http://www.projekktor.com/intro.webm?lo', type: 'video/webm', quality: "lo" },
-                // 1: { src: 'http://www.rob-coenen.nl/lab/html5/frame_accuracy/video/perfect-timecoded.webm', type: 'video/webm'},
-                // 2: { src: 'http://www.rob-coenen.nl/lab/html5/frame_accuracy/video/perfect-timecoded.mp4', type: 'video/x-mp4'},
-                
-                // 2: { src: 'http://cdn-d.vixlet.com/c3b968d47b481e4a9395a35b4ba9b45d-1366136943_e.mp4', type: 'video/x-mp4'},
-                // 1: { src: 'http://media.tagesschau.de/video/2014/0114/TV-20140114-1213-1401.webm.h264.mp4', type: 'video/mp4', streamType: 'rtmp'},
-                // 2: { src: 'rtsp://62.75.141.31/dss-1.sdp', type: 'video/mp4', streamType: 'rtsp'}
-                // 1: { src: 'http://www.projekktor.com/video/hoppe.webm', type: 'video/webm'},
-                // 2: { src: 'http://www.heise.de/videout/m3u8/52642256_92dad9ff62.jom.086d33b9a6377a4f84e44207fb032e06_360.m3u8', type: 'video/mp4'},        
-                // 3: { src: 'http://www.heise.de/videout/m3u8/52642256_92dad9ff62.jom.086d33b9a6377a4f84e44207fb032e06_360.m3u8', type: 'application/mpegURL'},
+                1: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.webm', type: 'video/webm' },
+                config: {
+                    plugin_ima: {
+                        withCredentials: true,
+                        url: 'http://ad3.adfarm1.adition.com/banner?sid=2671533&wpt=X',
+                        type: 'application/xml'
+                    }
+                }
         
         
             }
@@ -134,6 +132,15 @@
             }
             */
         ];
+        
+        var playlist_feed= [            
+            {
+                0: { src: 'http://www.projekktor.com/wp-content/manual/feedproxy.php?id=3', type: 'application/xml' },
+                config: {
+                    title: 'RSS FEED, BABE'
+                }
+            }
+        ];        
         
         var playlist_b = [
             {
@@ -281,7 +288,7 @@
                 // height: false,
                 imageScaling: "fixed",
                 debug: true,
-                // addplugins: ['Settings'],
+                // addplugins: ['ima'],
                 // forceFullViewport: true,
                 // debug: true,        
                 // loop: true,
@@ -317,7 +324,7 @@
                 // playerFlashMP3: 'coreSVN/trunk/swf/jarisplayer.swf',
                 playerFlashMP3: 'swf/StrobeMediaPlayback/StrobeMediaPlayback.swf',
                 playerFlashMP4: 'swf/StrobeMediaPlayback/StrobeMediaPlayback.swf',
-                 playlist: playlist
+                 playlist: playlist_feed
                 /*
                 ,        
                 playlist: [

@@ -160,14 +160,24 @@ projekktor = $p = function() {
 
     /* apply incoming playlistdata  */
     this._reelUpdate = function(obj) {
+
         var ref = this,
             itemIdx = null,
             data = obj || [{}],
             files = data.playlist || data;
 
-        this.env.loading = true;
         this.media = [];
-
+        
+console.log(this.getConfig('title'), arguments);   
+        $.each($p.parsers, function(idx) {
+            if (this.prototype.test(obj)) {
+                console.log( this.prototype.parse(obj) )
+            }
+        })
+        
+        
+        
+        return;
         // gather and set alternate config from reel:
         try {         
             for(var props in data.config) {
@@ -187,13 +197,23 @@ projekktor = $p = function() {
         } catch(e) {}
 
         // add media items
-        $.each(files, function() {  
-            itemIdx = ref._addItem(ref._prepareMedia({file:this, config:this.config || {}, errorCode: this.errorCode || 0}));      
+        $.each(files, function() {
+            
+            // using try-catch here is not accurate enough but the easiest way to handle parsing issues so far.
+            try {
+                itemIdx = ref._addItem(ref._prepareMedia({file:this, config:this.config || {}, errorCode: this.errorCode || 0}));
+            } catch(e) {
+                ref._promote('error', 13);
+                return false;
+            }
+
             // set cuepoints from reel:
             $.each(this.cuepoints || [], function() {
                 this.item = itemIdx;                    
                 ref.setCuePoint(this);        
-            });            
+            });
+            
+            return true;
         });
     
         if (itemIdx===null) {
@@ -339,7 +359,7 @@ projekktor = $p = function() {
                             if (k===0) {
                                 continue;
                             }
-                     
+
                             // set priority level
                             $p.mmap[mmapIndex].level = $.inArray(platform, ref.config._platforms);
                             $p.mmap[mmapIndex].level = ($p.mmap[mmapIndex].level<0) ? 100 : $p.mmap[mmapIndex].level;
@@ -1696,7 +1716,7 @@ projekktor = $p = function() {
     };
         
     /* asynchronously loads external XML and JSON data from server */
-    this.getFromUrl = function(url, dest, callback, customParser, dataType) {
+    this.getFromUrl = function(url, dest, callback, dataType) {
         var data = null,
             ref = this,
             aSync = !this.getIsMobileClient();
@@ -1738,10 +1758,8 @@ projekktor = $p = function() {
 
                 data = $p.utils.cleanResponse(xhr.responseText, dataType)
                 
-                try {data = customParser(data, xhr.responseText, dest);} catch(e){}
-
                 if (status!='error' && dataType!='jsonp') {
-                    try {dest[callback](data);} catch(e){}
+                    try {dest[callback](data, xhr.responseText);} catch(e){}
                 }
             },
             error: function(data) {
@@ -1758,9 +1776,9 @@ projekktor = $p = function() {
             jsonp: (callback.substr(0,1)!='_') ? false : 'callback'
         };
 
-        ajaxConf.xhrFields = {withCredentials: true};
+        ajaxConf.xhrFields = {withCredentials: false};
         ajaxConf.beforeSend = function(xhr){
-              xhr.withCredentials = true;
+              xhr.withCredentials = false;
         };
 
         $.support.cors = true;
@@ -1815,7 +1833,6 @@ projekktor = $p = function() {
             }
         }
 
-        // this.env.loading = false;
 
         // do we have an autoplay situation?
         // regular "autoplay" on:
@@ -2091,10 +2108,10 @@ projekktor = $p = function() {
     
             if (dest == '*') {
                 $.each(this.media, function() {
-                if (this.config == null) {
-                    this.config = {};
-                }
-                this.config[i] = value;
+                    if (this.config == null) {
+                        this.config = {};
+                    }
+                    this.config[i] = value;
                 });
                 continue;
             }
@@ -2226,26 +2243,26 @@ projekktor = $p = function() {
             result = [];
 
         this._clearqueue();
-        this.env.loading = true;
         this._detachplayerModel();
 
-        // incoming JSON
+        // incoming JSON Object / native Projekktor playlist
         if (typeof fileNameOrObject=='object') {
             $p.utils.log('Applying incoming JS Object', fileNameOrObject);
             this._reelUpdate(fileNameOrObject);
             return this;
         }
+        
 
         result[0] = {};
         result[0].file = {}
         result[0].file.src = fileNameOrObject || '';
         result[0].file.type = dataType || this._getTypeFromFileExtension( splt[0] ) ;
-
+console.log(result, arguments)
         // incoming playlist
         if (result[0].file.type.indexOf('/xml')>-1 || result[0].file.type.indexOf('/json') >-1) {
             $p.utils.log('Loading external data from '+result[0].file.src+' supposed to be '+result[0].file.type );
             this._playlistServer = result[0].file.src;
-            this.getFromUrl(result[0].file.src, this, '_reelUpdate', this.getConfig('reelParser'), result[0].file.type );
+            this.getFromUrl(result[0].file.src, this, '_reelUpdate', result[0].file.type );
             return this;
         }
 
@@ -2982,11 +2999,30 @@ projekktor = $p = function() {
 
 }
 
+$p.parsers = {};
+$p.newParser = function(obj, ext) {
+
+    if (typeof obj!='object') return false;
+    if (!obj.parserId) return falset;
+
+    var result = false,
+        extend = ($p.parsers[ext] && ext!=undefined) ? $p.parsers[ext].prototype : {};
+
+    /* already exists or has been replaced */
+    if ($p.parsers[obj.parserId]) return result;
+
+    /* register new parser */
+    $p.parsers[obj.parserId] = function(){};
+    $p.parsers[obj.parserId].prototype = $.extend({}, extend, obj);
+
+    return true;
+};
+
 $p.mmap = [];
 $p.models = {};
 $p.newModel = function(obj, ext) {
-    if (typeof obj!='object') return result;
-    if (!obj.modelId) return result;
+    if (typeof obj!='object') return false;
+    if (!obj.modelId) return false;
     
     var result = false,
         extend = ($p.models[ext] && ext!=undefined) ? $p.models[ext].prototype : {};
@@ -3003,7 +3039,6 @@ $p.newModel = function(obj, ext) {
         obj.setiLove();
     }
     
- 
     /* remove overwritten model from iLove-map */
     $p.mmap = $.grep($p.mmap, function(iLove) {
         var doesNotExist = iLove.model != ((obj.replace) ? obj.replace.toLowerCase() : ''),
