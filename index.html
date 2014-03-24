@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-        <title>Projekktor DEV II </title>
+        <title>Projekktor DEV II !</title>
         
         <meta http-equiv="CACHE-CONTROL" content="NO-CACHE">
         <meta charset="utf-8">
@@ -36,12 +36,13 @@
         <script type="text/javascript" src="src/controller/projekktor.utils.js"></script>
         
         <script type="text/javascript" src="projekktor.ima.js"></script>
-        
+         
         <!-- plugins -->
         <script type="text/javascript" src="src/plugins/projekktor.contextmenu.js"></script>
         <script type="text/javascript" src="src/plugins/projekktor.controlbar.js"></script>
         <script type="text/javascript" src="src/plugins/projekktor.display.js"></script>
         <script type="text/javascript" src="src/plugins/projekktor.settings.js"></script>       
+        <script type="text/javascript" src="src/plugins/projekktor.rss.js"></script>   
         
         <!-- models -->
         <script type="text/javascript" src="src/models/player.js"></script>
@@ -53,9 +54,9 @@
         <script type="text/javascript" src="src/models/player.image.html.js"></script>
         
 
-        <!-- parsers -->
+        <!-- parsers 
         <script type="text/javascript" src="src/parsers/parser.rss.js"></script>       
-        
+        -->
         
         <style type="text/css">
             body, video {margin:0; padding:0;}
@@ -110,7 +111,7 @@
         var playlist = [            
             {
                 0: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.mp4', type: 'video/mp4' },
-                1: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.webm', type: 'video/webm' },
+                // 1: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.webm', type: 'video/webm' },
                 config: {
                     plugin_ima: {
                         withCredentials: true,
@@ -140,7 +141,16 @@
                     title: 'RSS FEED, BABE'
                 }
             }
-        ];        
+        ];
+        
+        var playlist_json= [            
+            {
+                0: { src: 'test.json', type: 'application/json' },
+                config: {
+                    title: 'RSS FEED, BABE'
+                }
+            }
+        ];          
         
         var playlist_b = [
             {
@@ -288,14 +298,16 @@
                 // height: false,
                 imageScaling: "fixed",
                 debug: true,
-                // addplugins: ['ima'],
+                addplugins: ['RSS'],
                 // forceFullViewport: true,
                 // debug: true,        
                 // loop: true,
                 // height: Math.ceil(638 / 16*3),
                 // platforms: ['browser', 'android', 'ios', 'vlc', 'flash'],
                 // plugins: ['Display', 'Controlbar'],
-                enableNATIVEPlatform: false,
+                // enableNATIVEPlatform: false,
+                // enableFLASHPlatform: false,
+                enableVLCPlatform: false,
                 // plugins: ['display'],
                 // autoplay: true,
                 loop: false,
@@ -317,14 +329,14 @@
                     5: {src: "http://local.intern.ndr-net.de//mein_unternehmen/brandschutz116~_clientId-f9e591cc-e972-4f2c-ad80-304e0a08b9b9_v-original.jpg?xl", quality: 'xl'}
                 },
 */                
-                // poster:                         "http://192.168.0.105/testfiles/poster.jpg",
+                // poster:                         "http://192.168.0.105files/poster.jpg",
                 // playerFlashMP4: 'http://www.ndr.de/flash/OSMFPlayer.swf',
                 // playerFlashMP3: 'http://www.ndr.de/flash/OSMFPlayer.swf',
                 // playerFlashMP4: 'coreSVN/trunk/swf/jarisplayer.swf',
                 // playerFlashMP3: 'coreSVN/trunk/swf/jarisplayer.swf',
                 playerFlashMP3: 'swf/StrobeMediaPlayback/StrobeMediaPlayback.swf',
                 playerFlashMP4: 'swf/StrobeMediaPlayback/StrobeMediaPlayback.swf',
-                 playlist: playlist_feed
+                playlist: playlist_feed
                 /*
                 ,        
                 playlist: [

@@ -270,6 +270,6 @@ projekktorPluginInterface.prototype = {
     },
     
     // important
-    eventHandler: function() {}
+    eventHandler: function() {}  
 }
 });

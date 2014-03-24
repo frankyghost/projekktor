@@ -156,72 +156,7 @@ projekktor = $p = function() {
     this._currentItem = null;
     this._playlistServer = '';
     this._id = '';
-
-
-    /* apply incoming playlistdata  */
-    this._reelUpdate = function(obj) {
-
-        var ref = this,
-            itemIdx = null,
-            data = obj || [{}],
-            files = data.playlist || data;
-
-        this.media = [];
-        
-console.log(this.getConfig('title'), arguments);   
-        $.each($p.parsers, function(idx) {
-            if (this.prototype.test(obj)) {
-                console.log( this.prototype.parse(obj) )
-            }
-        })
-        
-        
-        
-        return;
-        // gather and set alternate config from reel:
-        try {         
-            for(var props in data.config) {
-                if (data.config.hasOwnProperty(props)) {
-                    if (typeof data.config[props].indexOf('objectfunction')>-1) {
-                        continue; // IE SUCKZ
-                    }
-                    this.config[props] = eval( data.config[props] );
-                }
-            }
-                
-            if (data.config!=null) {
-                $p.utils.log('Updated config var: '+props+' to '+this.config[props]);
-                this._promote('configModified');
-                delete(data.config);
-            }                
-        } catch(e) {}
-
-        // add media items
-        $.each(files, function() {
-            
-            // using try-catch here is not accurate enough but the easiest way to handle parsing issues so far.
-            try {
-                itemIdx = ref._addItem(ref._prepareMedia({file:this, config:this.config || {}, errorCode: this.errorCode || 0}));
-            } catch(e) {
-                ref._promote('error', 13);
-                return false;
-            }
-
-            // set cuepoints from reel:
-            $.each(this.cuepoints || [], function() {
-                this.item = itemIdx;                    
-                ref.setCuePoint(this);        
-            });
-            
-            return true;
-        });
-    
-        if (itemIdx===null) {
-            this._addItem(this._prepareMedia({file:'', config:{}, errorCode: 97}));
-        }
-
-        this._syncPlugins('reelupdate');     
-    };
+    this._parsers = [];
 
 
     this._addItem = function(data, idx, replace) {
@@ -562,6 +497,16 @@ console.log(this.getConfig('title'), arguments);
     
     this.pluginsReadyHandler = function(hook) {
         switch (hook) {
+            
+            case 'parserscollected':
+                console.log(this._parsers)
+                this.setPlaylist(this._);
+                break;
+                if (this.getItemCount()<1) {
+                    this.setPlaylist();
+                }                
+                break;
+            
             case 'reelupdate':
                 this.setActiveItem(0);
                 break;
@@ -605,7 +550,7 @@ console.log(this.getConfig('title'), arguments);
         this.getDC().attr("class", classes.join(" "));
         
         
-        switch (stateValue) {
+        switch (stateValue) { 
             case 'AWAKENING':
                 this._syncPlugins('awakening');
                 break;
@@ -632,7 +577,16 @@ console.log(this.getConfig('title'), arguments);
     
     this.playlistHandler = function(value) {
         this.setFile(value.file, value.type);      
-    };    
+    };
+    
+    this.scheduleLoadedHandler = function(xmlDocument) {
+        this._parsers.push(
+            function (data) {
+                return data;
+            }
+        )
+    };
+                
     
     this.fullscreenHandler = function(value) {
         var nativeFullscreen = this.getNativeFullscreenSupport(); 
@@ -1721,10 +1675,6 @@ console.log(this.getConfig('title'), arguments);
             ref = this,
             aSync = !this.getIsMobileClient();
 
-        if (dest==ref && callback=='_reelUpdate') {
-            this._promote('scheduleLoading', 1+this.getItemCount());
-        }
-
         if (callback.substr(0,1)!='_') {
             window[callback] = function(data) {
                 try { delete window[callback]; } catch(e) {}
@@ -2240,7 +2190,7 @@ console.log(this.getConfig('title'), arguments);
 
         var fileNameOrObject = arguments[0] || '',
             dataType = arguments[1] || this._getTypeFromFileExtension( fileNameOrObject ),
-            result = [];
+            result = [{file:{src: fileNameOrObject || '', type: dataType || this._getTypeFromFileExtension( splt[0] )}}];
 
         this._clearqueue();
         this._detachplayerModel();
@@ -2248,30 +2198,94 @@ console.log(this.getConfig('title'), arguments);
         // incoming JSON Object / native Projekktor playlist
         if (typeof fileNameOrObject=='object') {
             $p.utils.log('Applying incoming JS Object', fileNameOrObject);
-            this._reelUpdate(fileNameOrObject);
+            this.setPlaylist(fileNameOrObject);
             return this;
+        }
+
+
+        if (result[0].file.type.indexOf('/xml')>-1 || result[0].file.type.indexOf('/json') >-1) {
+            // async. loaded playlist
+            $p.utils.log('Loading playlist data from '+result[0].file.src+' supposed to be '+result[0].file.type );
+            this._promote('scheduleLoading', 1+this.getItemCount());                    
+            this._playlistServer = result[0].file.src;
+            this.getFromUrl(result[0].file.src, this, '_collectParsers', result[0].file.type );            
+        } else {
+            // incoming single file:
+            $p.utils.log('Applying single resource:'+result[0].file.src, result);
+            this.setPlaylist(result);
         }
         
-
-        result[0] = {};
-        result[0].file = {}
-        result[0].file.src = fileNameOrObject || '';
-        result[0].file.type = dataType || this._getTypeFromFileExtension( splt[0] ) ;
-console.log(result, arguments)
-        // incoming playlist
-        if (result[0].file.type.indexOf('/xml')>-1 || result[0].file.type.indexOf('/json') >-1) {
-            $p.utils.log('Loading external data from '+result[0].file.src+' supposed to be '+result[0].file.type );
-            this._playlistServer = result[0].file.src;
-            this.getFromUrl(result[0].file.src, this, '_reelUpdate', result[0].file.type );
-            return this;
-        }
-
-        // incoming single file:
-        $p.utils.log('Applying incoming single file:'+result[0].file.src, result);
-        this._reelUpdate(result);
         return this;
     };
+    
+    this._collectParsers = function() {
+        this._syncPlugins('parserscollected');          
+        this._promote('scheduleLoaded', arguments);           
+    };
+    
+    this.addParser = function(parser) {
+        console.log("ADD APRSERS")
+        this._parsers.push(parser)
+    };
+    
+    this.setPlaylist = this.destroy = function(obj) {
 
+console.log("reelupdate");
+        var ref = this,
+            itemIdx = null,
+            data = obj || [{file:{src:'', type:'nane/none'}}],
+            files = data.playlist || data;
+            
+        this.media = [];
+ 
+        // gather and set alternate config from reel:
+        try {         
+            for(var props in data.config) {
+                if (data.config.hasOwnProperty(props)) {
+                    if (typeof data.config[props].indexOf('objectfunction')>-1) {
+                        continue; // IE SUCKZ
+                    }
+                    this.config[props] = eval( data.config[props] );
+                }
+            }
+                
+            if (data.config!=null) {
+                $p.utils.log('Updated config var: '+props+' to '+this.config[props]);
+                this._promote('configModified');
+                delete(data.config);
+            }                
+        } catch(e) {}
+
+        // add media items
+        $.each(files, function() {
+            console.log("zoink");
+            // using try-catch here is not accurate enough but the easiest way to handle parsing issues so far.
+            try {
+                itemIdx = ref._addItem(ref._prepareMedia({file:this, config:this.config || {}, errorCode: this.errorCode || 0}));
+            } catch(e) {
+                console.log(e)
+                ref._promote('error', 13);
+                return false;
+            }
+
+            // set cuepoints from reel:
+            $.each(this.cuepoints || [], function() {
+                this.item = itemIdx;                    
+                ref.setCuePoint(this);        
+            });
+            
+            return true;
+        });
+    
+        if (itemIdx===null) {
+            this._addItem(this._prepareMedia({file:'', config:{}, errorCode: 97}));
+        }
+
+        this._syncPlugins('reelupdate');     
+    };    
+    
+
+    
     this.setPlaybackQuality = function(quality) {
         var qual = quality || this.getAppropriateQuality();         
         if ($.inArray(qual, this.media[this._currentItem].qualities || [])>-1) {
@@ -2359,6 +2373,7 @@ console.log(result, arguments)
 
         this.playerModel.destroy();
         this.playerModel = {};
+        this._parsers = [];
             
         this.removePlugins();
         this._removeGUIListeners();
@@ -2998,25 +3013,6 @@ console.log(result, arguments)
     };
 
 }
-
-$p.parsers = {};
-$p.newParser = function(obj, ext) {
-
-    if (typeof obj!='object') return false;
-    if (!obj.parserId) return falset;
-
-    var result = false,
-        extend = ($p.parsers[ext] && ext!=undefined) ? $p.parsers[ext].prototype : {};
-
-    /* already exists or has been replaced */
-    if ($p.parsers[obj.parserId]) return result;
-
-    /* register new parser */
-    $p.parsers[obj.parserId] = function(){};
-    $p.parsers[obj.parserId].prototype = $.extend({}, extend, obj);
-
-    return true;
-};
 
 $p.mmap = [];
 $p.models = {};
