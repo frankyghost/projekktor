@@ -495,12 +495,13 @@ projekktor = $p = function() {
         this._promote('item', ref._currentItem);
     };
     
-    this.pluginsReadyHandler = function(hook) {
-        switch (hook) {
+    this.pluginsReadyHandler = function(obj) {
+        switch (obj.callee) {
             
             case 'parserscollected':
-                console.log(this._parsers)
-                this.setPlaylist(this._);
+                var parser = this._parsers.pop();
+                // console.log(parser(obj.data))
+                this.setPlaylist(parser(obj.data));
                 break;
                 if (this.getItemCount()<1) {
                     this.setPlaylist();
@@ -646,7 +647,7 @@ projekktor = $p = function() {
         this.reset() // POW, crowbar-method for Firefox!
     };
     
-    this._syncPlugins = function(callee) {
+    this._syncPlugins = function(callee, data) {
         // wait for all plugins to re-initialize properly
         var ref = this,
             sync = function() {
@@ -659,7 +660,7 @@ projekktor = $p = function() {
                         }
                     }
                 }
-                ref._promote('pluginsReady', callee);                        
+                ref._promote('pluginsReady', {callee: callee, data: data});                        
             } catch(e) {}
         };
         setTimeout(sync, 50);
@@ -1672,8 +1673,7 @@ projekktor = $p = function() {
     /* asynchronously loads external XML and JSON data from server */
     this.getFromUrl = function(url, dest, callback, dataType) {
         var data = null,
-            ref = this,
-            aSync = !this.getIsMobileClient();
+            ref = this;
 
         if (callback.substr(0,1)!='_') {
             window[callback] = function(data) {
@@ -1713,14 +1713,13 @@ projekktor = $p = function() {
                 }
             },
             error: function(data) {
-
                 // bypass jq 1.6.1 issues
                 if (dest[callback] && dataType!='jsonp'){
                     dest[callback](false);
                 }
             },
             cache: true,
-            async: aSync,
+            async: !this.getIsMobileClient(),
             dataType: dataType,
             jsonpCallback: (callback.substr(0,1)!='_') ? false : "projekktor('"+this.getId()+"')._jsonp"+callback,
             jsonp: (callback.substr(0,1)!='_') ? false : 'callback'
@@ -1740,8 +1739,12 @@ projekktor = $p = function() {
 
     /*******************************
     public (API) methods SETTERS
-    *******************************/
+    *******************************/ 
     this.setActiveItem = function(mixedData) {
+        var ref = this;
+        this._enqueue(function() { try {ref._setActiveItem(mixedData);} catch(e) {} } );    
+    }
+    this._setActiveItem = function(mixedData) {
         var newItem = 0,
             lastItem = this._currentItem,
             ref = this,
@@ -1769,7 +1772,7 @@ projekktor = $p = function() {
         }
  
         // all items in PL completed:
-        if (this._currentItem+1>=this.media.length && !this.getConfig('loop') && !this.getState('IDLE')) {
+        if (this._currentItem+1>this.media.length && !this.getConfig('loop') && !this.getState('IDLE')) {
             this._promote('done', {});
             return this;            
         }
@@ -2219,7 +2222,7 @@ projekktor = $p = function() {
     };
     
     this._collectParsers = function() {
-        this._syncPlugins('parserscollected');          
+        this._syncPlugins('parserscollected', arguments);          
         this._promote('scheduleLoaded', arguments);           
     };
     

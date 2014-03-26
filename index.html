@@ -28,7 +28,7 @@
         -->
         <link rel="stylesheet" href="themes/maccaco/projekktor.style.css" type="text/css" media="screen" />
         
-        <!-- core -->
+        <!-- core --> 
         <script type="text/javascript" src="src/controller/projekktor.js"></script>
         <script type="text/javascript" src="src/controller/projekktor.config.js"></script>
         <script type="text/javascript" src="src/controller/projekktor.messages.js"></script>         
@@ -121,8 +121,8 @@
                 }
         
         
-            }
-            /*,
+            },
+
             {
                 // 0: { src: 'flv.flv', type: 'video/flv' },
                 0: { src: 'http://www.projekktor.com/intro.mp4', type: 'video/mp4' },
@@ -131,7 +131,7 @@
                     poster: 'http://www.projekktor.com/intro.png'
                 }
             }
-            */
+
         ];
         
         var playlist_feed= [            
@@ -305,9 +305,10 @@
                 // height: Math.ceil(638 / 16*3),
                 // platforms: ['browser', 'android', 'ios', 'vlc', 'flash'],
                 // plugins: ['Display', 'Controlbar'],
-                // enableNATIVEPlatform: false,
+                enableNATIVEPlatform: false,
                 // enableFLASHPlatform: false,
                 enableVLCPlatform: false,
+                
                 // plugins: ['display'],
                 // autoplay: true,
                 loop: false,
@@ -336,7 +337,7 @@
                 // playerFlashMP3: 'coreSVN/trunk/swf/jarisplayer.swf',
                 playerFlashMP3: 'swf/StrobeMediaPlayback/StrobeMediaPlayback.swf',
                 playerFlashMP4: 'swf/StrobeMediaPlayback/StrobeMediaPlayback.swf',
-                playlist: playlist_feed
+                playlist: playlist
                 /*
                 ,        
                 playlist: [
