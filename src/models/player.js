@@ -63,6 +63,7 @@ jQuery(function ($) {
         _init: function (params) {
             this.pp = params.pp || null;
             this.media = $.extend(true, {}, this.media, params.media);
+            this.mediaId = params.media.ID;
             this._ap = params.autoplay;
             this._isFullscreen = params.fullscreen;
             this._id = $p.utils.randomId(8);
@@ -317,6 +318,10 @@ jQuery(function ($) {
         /*******************************
             ELEMENT GETTERS 
         *******************************/
+        getId: function() {
+            return this.mediaId;    
+        },
+        
         getQuality: function () {
             return this._quality;
         },

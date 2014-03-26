@@ -8,12 +8,17 @@ V1.4.00
   * [core] "messages" can be overwritten by custom strings on player- and item- config-level
   * [core] posters / images are now dynamically replaced on player resize and case a valid quality-set is applied
   * [core] new event "synchronized" fired once asynchronous model- and plugins-init process is completed
+  * [core] new API method .getNextItem()
+  * [core] new API method .getPreviousItem()
+  * [core] new API method .getItemAtIdx()  
 
   changes:
   * [core] dumped "scheduled" event due to redundancy (scheduleModified)
   * [core] i18n relevant strings (error messages, menu descriptors etc.) are now moved into an external non bundled file => controller/projekktor.messages.js
   * [core] event "syncing" is now "synchronizing"
   * [core] dumped built in "theme loader" - use additional scripts instead
+  * [core] config option "playlistParser" obsolete. parsing is now handled by plugins. there can be multiple parsers in parallel in order to support multiple formats.
+  * [core] .getItem() now returns references and not copies
   
   fixes:
   * [core] Fixed streams random seeking with OSMFVIDEO model

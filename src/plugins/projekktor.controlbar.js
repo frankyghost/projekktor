@@ -339,20 +339,12 @@ jQuery(function ($) {
             }
 
             // prev / next button
-            if (this.pp.getItemCount() < 2 || this.getConfig('disallowSkip')) {
+            if (this.getConfig('disallowSkip')) {
                 this._active('prev', false);
                 this._active('next', false);
             } else {
-                this._active('prev', true);
-                this._active('next', true);
-            }
-
-            if (this.pp.getItemIdx() < 1) {
-                this._active('prev', false);
-            }
-
-            if (this.pp.getItemIdx() >= this.pp.getItemCount() - 1) {
-                this._active('next', false);
+                this._active('prev', this.pp.getPreviousItem()!==false);
+                this._active('next', this.pp.getNextItem()!==false);
             }
 
             // play / pause button
