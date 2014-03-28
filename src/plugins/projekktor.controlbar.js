@@ -395,6 +395,17 @@ jQuery(function ($) {
             // init volume display
             this.displayVolume(this._getVolume());
         },
+        
+        deconstruct: function() {
+            this.pluginReady = false;
+            $.each(this.controlElements, function () {
+                $(this).unbind(); 
+            });
+            $.each(this._appliedDOMObj, function() {
+                $(this).unbind(); 
+            });            
+        },
+                
 
         /* assign listener methods to controlbar elements */
         addGuiListeners: function () {

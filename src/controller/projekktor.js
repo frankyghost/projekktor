@@ -133,7 +133,6 @@ projekktor = $p = function() {
 
     this.config = new projekktorConfig('1.4.00');
     
-    var ref = this;
 
     this.env = {
         muted: false,
@@ -158,6 +157,20 @@ projekktor = $p = function() {
     this._playlistServer = '';
     this._id = '';
     this._parsers = [];
+
+    this.itemRules = [
+        function() {
+            return arguments[0].ID != null;
+        },
+        function() {
+            return arguments[0].config.active !== false ;
+        },
+        function() {
+            return arguments[0].config.maxviews == null || arguments[0].viewcount < arguments[0].config.maxviews;
+        }        
+    ];
+    
+        
 
 
     this._addItem = function(data, idx, replace) {
@@ -473,7 +486,8 @@ projekktor = $p = function() {
             platforms: platforms,
             qualities: $p.utils.intersect($p.utils.unique(_setQual), $p.utils.unique(qualities)),
             mediaModel: modelSet.model || 'NA', 
-            errorCode: modelSet.errorCode || data.errorCode || 7,   
+            errorCode: modelSet.errorCode || data.errorCode || 7,
+            viewcount: 0,
             config:  data.config || {}                   
         } 
 
@@ -552,7 +566,11 @@ projekktor = $p = function() {
         this.getDC().attr("class", classes.join(" "));
         
         
-        switch (stateValue) { 
+        switch (stateValue) {
+            case 'STARTING':
+                this.getItem().viewcount++;
+                break;
+            
             case 'AWAKENING':
                 this._syncPlugins('awakening');
                 break;
@@ -561,8 +579,10 @@ projekktor = $p = function() {
                 this._addGUIListeners();
                 break;
         
-            case 'COMPLETED':                           
+            case 'COMPLETED':
+                console.log("completed");
                 this.setActiveItem('next');
+                break;
         }
     };
         
@@ -639,7 +659,8 @@ projekktor = $p = function() {
     };
     
     this.errorHandler = function(value) {
-        if (this.getConfig('skipTestcard') && this.getItemCount() > 1) {        
+        if (this.getConfig('skipTestcard') && this.getItemCount() > 1) {
+            console.log("ERRORHANDLER");
            this.setActiveItem('next');
         } 
     }; 
@@ -734,7 +755,7 @@ projekktor = $p = function() {
         for(var i=0; i<plugins.length; i++) {
             pluginName = "projekktor"+plugins[i].charAt(0).toUpperCase() + plugins[i].slice(1);
             try {typeof eval(pluginName);} catch(e) {alert("Projekktor Error: Plugin '" + plugins[i] + "' malicious or not available."); continue;}
-        
+        console.log("init plguins")
             pluginObj = $.extend(true, {}, new projekktorPluginInterface(), eval(pluginName).prototype);
             pluginObj.name = plugins[i].toLowerCase();
             pluginObj.pp = this;
@@ -1083,27 +1104,32 @@ projekktor = $p = function() {
     /*******************************
     public (API) methods GETTERS
     *******************************/
-        this.getPlayerVer = function() {
-            return this.config._version;
-        };
+    this.getVersion = this.getPlayerVer = function() {
+        return this.config._version;
+    };
     
     this.getIsLastItem = function() {
-        return ( (this._currentItem==this.media.length-1) && this.config._loop!==true )
+        return this.getNextItem()!==false;
     };
 
     this.getIsFirstItem = function() {
-        return ( (this._currentItem==0) && this.config._loop!==true )
+        return this.getPreviousItem()!==false;
     };    
     
-    // compatibility <0.9.x
-    this.getItemConfig = function(name, itemIdx) {
-        return this.getConfig(name, itemIdx);
-    };
-
-    this.getConfig = function(name, itemIdx) {
-        var idx = itemIdx || this.getItemIdx(),
+    this.getItemConfig = this.getConfig = function() {
+      
+        var idx = this.getItemIdx(),
+            name = null,
+            result = false;
+            
+        if (typeof arguments[0] == 'string') {
+            name = arguments[0];
             result = (this.config['_'+name]!=null) ? this.config['_'+name] : this.config[name];
-
+        }            
+        else if (typeof arguments[0] == 'number') {
+            idx = arguments[0]; 
+        }           
+             
         if (name==null) {
             return this.media[idx]['config'];
         }
@@ -1124,7 +1150,8 @@ projekktor = $p = function() {
                 }
             } catch(e){}
         }
-  
+                  
+                  
         if (result==null)
             return null;
      
@@ -1180,19 +1207,6 @@ projekktor = $p = function() {
         catch(e) {return 0;}
     };
 
-    this.itemRules = [
-        function() {
-            return arguments[0].ID != null;
-        },
-        function() {
-            return arguments[0].active !== false ;
-        },
-        function() {
-            return arguments[0].maxviews == null || arguments[0].viewcount < arguments[0].maxviews;
-        }        
-    ];
-    
-    
     this._testItem = function(item) {
         for(var r=0; r<this.itemRules.length; r++) {
             if (!this.itemRules[r](item)) {
@@ -1290,7 +1304,8 @@ projekktor = $p = function() {
         return this.media.indexOf(  $.grep(this.media, function(e){ return (item.ID == e.ID || ref.getItemId() == e.ID); })[0] );
     };
 
-    this.getCurrentItem = function() {        
+    this.getCurrentItem = function() {
+        var ref = this;
         return $.grep(this.media, function(e){ return ref.getItemId() == e.ID; })[0] || false;
     };
     
@@ -1842,13 +1857,14 @@ projekktor = $p = function() {
 
     /*******************************
     public (API) methods SETTERS
-    *******************************/ 
+    *******************************/
+/*
     this.setActiveItem = function(mixedData) {
         var ref = this;
         this._enqueue(function() { try {ref._setActiveItem(mixedData);} catch(e) {} } );    
     };
-    
-    this._setActiveItem = function(mixedData) {
+*/
+    this.setActiveItem = function(mixedData) {        
         var newItem = this.getItem(),
             lastItem = this.getItem(),
             ref = this,
@@ -1871,30 +1887,28 @@ projekktor = $p = function() {
                 return this;
             }
         } 
- 
+ console.log(mixedData + ">" + ap, this.getItemId(), newItem, this._queue);   
         // all items in PL completed:
-        if (this.getNextItem()===false) {
+        if (newItem===false) {
             this._promote('done', {});
             return this;            
-        }
+        } 
        
 
         // item change requested...
         if (newItem!=lastItem) {
             // and denied... gnehe
+             ap = true;
             if ( this.getConfig('disallowSkip')==true && (!this.getState('COMPLETED') && !this.getState('IDLE')) ) {
                 return this;
             }
         }
 
-console.log(">>>>", newItem==lastItem);
         // do we have an autoplay situation?
-        // regular "autoplay" on:
         if (this.getNextItem()!==false && newItem!=lastItem) {
             ap = this.config._continuous;
-        }
-
-        
+        } 
+   console.log("DETACHT");
         this._detachplayerModel();
         
         // reset player class
@@ -1945,121 +1959,6 @@ console.log(">>>>", newItem==lastItem);
     };    
     
     
-    
-    /*
-    this._setActiveItem = function(mixedData) {
-        var newItem = 0,
-            lastItem = this._currentItem,
-            ref = this,
-            ap = false;
-
-        if (typeof mixedData=='string') {
-            // prev/next shortcuts
-            switch(mixedData) {
-                case 'same':
-                    newItem = this._currentItem;
-                    break;            
-                case 'previous':
-                    newItem = this._currentItem-1;
-                    break;
-                case 'next':
-                    newItem = this._currentItem+1;
-                    break;
-            }
-        } else if (typeof mixedData=='number') {
-            // index number given
-            newItem = parseInt(mixedData);
-        } else {
-            // default
-            newItem = 0;
-        }
- 
-        // all items in PL completed:
-        if (this._currentItem+1>this.media.length && !this.getConfig('loop') && !this.getState('IDLE')) {
-            this._promote('done', {});
-            return this;            
-        }
-       
-
-        // item change requested...
-        if (newItem!=this._currentItem) {
-            // and denied... gnehe
-            if ( this.getConfig('disallowSkip')==true && (!this.getState('COMPLETED') && !this.getState('IDLE')) ) {
-                return this;
-            }
-        }
-
-
-        // do we have an autoplay situation?
-        // regular "autoplay" on:
-        if (newItem===0 && (lastItem==null || lastItem==newItem) && (this.config._autoplay===true || 'DESTROYING|AWAKENING'.indexOf(this.getState())>-1) ) {
-            ap = true;
-        }
-        //  "continuous" playback?
-        else if (this.getItemCount()>1 && newItem!=lastItem && lastItem!=null && this.config._continuous===true && newItem<this.getItemCount()) {
-            ap = true;
-        }
-
-        // always "loop" playlist and disallow illegal indexes:
-        if (newItem >= this.getItemCount() || newItem<0) {
-            ap = this.config._loop;
-            newItem = 0;          
-        }
-      
-
-        // set new item
-        this._currentItem = newItem;
-        
-        this._detachplayerModel();
-        
-        // reset player class
-        var wasFullscreen = this.getDC().hasClass('fullscreen');
-        this.getDC().attr('class', this.env.className)
-        if (wasFullscreen) this.getDC().addClass('fullscreen');
-
-        // create player instance
-        var newModel = this.media[this._currentItem].mediaModel.toUpperCase();
-
-        // model does not exist or is faulty:
-        if ( !$p.models[newModel] ) {
-            newModel='NA';
-            this.media[this._currentItem].mediaModel = newModel;
-            this.media[this._currentItem].errorCode = 8;
-        } else {
-            // apply item specific class(es) to player
-            if (this.getConfig('className', null)!=null) {
-                this.getDC().addClass(this.getNS() + this.getConfig('className'))
-            }
-            this.getDC().addClass(this.getNS() + (this.getConfig('streamType') || 'http') );
-                
-            if (!$p.utils.cssTransitions()) this.getDC().addClass('notransitions')
-            if (this.getIsMobileClient()) this.getDC().addClass('mobile')
-        }
-
-        // start model:
-  
-        this.playerModel = new playerModel();
-        $.extend(this.playerModel, $p.models[newModel].prototype );
-              
-        this.__promote('synchronizing', 'display');
-
-        this._enqueue(function() { try {ref._applyCuePoints();} catch(e) {} } );
-
-        this.playerModel._init({
-            media: $.extend(true, {}, this.media[this._currentItem]),
-            model: newModel,
-            pp: this,
-            environment: $.extend(true, {}, this.env),
-            autoplay: ap,
-            quality: this.getPlaybackQuality(),
-            fullscreen: this.getInFullscreen()
-            // persistent: (ap || this.config._continuous) && (newModel==nextUp)
-        });
-
-        return this;
-    };
-
-    */
     /* queue ready */
     this.setPlay = function() {        
         var ref = this;            
@@ -2230,7 +2129,7 @@ console.log(">>>>", newItem==lastItem);
             args = arguments;
             
         this._enqueue(function() {
-            ref._setConfig(args[0] || null, args[1] || null)
+            ref._setConfig(args[0] || null, args[1])
         });
             
         return this;
@@ -2254,7 +2153,7 @@ console.log(">>>>", newItem==lastItem);
         } else {
             dest = this.getItemIdx();
         }
-
+        
         for (var i in confObj) {
             // is constant:
             if (this.config['_'+i]!=null) continue;
@@ -2385,6 +2284,7 @@ console.log(">>>>", newItem==lastItem);
             // add/set item
             affectedIdx = this._addItem( itemData, arguments[1], arguments[2]);
             if (affectedIdx===this.getItemId()) {
+console.log("set item");                
                 this.setActiveItem(this.getItemIdx());
             }
         }
@@ -2399,6 +2299,7 @@ console.log(">>>>", newItem==lastItem);
             result = [{file:{src: fileNameOrObject || '', type: dataType || this._getTypeFromFileExtension( splt[0] )}}];
 
         this._clearqueue();
+        console.log("setfile");
         this._detachplayerModel();
 
         // incoming JSON Object / native Projekktor playlist

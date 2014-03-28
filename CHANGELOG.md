@@ -19,6 +19,7 @@ V1.4.00
   * [core] dumped built in "theme loader" - use additional scripts instead
   * [core] config option "playlistParser" obsolete. parsing is now handled by plugins. there can be multiple parsers in parallel in order to support multiple formats.
   * [core] .getItem() now returns references and not copies
+  * [core] .getConfig() now allows one argument only - either a string or a number
   
   fixes:
   * [core] Fixed streams random seeking with OSMFVIDEO model
@@ -29,6 +30,7 @@ V1.4.00
   * [core] fixed event stack
   * [core] fixed setItem()-makes-IDLE-player-play bug
   * [core] "done" event is now properly promoted in case of an "error" with the last item in schedule and "skipTestcard==true"
+  * [plugin:controlbar] click handlers are now properly unbound 
   
 
 V1.3.09
