@@ -8,8 +8,8 @@ var projekktorRSS = function(){};
 jQuery(function($) {
 projekktorRSS.prototype = {
         
-    version: '1.1.00',
-    reqVer: '1.2.13', 
+    version: '1.0.00',
+    reqVer: '1.4.00', 
     
     initialize: function() {
         this.pluginReady = true;
@@ -20,7 +20,6 @@ projekktorRSS.prototype = {
     },
     
     scheduleLoadedHandler: function(xmlDocument) {
-        console.log("hier", arguments)
         var node = null;
         try {
             node = $(xmlDocument).find("rss");
