@@ -14,7 +14,7 @@ V1.4.00
 
   changes:
   * [core] dumped "scheduled" event due to redundancy (scheduleModified)
-  * [core] i18n relevant strings (error messages, menu descriptors etc.) are now moved into an external non bundled file => controller/projekktor.messages.js
+  * [core] i18n relevant strings (error messages, menu descriptors etc.) are now moved into an external, non bundled, optional file => controller/projekktor.messages.js
   * [core] event "syncing" is now "synchronizing"
   * [core] dumped built in "theme loader" - use additional scripts instead
   * [core] config option "playlistParser" obsolete. parsing is now handled by plugins. there can be multiple parsers in parallel in order to support multiple formats.

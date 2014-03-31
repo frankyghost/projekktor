@@ -256,10 +256,28 @@ jQuery(function ($) {
         config: {
             /* Plugin: cb - enable/disable fade away of overlayed controls */
             toggleMute: false,
-            showCuePoints: false,
             fadeDelay: 2500,
             showOnStart: false,
             showOnIdle: false,
+            
+            /* cuepoints */
+            showCuePoints: true,
+            showCuePointsImmediately: true, // should the cuepoint be displayed immediately after curent playlist item duration is known or only if the relevant part of the playlist item is buffered and ready to be played
+            showCuePointGroups: [],
+            minCuePointSize: '2px', // minimal cuepoint size
+            cuePointEvents: [
+               /* { // Sample global blip events config. You can set individual events for every blip within cuepoint blipEvents object.
+                 'events': ['click', 'mouseover'],
+                 'handler': function(e){ // the event parameter passed to the event handler has data property which contains:
+                                         // pp - reference to the current projekktor instance
+                                         // cuepoint - reference to the cuepoint represented by current blip
+                                         // any other custom data which was passed inside 'data' property described below
+                    e.data.pp.setGotoCuePoint(e.data.cuepoint.id);
+                    console.log(e.data.test);
+                 },
+                 'data': {test:'data test'} // you can add any custom data you want
+                } */
+            ],            
 
             /* Default layout */
             controlsTemplate: '<ul class="left"><li><div %{play}></div><div %{pause}></div></li></ul><ul class="right"><li><div %{fsexit}></div><div %{fsenter}></div></li><li><div %{settingsbtn}></div></li><li><div %{tracksbtn}></div></li><li><div %{vmax}></div></li><li><div %{vslider}><div %{vmarker}></div><div %{vknob}></div></div></li><li><div %{mute}></div></li><li><div %{timeleft}>%{hr_elp}:%{min_elp}:%{sec_elp} | %{hr_dur}:%{min_dur}:%{sec_dur}</div></li><li><div %{next}></div></li><li><div %{prev}></div></li></ul><ul class="bottom"><li><div %{scrubber}><div %{loaded}></div><div %{playhead}></div><div %{scrubberknob}></div><div %{scrubberdrag}></div></div></li></ul><div %{scrubbertip}>%{hr_tip}:%{min_tip}:%{sec_tip}</div>'
@@ -499,8 +517,8 @@ jQuery(function ($) {
                 return;
             }
                         
-                        if (this.getConfig('showOnIdle') && this.pp.getState('IDLE'))
-                            return;
+            if (this.getConfig('showOnIdle') && this.pp.getState('IDLE'))
+                return;
 
             if (instant)
                 this._noHide = false;
@@ -549,6 +567,7 @@ jQuery(function ($) {
             );            
         },
         
+        /*
         displayTime: function (pct, dur, pos) {
 
             if (this.pp.getHasGUI()) return;
@@ -588,7 +607,8 @@ jQuery(function ($) {
             }
 
         },        
-
+        */
+        
         displayTime: function (pct, dur, pos) {
 
             if (this.pp.getHasGUI()) return;
@@ -700,43 +720,51 @@ jQuery(function ($) {
             }
         },
 
-        displayCuePoints: function (duration) {
-
-            var ref = this,
-                prefix = this.pp.getNS();
-
+	displayCuePoints: function(immediately) {
+            
             if (!this.getConfig('showCuePoints'))
                 return;
+            
+            var ref = this,
+                prefix = this.pp.getNS(),
+                duration = this.pp.getDuration();
 
-            ref.controlElements['scrubber'].remove('.' + prefix + 'cuepoint');
+            ref.controlElements['scrubber'].children().remove('.' + prefix + 'cuepoint');
 
-            $.each(this.pp.getCuePoints() || [], function () {
+            $.each(this.pp.getCuePoints(this.pp.getItemId(), true) || [], function() {
 
-                var blipWidth = Math.max(100 / duration, Math.round(duration / 100), 1),
-                    // Math.max( (this.off - this.off / duration, Math.round(duration/100), 1),
-                    blipPos = (this.on * 100 / duration) - ((blipWidth / 2) * 100 / duration),
-                    that = this,
-                    player = ref.pp,
+                // display cuepoins only from given groups or all cuepoints if there are no specyfic groups defined (showCuePointGroups array is empty)
+                if (ref.getConfig('showCuePointGroups').length && ref.getConfig('showCuePointGroups').indexOf(this.group) == -1) {
+                    return;
+                }
+
+                var blipWidth = this.on != this.off ? (((this.off - this.on) / duration) * 100) + '%'  : ref.getConfig('minCuePointSize'),
+                    blipPos = (this.on / duration) * 100,
                     blip = $(document.createElement('div'))
-                        .addClass(prefix + 'cuepoint')
-                        .addClass('inactive')
-                        .css('left', blipPos + "%")
-                        .css('width', blipWidth + "%")
-                        .data('on', this.on);
+                    .addClass(prefix + 'cuepoint')
+                    .addClass(prefix + 'cuepoint_group_' + this.group)
+                    .addClass(prefix + 'cuepoint_' + this.id)
+                    .addClass(immediately ? 'active' : 'inactive')
+                    .css('left', blipPos + "%")
+                    .css('width', blipWidth),
+                    blipEvents = ref.config.cuePointEvents.concat(this.blipEvents);
 
                 if (this.title != '')
                     blip.attr('title', this.title);
 
-                this.addListener('unlock', function () {
-                    $(blip).removeClass('inactive').addClass('active');
-                    blip.click(function () {
-                        ref.pp.setPlayhead(blip.data('on'))
-                    })
-                });
+                if (!immediately) {
+                    this.addListener('unlock', function() {
+                        $(blip).removeClass('inactive').addClass('active');
+                        ref._bindCuePointBlipEvents(blip, blipEvents, {pp:ref.pp, cuepoint:this});
+                    });
+                }
+                else {
+                    ref._bindCuePointBlipEvents(blip, blipEvents, {pp:ref.pp, cuepoint:this});
+                }
 
                 ref.controlElements['scrubber'].append(blip);
 
-            })
+            });
 
         },
 
@@ -923,8 +951,16 @@ jQuery(function ($) {
                 this.hidecb(true);
         },        
         
-        durationChangeHandler: function (dur) {
-            this.displayCuePoints(dur);
+	durationChangeHandler: function () {
+            if(this.pp.getDuration() != 0){
+                this.displayCuePoints( this.getConfig('showCuePointsImmediately') );
+            }
+        },
+        
+        cuepointsSyncHandler: function(cuepoints){
+            if(this.pp.getDuration() != 0){
+                this.displayCuePoints( this.getConfig('showCuePointsImmediately') );
+            }
         },
         
         errorHandler: function (value) {
@@ -1341,6 +1377,20 @@ jQuery(function ($) {
             result['hr_' + postfix] = (hr < 10) ? "0" + hr : hr;
             
             return result;
-        }
+        },
+        
+        _bindCuePointBlipEvents: function(blip, events, data){
+            if(events.length){ // bind events if there are some
+                for(var i=0; i < events.length; i++){
+                    var e = events[i]['events'].join(' '),
+                        d = $.extend({}, events[i]['data'], data) || {},
+                        h = (typeof events[i]['handler'] == 'function' ? events[i]['handler'] : function(e){});
+                    blip.bind(e, d, h);
+                }
+            }
+            else { // otherwise make the blip 'invisible' for mouse events (works everywhere but IE up to 10)
+                blip.css('pointer-events', 'none');
+            }
+        }        
     }
 });

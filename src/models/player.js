@@ -83,7 +83,9 @@ jQuery(function ($) {
             if (this._ap) {
                 this.sendUpdate('autostart', true);
                 this._setState('awakening');
-            } else this.displayItem(false);
+            } else {
+                this.displayItem(false);
+                }
         },
 
         /* apply poster while sleeping or get ready for true multi media action */
