@@ -114,9 +114,6 @@
                 // 1: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.webm', type: 'video/webm' },
                 config: {
                     id: "ITEMONE",
-                    
-                    // active: false,
-                    
                     plugin_ima: {
                         withCredentials: true,
                         url: 'http://ad3.adfarm1.adition.com/banner?sid=2671533&wpt=X',
@@ -132,7 +129,6 @@
                 0: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.mp4', type: 'video/mp4' },
                 config: {
                     id: "ITEMTWO",
-                    // maxviews: 1,
                     title: 'Alles hatein Ende nur die Wurst hat Zwei, Adieu mein Schatz, es ist vorbei.',
                     poster: 'http://www.projekktor.com/intro.png'
                 }
@@ -303,21 +299,19 @@
                 }
             }
         ]  
-         
-             
+        
+            
             var player = projekktor('.projekktor', {
                 // ratio: 16/9,
                 width: 760,
-                debug: true,
-                // autoplay: true,
+                autoplay: true,
                 height: 426,
                 cookiePath: '/projekktor/',
                 // height: false,
                 imageScaling: "fixed",
                 // debug: true,
-                // addplugins: ['RSS'],
-                // loop: true,
-                // continuous: false,
+                addplugins: ['RSS'],
+                loop: true,
                 // forceFullViewport: true,
                 // debug: true,        
                 // loop: true,
