@@ -2,7 +2,7 @@
  * Projekktor II Plugin: Controlbar
  * 
  * DESC: Adds a fully features cb element to the player
- * Copyright 2010-2013 Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com
+ * Copyright 2010-2014 Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com
  *
  * under GNU General Public License
  * http://www.projekktor.com/license/

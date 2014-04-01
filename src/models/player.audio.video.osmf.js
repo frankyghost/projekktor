@@ -75,8 +75,9 @@ $p.newModel({
     
     applyMedia: function(destContainer) {
         var ref = this; 
-        
+
         window['projekktorOSMFReady'+this.pp.getId()] = function() {
+            console.log("HIER")
             projekktor(ref.pp.getId()).playerModel._OSMFListener(arguments);
         };     
 
@@ -112,11 +113,12 @@ $p.newModel({
                 javascriptCallbackFunction: 'window.projekktorOSMFReady'+this.pp.getId()               
             }, this.pp.getConfig('OSMFVars'))
         };
-
+    
+    console.log(domOptions.src)
         this.createFlash(domOptions, destContainer);
     },
     
-    flashReadyListener: function() {},    
+    flashReadyListener: function() {    console.log("PAPP")},    
 
     // 
     removeListeners: function() {},
@@ -157,9 +159,11 @@ $p.newModel({
             value = arguments[0][2],
             ref = this;
  
-        this.mediaElement = $('#' +  this.pp.getMediaId()+"_flash"); // IE 10 sucks      
+        this.mediaElement = $('#' +  this.pp.getMediaId()+"_flash"); // IE 10 sucks
+        console.log(event)
         switch(event) {
             case 'onJavaScriptBridgeCreated':
+                
                 if (this.mediaElement!==null && this.getState('AWAKENING') ) {                
                     $.each(this._eventMap, function(key, value){
                         ref.mediaElement.get(0).addEventListener(key, "projekktor('"+ref.pp.getId()+"').playerModel." + value);
@@ -443,7 +447,7 @@ $p.newModel({
     
     getQuality: function () {
         return this._quality;
-    },    
+    }    
     
     /************************************************
      * disablers

@@ -85,7 +85,7 @@ jQuery(function ($) {
                 this._setState('awakening');
             } else {
                 this.displayItem(false);
-                }
+            }
         },
 
         /* apply poster while sleeping or get ready for true multi media action */
@@ -160,6 +160,7 @@ jQuery(function ($) {
         detachMedia: function () {},
 
         destroy: function (silent) {
+            
             this.removeListeners();
 
             if (!this.getState('IDLE'))

@@ -3,7 +3,8 @@
  * projekktor zwei
  * http://www.projekktor.com
  *
- * Copyright 2010-2013, Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com
+ * Copyright 2010-2014, Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com
+ * 
  * under GNU General Public License
  * http://www.projekktor.com/license/
  * ,------------------------------------------,      .    _  .
@@ -891,7 +892,6 @@ projekktor = $p = function() {
             this.playerModel.destroy();
             this._promote('detach', {});
         } catch(e) {
-            console.log(e);
         // this.playerModel = new playerModel();
         // this.playerModel._init({pp:this, autoplay: false});
         }
@@ -1119,11 +1119,11 @@ projekktor = $p = function() {
     };    
     
     this.getItemConfig = this.getConfig = function() {
-      
+
         var idx = this.getItemIdx(),
             name = null,
             result = false;
-            
+      
         if (typeof arguments[0] == 'string') {
             name = arguments[0];
             result = (this.config['_'+name]!=null) ? this.config['_'+name] : this.config[name];
@@ -1303,7 +1303,7 @@ projekktor = $p = function() {
         var ref = this,
             item = itm || {ID: false};
             
-        return this.media.indexOf(  $.grep(this.media, function(e){ return (item.ID == e.ID || ref.getItemId() == e.ID); })[0] );
+        return $.inArray($.grep(this.media, function(e){ return (item.ID == e.ID || ref.getItemId() == e.ID); })[0], this.media );
     };
 
     this.getCurrentItem = function() {
@@ -1604,7 +1604,6 @@ projekktor = $p = function() {
         if (fullScreenApi.supportsFullScreen=='viewport' || (fullScreenApi.supportsFullScreen=='dom' && this.getConfig('forceFullViewport'))) {
             return fullScreenApi;
         }
-
         
         // MEDIA ONLY:
         // the browser supports true fullscreen for the media element only - this is semi cool
@@ -2223,6 +2222,7 @@ projekktor = $p = function() {
 
     this.setDebug = function(value) {
         $p.utils.logging = (value!==undefined) ? value : !$p.utils.logging;
+
         if ($p.utils.logging) {
             $p.utils.log('DEBUG MODE #' + this.getId() + " Level: " + this.getConfig('debugLevel') );
         }
@@ -2707,7 +2707,7 @@ projekktor = $p = function() {
             
         if(groups && !$.isEmptyObject(cuePoints)){
             for (var cIdx=0; cIdx < cuePoints.length; cIdx++ ) {
-                if (groups.indexOf(cuePoints[cIdx].group)>-1) {  
+                if ($.inArray(cuePoints[cIdx].group, groups)>-1) {  
                     cuePointsGroup.push(cuePoints[cIdx]);
                 }
             }
@@ -2758,7 +2758,7 @@ projekktor = $p = function() {
             if (cuePoints.hasOwnProperty(itemKey) && ( itemKey == itemId || (withWildcarded ? itemKey == '*' : false) ) ){
                 cpForItem = cuePoints[itemKey];
                 for (var cIdx=0, cL=cpForItem.length; cIdx < cL; cIdx++ ) {
-                    if (cuePointGroups === undefined || cuePointGroups.indexOf(cpForItem[cIdx].group) > -1 ) {
+                    if (cuePointGroups === undefined || $.inArray(cpForItem[cIdx].group, cuePointGroups) > -1 ) {
                         this.removeListener('time', cpForItem[cIdx].timeEventHandler);
                         this.removeListener('state', cpForItem[cIdx].stateEventHandler);
                         toKill.push(cIdx);
@@ -3196,7 +3196,7 @@ projekktor = $p = function() {
         }
 
         this.setDebug(this.getConfig('debug'));
-            
+                    
         // initial DOM scaling
         this.setSize();
             
