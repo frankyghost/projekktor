@@ -77,7 +77,6 @@ $p.newModel({
         var ref = this; 
 
         window['projekktorOSMFReady'+this.pp.getId()] = function() {
-            console.log("HIER")
             projekktor(ref.pp.getId()).playerModel._OSMFListener(arguments);
         };     
 
@@ -114,11 +113,10 @@ $p.newModel({
             }, this.pp.getConfig('OSMFVars'))
         };
     
-    console.log(domOptions.src)
         this.createFlash(domOptions, destContainer);
     },
     
-    flashReadyListener: function() {    console.log("PAPP")},    
+    flashReadyListener: function() {},    
 
     // 
     removeListeners: function() {},
@@ -160,7 +158,7 @@ $p.newModel({
             ref = this;
  
         this.mediaElement = $('#' +  this.pp.getMediaId()+"_flash"); // IE 10 sucks
-        console.log(event)
+
         switch(event) {
             case 'onJavaScriptBridgeCreated':
                 

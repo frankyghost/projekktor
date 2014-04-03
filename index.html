@@ -108,6 +108,7 @@
         try {
             
             
+            
         var playlist = [            
             {
                 0: { src: 'http://www.projekktor.com/wp-content/manual/intro.lo.mp4', type: 'video/mp4' },
@@ -145,6 +146,22 @@
             }            
 
         ];
+        /*
+         var playlist = [
+            {
+                1: {src:'http://hds.ndr.de/z/ndr/2014/0316/TV-20140316-2215-0442.,hi,hq,.mp4.csmil/manifest.f4m', type:"application/f4m+xml"},
+                2: {src:'http://hls.ndr.de/i/ndr/2014/0316/TV-20140316-2215-0442.,lo,hi,hq,.mp4.csmil/master.m3u8', type:"application/x-mpegURL"},
+                3: {src:'http://media.ndr.de/progressive/2014/0316/TV-20140316-2215-0442.hi.mp4', type:"video/mp4"},
+                config: {
+                    streamType: 'httpVideo',
+                    OSMFVars: {
+                        plugin_AkamaiAdvancedStreamingPlugin: 'http://players.edgesuite.net/flash/plugins/osmf/advanced-streaming-plugin/v3.1/osmf2.0/AkamaiAdvancedStreamingPlugin.swf'
+                    },                    
+                    title: "mareTV: Die unglaublichsten Geschichten"
+                }
+            }
+        ]
+        */
         
         var playlist_feed= [            
             {
@@ -310,8 +327,8 @@
                 // height: false,
                 imageScaling: "fixed",
                 // debug: true,
-                addplugins: ['RSS'],
-                loop: true,
+                addplugins: ['settings'],
+                // loop: true,
                 // forceFullViewport: true,
                 // debug: true,        
                 // loop: true,

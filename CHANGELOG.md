@@ -28,9 +28,11 @@ V1.4.00
   * [core] fixed image / poster scaling
   * [core] fixed "fill" and "none" scaling while in flashfallback
   * [core] fixed event stack
-  * [core] fixed setItem()-makes-IDLE-player-play bug
+  * [core] fixed setItem()-makes-IDLE-player-play bug  
+  * [core] fixed general IE fullscreen / full-viewport issues
   * [core] "done" event is now properly promoted in case of an "error" with the last item in schedule and "skipTestcard==true"
-  * [plugin:controlbar] click handlers are now properly unbound 
+  * [plugin:controlbar] click handlers are now properly unbound
+  * [plugin:controlbar] progress indicator sometimes didn´t go 100%
   
 
 V1.3.09

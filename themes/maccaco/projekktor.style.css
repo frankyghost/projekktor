@@ -402,6 +402,26 @@ background: url("maccaco.png") no-repeat -91px top transparent;
 }
 
 
+/* Settings Button */
+.ppsettingsbtn {
+    background: url("maccaco.png") no-repeat -60px -72px transparent;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    border-left:1px solid #413e3e;
+    border-right:1px solid #000;    
+}
+
+.ppsettingsbtn:hover {
+    background: url("maccaco.png") no-repeat -32px -106px transparent;
+}
+
+
+.ppsettingsbtn:active {
+    background: url("maccaco.png") no-repeat -32px -105px transparent;
+}
+
+
 
 
 /* previous / next item */
@@ -496,7 +516,8 @@ background: url("maccaco.png") no-repeat -91px top transparent;
     -webkit-transition: width 0.1s linear;
     -moz-transition: width 0.1s linear;
     -o-transition: width 0.1s linear;
-    transition: width 0.1s linear;        
+    transition: width 0.1s linear;
+    -webkit-transform: scale3d(1,1,1);
 }
 
 .ppcuepoint {
@@ -710,3 +731,151 @@ background: url("maccaco.png") no-repeat -91px top transparent;
     bottom: 38px;
 }
 
+/***************************************
+settings menu
+***************************************/
+.ppsettingsmenu {
+    position: absolute;
+    bottom: 36px;
+    right:0;
+    display: block;    
+    width: 184px;
+    height: 130px;
+    padding: 0;
+    /* margin: 0 0 -130px -184px; */
+    text-align: center;
+    display: block;
+    font-weight: normal;
+    font-size: 1em;
+}
+
+.pphttpVideoLive .ppsettingsmenu {
+    top: -131px;
+}
+
+.pphttpVideoLive.ppdvr .ppsettingsmenu {
+    top: -138px;
+}
+
+
+.ppsettingsmenu.column1  {
+    width: 90px;   
+}
+
+.ppsettingsmenu.column2 {
+    width: 184px;   
+}
+
+.ppsettingsmenu.column3 {
+    width: 280px;   
+}
+
+
+.ppsettingsmenu ul {
+    width: 90px;
+    overflow: hidden;
+    background-color: #343B59;
+    background-color: rgb(13,38,84);
+    background-color: rgba(13,38,84,.9);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#0D265459,endColorstr=#0D265459);
+    zoom:1;
+    display: inline-block;
+    margin: auto;
+    padding: 0;    
+    color: #fff;
+    list-style: none;
+    height: 100%;
+    margin: 0 0 0 1px; 
+}
+
+.ppsettingsmenu ul#tool,
+.ppsettingsmenu ul#platform,
+.ppsettingsmenu ul#quality {
+    float: left;
+}
+
+
+
+.ppsettingslist li.first {
+    font-weight: bold;
+    cursor: auto;
+}
+
+
+.ppsettingsmenu ul li {
+    margin: 0;
+    padding: 5px 0 5px 0px;
+    width: 100%;
+    height: 15px;
+    line-height: 15px;
+    cursor: pointer;
+}
+
+.ppsettingslist.active {
+    display: block;
+}
+
+.ppsettingslist.inactive {
+    display: none;
+}
+
+
+/***************************************
+Tool
+***************************************/
+.pptool {    
+    background-color: #343B59;
+    background-color: rgb(13,38,84);
+    background-color: rgba(13,38,84,.9);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#0D265459,endColorstr=#0D265459);  
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    color: #fff;
+    padding: 0 15px;
+    font-size: 12px;
+    text-align: center;
+    max-width: 70%;
+}
+
+.pptool.inactive,
+.pptool .inactive {
+    display: none;
+}
+
+.pptool.active,
+.pptool .active {
+    display: block;
+}
+
+.pptool p {
+    line-height:1.5;    
+}
+
+.pptool .btn {
+    padding: 5px 15px;
+    color: #0F1D46;
+    background-color: #faffef;
+    text-decoration: none;
+}
+
+.pptool p.key {
+    color:#eee;
+    margin:.5em 0;
+    margin: 15px;
+}
+
+.pptool em {
+    background:#faffef;
+    -webkit-border-radius:.3em;
+    -moz-border-radius:.3em;
+    border-radius:.3em;
+    margin:0 .4em;
+    padding:.3em .6em;
+    color:#51231E
+}
+
+.pptool textarea {
+    width: 240px;
+    height: 100px;
+}

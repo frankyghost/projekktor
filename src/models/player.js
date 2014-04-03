@@ -115,7 +115,7 @@ jQuery(function ($) {
         applyMedia: function () {},
 
         sendUpdate: function (type, value) {
-            type = type.toLowerCase();
+            // type = type.toLowerCase();
             this.pp._modelUpdateListener(type, value);
             if (type=='error') {
                 this.removeListeners();

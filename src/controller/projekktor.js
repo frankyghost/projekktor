@@ -508,6 +508,7 @@ projekktor = $p = function() {
     
     this.modelReadyHandler = function() {
         this._maxElapsed = 0;
+        console.log("HIERasdasd")
         this._promote('item', this.getItemIdx());
     };
     
@@ -821,7 +822,7 @@ projekktor = $p = function() {
     /* media element update listener */
     this._modelUpdateListener = function(evtName, value) {
         if (this.playerModel.init) {
-            this.__promote(evtName, value);
+            this._promote(evtName, value);
         }
     };
     
@@ -844,7 +845,7 @@ projekktor = $p = function() {
         if (event!='time' && event!='progress' && event!='mousemove') {
             $p.utils.log("Event: ["+event+"]", value, this.listeners);
         }
-
+console.log(evt + "Handler")
         // fire on self:
         if (this[evt + 'Handler']) {
             this[evt + 'Handler'](value);
@@ -980,7 +981,7 @@ projekktor = $p = function() {
     
         var ref = this,
             set = (this.getConfig('keys').length > 0) ? this.getConfig('keys') : [{
-                27: function(player) { if(player.getInFullscreen()) { player.setFullscreen(false); }else player.setStop();}, // ESC
+                // 27: function(player) { if(player.getInFullscreen()) { player.setFullscreen(false); }else player.setStop();}, // ESC
                 32: function(player, evt) {player.setPlayPause(); evt.preventDefault();},
                 70: function(player) {player.setFullscreen();}, // f
                 39: function(player, evt) {player.setPlayhead('+5'); evt.preventDefault();},
@@ -1008,49 +1009,50 @@ projekktor = $p = function() {
     this._enterFullViewport = function(forcePlayer) {
         // get relevant elements
         var win = this.getIframeParent() || $(window),
-        target = this.getIframe() || this.getDC(),
-                overflow = $(win[0].document.body).css('overflow');
+            target = this.getIframe() || this.getDC(),
+            overflow = $(win[0].document.body).css('overflow');
 
         if (forcePlayer) {
-        win = $(window);
-        target = this.getDC();
+            win = $(window);
+            target = this.getDC();
         }
-            
+console.log(target.attr('id'));       
         // prepare target:
-            target.data('fsdata', {
-                scrollTop: win.scrollTop() || 0,
-                scrollLeft: win.scrollLeft() || 0,
-                targetStyle: target.attr('style') || '',
-                targetWidth: target.width(),
-                targetHeight: target.height(),
-                bodyOverflow: (overflow=='visible') ? 'auto' : overflow, // prevent IE7 crash
-                bodyOverflowX: $(win[0].document.body).css('overflow-x'), // prevent IE7 crash
-                bodyOverflowY: $(win[0].document.body).css('overflow-y'), // prevent IE7 crash
-                iframeWidth: target.attr('width') || 0,
-                iframeHeight: target.attr('height') || 0
-            }).css({
-        position: 'absolute',
-        display: 'block',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 99999,
-        margin: 0,
-        padding: 0
+        target.data('fsdata', {
+            scrollTop: win.scrollTop() || 0,
+            scrollLeft: win.scrollLeft() || 0,
+            targetStyle: target.attr('style') || '',
+            targetWidth: target.width(),
+            targetHeight: target.height(),
+            bodyOverflow: (overflow=='visible') ? 'auto' : overflow, // prevent IE7 crash
+            bodyOverflowX: $(win[0].document.body).css('overflow-x'), // prevent IE7 crash
+            bodyOverflowY: $(win[0].document.body).css('overflow-y'), // prevent IE7 crash
+            iframeWidth: target.attr('width') || 0,
+            iframeHeight: target.attr('height') || 0
+        }).css({
+            position: 'absolute',
+            display: 'block',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 99999,
+            margin: 0,
+            padding: 0
         });     
-
+return;
         // prepare parent window
         win.scrollTop(0).scrollLeft(0);
         $(win[0].document.body).css({
-                overflow: 'hidden',
-                overflowX: 'hidden',
-                overflowY: 'hidden'
-            });
+            overflow: 'hidden',
+            overflowX: 'hidden',
+            overflowY: 'hidden'
+        });
     };
 
     /* reset player from "full (parent) window viewport" iframe thing */
     this._exitFullViewport = function(forcePlayer) {
+        console.log("EXIT")
         // get relevant elements
         var win = this.getIframeParent() || $(window),
         target = this.getIframe() || this.getDC(),
@@ -1575,14 +1577,14 @@ projekktor = $p = function() {
             for (var i = 0, il = browserPrefixes.length; i < il; i++ ) {
     
                 fullScreenApi.prefix = browserPrefixes[i];
-    
+
                 // media element only
                 if (typeof document.createElement('video')[fullScreenApi.prefix+"EnterFullscreen"] != 'undefined') {
                     fullScreenApi.supportsFullScreen = 'mediaonly';
                 }
-    
+
                 // player container / true fullscreen
-                if (typeof document[fullScreenApi.prefix + 'CancelFullScreen' ] != 'undefined' ) {
+                if (typeof document[fullScreenApi.prefix + 'CancelFullScreen' ] != 'undefined' || typeof document[fullScreenApi.prefix + 'ExitFullscreen' ] != 'undefined') {
                 
                     fullScreenApi.supportsFullScreen = 'dom';
     
@@ -1625,6 +1627,7 @@ projekktor = $p = function() {
         fullScreenApi.isFullScreen = function(esc) {
             // * FF and GoogleTV report bullshit here:
             var dest = (ref.getIframe()) ? parent.window.document : document;
+
             switch (this.prefix) {
                 case '':
                     return dest.fullScreen;
@@ -1632,6 +1635,10 @@ projekktor = $p = function() {
                     return dest.webkitIsFullScreen;
                 case 'moz':
                      return dest[this.prefix + 'FullScreen'] || (ref.getDC().hasClass('fullscreen') && esc!==true);
+                case 'ms':
+                    console.log("huer")  
+                    console.log( document.msFullscreenElement )
+                    return (document.msFullscreenElement!=null);
                 default:                  
                     return dest[this.prefix + 'FullScreen'];
             }
@@ -1645,7 +1652,20 @@ projekktor = $p = function() {
                 target = (ref.getIframe()) ? ref.getIframe().get(0) : null || ref.getDC().get(0),
                 apiRef = this,
                 dest = (ref.getIframe()) ? parent.window.document : document,
-                win = ref.getIframeParent() || $(window);
+                win = ref.getIframeParent() || $(window),
+                fschange = function(evt) {
+                    if (!apiRef.isFullScreen()) {                        
+                        var win = apiRef.ref.getIframeParent() || $(window),
+                        fsData = win.data('fsdata');
+                        if (fsData!=null) {
+                            win.scrollTop(fsData.scrollTop);
+                            win.scrollLeft(fsData.scrollLeft);
+                            apiRef.ref.playerModel.applyCommand('fullscreen', false);
+                        }
+                    } else {
+                        apiRef.ref.playerModel.applyCommand('fullscreen', true);
+                    }
+                }
             
             // store scroll positon:
             win.data('fsdata', {
@@ -1653,34 +1673,22 @@ projekktor = $p = function() {
                 scrollLeft: win.scrollLeft()
             });
 
-            $(dest).unbind(this.prefix + "fullscreenchange.projekktor");
+            $(dest).unbind(this.prefix + "fullscreenchange.projekktor").unbind("MSFullscreenChange.projekktor");
+
+            // create fullscreen change listener on the fly:
+            $(dest).bind(this.prefix + "fullscreenchange.projekktor", fschange);
+            $(dest).bind("MSFullscreenChange.projekktor", fschange);
             
             if (this.prefix === '') {
                 target.requestFullScreen();
             }
             else {
-                target[this.prefix + 'RequestFullScreen']();
-            }  
-            
-            apiRef.ref.playerModel.applyCommand('fullscreen', true);            
-            
-            // create fullscreen change listener on the fly:
-            $(dest).bind(this.prefix + "fullscreenchange.projekktor", function(evt) {
-                if (!apiRef.isFullScreen(true)) {                    
-                    var win = apiRef.ref.getIframeParent() || $(window),
-                        fsData = win.data('fsdata');
-                    if (fsData!=null) {
-                        win.scrollTop(fsData.scrollTop);
-                        win.scrollLeft(fsData.scrollLeft);
-                        apiRef.ref.playerModel.applyCommand('fullscreen', false);
-                    }
-                } else {
-                    apiRef.ref.playerModel.applyCommand('fullscreen', true);
+                try {
+                    target[this.prefix + 'RequestFullScreen']();
+                } catch(e) {
+                    target[this.prefix + 'RequestFullscreen'](); // IE fun
                 }
-                
-                $( (ref.getIframe()) ? parent.window.document : document).unbind(this.prefix + "fullscreenchange.projekktor");                
-            });
-
+            } 
         }
 
         // cancel fullscreen method
@@ -1698,7 +1706,12 @@ projekktor = $p = function() {
                 target.cancelFullScreen();
             }
             else {
-                target[this.prefix + 'CancelFullScreen']();
+                try {
+                    target[this.prefix + 'CancelFullScreen']();
+                } catch(e) {
+                    target[this.prefix + 'ExitFullscreen']();  // IE fun
+                }
+
             }                
 
             // restore scrollposition

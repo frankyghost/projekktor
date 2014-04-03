@@ -564,7 +564,9 @@ jQuery(function ($) {
                 function() {
                     ref.hidecb();
                 }, this.getConfig('fadeDelay')
-            );            
+            );
+            
+            this.displayProgress();
         },
         
         /*
@@ -646,9 +648,8 @@ jQuery(function ($) {
 
         displayProgress: function () {
             var percent = Math.round(this.pp.getLoadProgress() * 10) / 10;
-
             // limit updates
-            if (this.controlElements['loaded'].data('pct') != percent) {
+            if (this.controlElements['loaded'].data('pct') == undefined || this.controlElements['loaded'].data('pct') != percent) {                
                 this.controlElements['loaded'].data('pct', percent).css("width", percent + "%");
             };
         },
