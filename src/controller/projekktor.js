@@ -1526,37 +1526,8 @@ return;
         return this.getItem().platform  || 'error';
     };
 
-    this.getPlatforms = function()  {
-        
+    this.getPlatforms = function()  {        
         return $.map($p._platformTableCache, function(n,i){return n.toLowerCase();});
-        /*
-        var ref = this,
-            platforms = this._testMediaSupport(true),
-            cfg = this.getConfig('platforms'),
-            tmp = [],
-            result = [];
-
-        try {
-            for (var i in this.getItem().file) {
-                console.log( this.getItem().file[i].type)
-                if (this.getItem().file.hasOwnProperty(i)) {
-                    for (var j in platforms) {
-                        if (this._canPlay(this.getItem().file[i].type.replace(/x-/, ''), platforms[j].toLowerCase(), this.getConfig('streamType')) ) {
-                            if ($.inArray(platforms[j].toLowerCase(), result)==-1) {
-                                result.push(platforms[j].toLowerCase());
-                            }
-                        }
-                    }
-                }            
-            }
-        } catch(e) {}
-
-        result.sort(function(a, b) {
-            return $.inArray(a, cfg) - $.inArray(b, cfg);
-        });                               
-
-        return result;
-        */
     };
 
     /*
