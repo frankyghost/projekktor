@@ -736,7 +736,7 @@ settings menu
 ***************************************/
 .ppsettingsmenu {
     position: absolute;
-    bottom: 36px;
+    bottom: 40px;
     right:0;
     display: block;    
     width: 184px;
@@ -745,8 +745,16 @@ settings menu
     /* margin: 0 0 -130px -184px; */
     text-align: center;
     display: block;
-    font-weight: normal;
-    font-size: 1em;
+    font-weight: lighter;
+    font-size: 0.7em;
+}
+
+.ppsettingsmenu.active {
+    display: block;
+}
+
+.ppsettingsmenu.inactive {
+    display: block;
 }
 
 .pphttpVideoLive .ppsettingsmenu {
@@ -774,10 +782,7 @@ settings menu
 .ppsettingsmenu ul {
     width: 90px;
     overflow: hidden;
-    background-color: #343B59;
-    background-color: rgb(13,38,84);
-    background-color: rgba(13,38,84,.9);
-    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#0D265459,endColorstr=#0D265459);
+    background-color: #333;
     zoom:1;
     display: inline-block;
     margin: auto;
@@ -796,8 +801,11 @@ settings menu
 
 
 
+
+
 .ppsettingslist li.first {
     font-weight: bold;
+    text-decoration: underline;
     cursor: auto;
 }
 
@@ -819,14 +827,17 @@ settings menu
     display: none;
 }
 
+ul.ppsettingslist li.on {
+    background: #fdfdfd;
+    color: #333;
+    opacity: 1;
+}
 
 /***************************************
 Tool
 ***************************************/
 .pptool {    
-    background-color: #343B59;
-    background-color: rgb(13,38,84);
-    background-color: rgba(13,38,84,.9);
+    background-color: #333;
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#0D265459,endColorstr=#0D265459);  
     position: absolute;
     top: 50%;
@@ -854,6 +865,7 @@ Tool
 
 .pptool .btn {
     padding: 5px 15px;
+    margin: 2px;
     color: #0F1D46;
     background-color: #faffef;
     text-decoration: none;
@@ -876,6 +888,7 @@ Tool
 }
 
 .pptool textarea {
+    padding: 5px;
     width: 240px;
     height: 100px;
 }

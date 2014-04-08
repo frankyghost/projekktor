@@ -281,7 +281,9 @@ jQuery(function ($) {
         setStop: function () {
             this.detachMedia();
             this._setState('stopped');
+            // this._ap=false;
             this.displayItem(false);
+            
         },
 
         setVolume: function (volume) {},

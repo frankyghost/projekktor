@@ -387,7 +387,7 @@ projekktor = $p = function() {
                     data.file[index].ext = (!data.file[index].ext) ? 'NaN' : data.file[index].ext.replace('.','');
                 } catch(e) { data.file[index].ext='NaN'; }
                 */
-     
+
                 // if type is set, get rid of the codec mess
                 if ( data.file[index].type!=null && data.file[index].type!=='') {
                     try {
@@ -397,6 +397,7 @@ projekktor = $p = function() {
                         }
                         data.file[index].type = codecMatch[0].replace(/x-/, '');
                         data.file[index].originalType = codecMatch[0];
+      
                     } catch(e){}
                 }
                 else {
@@ -468,7 +469,7 @@ projekktor = $p = function() {
                 mediaFiles.push(data.file[index])        
             }
         }         
-       
+    
         if (mediaFiles.length===0) {
             mediaFiles.push({src:null, quality:"default"});
         }
@@ -508,7 +509,6 @@ projekktor = $p = function() {
     
     this.modelReadyHandler = function() {
         this._maxElapsed = 0;
-        console.log("HIERasdasd")
         this._promote('item', this.getItemIdx());
     };
     
@@ -532,7 +532,7 @@ projekktor = $p = function() {
             case 'displayready':
                 this._addGUIListeners();
                  this._promote('synchronized');
-                if (!this.getState('STARTING')) {
+                if (this.getState('AWAKENING')) {
                     this.playerModel.start(); 
                 }
                 if (!this._isReady) {
@@ -845,7 +845,7 @@ projekktor = $p = function() {
         if (event!='time' && event!='progress' && event!='mousemove') {
             $p.utils.log("Event: ["+event+"]", value, this.listeners);
         }
-console.log(evt + "Handler")
+
         // fire on self:
         if (this[evt + 'Handler']) {
             this[evt + 'Handler'](value);
@@ -981,13 +981,12 @@ console.log(evt + "Handler")
     
         var ref = this,
             set = (this.getConfig('keys').length > 0) ? this.getConfig('keys') : [{
-                // 27: function(player) { if(player.getInFullscreen()) { player.setFullscreen(false); }else player.setStop();}, // ESC
-                32: function(player, evt) {player.setPlayPause(); evt.preventDefault();},
-                70: function(player) {player.setFullscreen();}, // f
-                39: function(player, evt) {player.setPlayhead('+5'); evt.preventDefault();},
-                37: function(player, evt) {player.setPlayhead('-5'); evt.preventDefault();},
-                38: function(player, evt) {player.setVolume('+0.05'); evt.preventDefault();},
-                40: function(player, evt) {player.setVolume('-0.05'); evt.preventDefault();},
+                13: function(player) { player.setFullscreen(!player.getInFullscreen()); }, // return;
+                32: function(player, evt) {player.setPlayPause(); evt.preventDefault();}, // space
+                39: function(player, evt) {player.setPlayhead('+5'); evt.preventDefault();}, // cursor right
+                37: function(player, evt) {player.setPlayhead('-5'); evt.preventDefault();},  // cursor left
+                38: function(player, evt) {player.setVolume('+0.05'); evt.preventDefault();},  // cursor up 
+                40: function(player, evt) {player.setVolume('-0.05'); evt.preventDefault();}, // cursor down
                 68: function(player) {player.setDebug();}, // D
                 67: function(player) {$p.utils.log('Config Dump', player.config);}, // C
                 80: function(player) {$p.utils.log('Schedule Dump', player.media);}, // P
@@ -1016,7 +1015,7 @@ console.log(evt + "Handler")
             win = $(window);
             target = this.getDC();
         }
-console.log(target.attr('id'));       
+     
         // prepare target:
         target.data('fsdata', {
             scrollTop: win.scrollTop() || 0,
@@ -1052,7 +1051,6 @@ return;
 
     /* reset player from "full (parent) window viewport" iframe thing */
     this._exitFullViewport = function(forcePlayer) {
-        console.log("EXIT")
         // get relevant elements
         var win = this.getIframeParent() || $(window),
         target = this.getIframe() || this.getDC(),
@@ -1393,6 +1391,11 @@ return;
         return this.getNativeFullscreenSupport().isFullScreen();
     }
 
+    this.getIsMuted = function() {
+        return this.env.muted;
+    }
+    
+    
     this.getMediaContainer = function() {
         // return "buffered" media container
         if (this.env.mediaContainer==null) {
@@ -1524,6 +1527,9 @@ return;
     };
 
     this.getPlatforms = function()  {
+        
+        return $.map($p._platformTableCache, function(n,i){return n.toLowerCase();});
+        /*
         var ref = this,
             platforms = this._testMediaSupport(true),
             cfg = this.getConfig('platforms'),
@@ -1532,9 +1538,10 @@ return;
 
         try {
             for (var i in this.getItem().file) {
+                console.log( this.getItem().file[i].type)
                 if (this.getItem().file.hasOwnProperty(i)) {
                     for (var j in platforms) {
-                        if (this._canPlay(getItem().file[i].type.replace(/x-/, ''), platforms[j].toLowerCase(), this.getConfig('streamType')) ) {
+                        if (this._canPlay(this.getItem().file[i].type.replace(/x-/, ''), platforms[j].toLowerCase(), this.getConfig('streamType')) ) {
                             if ($.inArray(platforms[j].toLowerCase(), result)==-1) {
                                 result.push(platforms[j].toLowerCase());
                             }
@@ -1549,6 +1556,7 @@ return;
         });                               
 
         return result;
+        */
     };
 
     /*
@@ -1627,17 +1635,12 @@ return;
         fullScreenApi.isFullScreen = function(esc) {
             // * FF and GoogleTV report bullshit here:
             var dest = (ref.getIframe()) ? parent.window.document : document;
-
             switch (this.prefix) {
                 case '':
                     return dest.fullScreen;
                 case 'webkit':
                     return dest.webkitIsFullScreen;
-                case 'moz':
-                     return dest[this.prefix + 'FullScreen'] || (ref.getDC().hasClass('fullscreen') && esc!==true);
                 case 'ms':
-                    console.log("huer")  
-                    console.log( document.msFullscreenElement )
                     return (document.msFullscreenElement!=null);
                 default:                  
                     return dest[this.prefix + 'FullScreen'];
@@ -1673,11 +1676,9 @@ return;
                 scrollLeft: win.scrollLeft()
             });
 
-            $(dest).unbind(this.prefix + "fullscreenchange.projekktor").unbind("MSFullscreenChange.projekktor");
-
             // create fullscreen change listener on the fly:
-            $(dest).bind(this.prefix + "fullscreenchange.projekktor", fschange);
-            $(dest).bind("MSFullscreenChange.projekktor", fschange);
+            $(dest).unbind(this.prefix + "fullscreenchange.projekktor").bind(this.prefix + "fullscreenchange.projekktor", fschange);
+            $(dest).unbind("MSFullscreenChange.projekktor").bind("MSFullscreenChange.projekktor", fschange);
             
             if (this.prefix === '') {
                 target.requestFullScreen();
@@ -3018,7 +3019,7 @@ return;
                             if ( $p.utils.versionCompare($p.platforms[platform.toUpperCase()]($p.mmap[i]['type']), reqPlatformVersion) ) {                                
                                 // check if platform is enabled in config
                                 if (ref.getConfig('enable'+platform.toUpperCase()+'Platform')!=false && $.inArray(platform.toLowerCase(), ref.getConfig('platforms'))>-1) {
-                                    result[st][platform].push($p.mmap[i]['type'])
+                                    result[st][platform].push($p.mmap[i]['type']);
                                     if ($.inArray(platform.toUpperCase(), resultPlatforms)==-1) {
                                         resultPlatforms.push(platform.toUpperCase());
                                     }

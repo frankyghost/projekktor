@@ -41,7 +41,57 @@ projekktorSettings.prototype = {
                 '<li data-pp-settings-func="quality_s"  class="active">%{low}</li>' +
                 '<li data-pp-settings-func="quality_auto"  class="auto active">%{automatic}</li>' +
             '</ul>' +
-            '<div class="ppclear"></div>'
+            '<div class="ppclear"></div>',
+            
+        versionTpl:
+            '<div data-pp-settings-func="toolwindow_version">' +
+                '<p>Projekktor V%{version}</p>' + 
+                '<p><a class="btn cancel" href="#">%{ok}</a></p>' + 
+            '</div>',
+            
+            
+        debugTpl:
+            '<div data-pp-settings-func="toolwindow_debug">' + 
+                '<div class="wizzard inactive" id="debug_1">' + 
+                    '<p><b>%{report}</b></p>' + 
+                    '<p><textarea id="message">%{please}</textarea></p>' + 
+                    '<p>' + 
+                        '<a class="btn cancel" href="#">%{cancel}</a>' + 
+                        '<a class="btn next" data-step="2" href="#">%{continue}</a>' + 
+                    '</p>' + 
+                '</div>' + 
+                '<div class="wizzard inactive" id="debug_2">' + 
+                    '<p><b>%{sendto}</b></p>' + 
+                    '<p><textarea id="result">%{please}</textarea></p>' + 
+                    '<p><a class="btn next" href="#" data-step="3">%{ok}</a></p>' + 
+                '</div>' + 
+                '<div class="wizzard inactive" id="debug_3">' + 
+                    '<p>%{thanks}</p>' + 
+                    '<p><a class="btn cancel" href="#">%{ok}</a></p>' + 
+                '</div>' + 
+            '</div>' + 
+            '<div data-pp-settings-func="toolwindow_error">' + 
+                '<div class="wizzard inactive" id="error_1">' + 
+                    '<p><b>%{error}<br/> %{sendto}</b></p>' + 
+                    '<p><textarea id="errortxt"></textarea></p>' + 
+                    '<p><a class="btn next" href="#" data-step="3">%{ok}</a></p>' + 
+                '</div>' + 
+                '<div class="wizzard inactive" id="error_2">' + 
+                    '<p>%{thanks}</p>' + 
+                    '<p><a class="btn cancel" href="#">%{ok}</a></p>' + 
+                '</div>' + 
+            '</div>',
+        
+        helpTpl:
+            '<div data-pp-settings-func="toolwindow_help">' +
+                '<p><b>%{keyboard assignments}</b></p>' +
+                '<p class="key">%{help1}</p>' +
+                '<p class="key">%{help2}</p>' +
+                '<p class="key">%{help3}</p>' +
+                '<p>%{help4}</p>' +
+                '<p><a class="btn cancel" href="#">%{ok}</a></p>' +
+            '</div>' 
+
     },
 
     initialize: function() {
@@ -119,7 +169,7 @@ projekktorSettings.prototype = {
         var ref = this,
             pCount = 0,
             menuOptions = [];  
-console.log("hier");
+
         $.each(this.dest.find("[" + this.getDA('func') + "]"), function() {
             var func = $(this).attr(ref.getDA('func')).split('_');
 
@@ -154,9 +204,10 @@ console.log("hier");
 
             return true;
         });
-console.log(pCount);
+
         // restore presets:
         for (var i in menuOptions) {
+            
             if (menuOptions[i].length<3) {
                 this.dest.find('#' + i).addClass('inactive').removeClass('active');
             } else {
@@ -165,7 +216,7 @@ console.log(pCount);
                 pCount++;
             }
         }
-console.log(pCount);
+
         // apply "columns" class
         var classes = this.dest.attr("class").split(" ").filter(function(item) {
             return item.lastIndexOf("column", 0) !== 0;
@@ -216,11 +267,14 @@ console.log(pCount);
      * Config SETTERS
      * **************************************************/
     toolSet: function(func, stp, data) {
+
         var tpl = this.applyToPlayer($('<div/>'), 'toolwindow_' + func),
             step = stp || 1,
             ref = this,
             isPlaying = this.pp.getState('PLAYING');
-
+        
+        tpl.html(this.i18n(this.getConfig(func + 'Tpl')));
+        
         this.tool.html($p.utils.parseTemplate(tpl.html(), this.pp.config) );
         this.tool.find('.wizzard').addClass('inactive').removeClass('active');
         this.tool.find('#' + func + '_' + step).addClass('active').removeClass('inactive');
@@ -309,11 +363,11 @@ console.log(pCount);
 
     platformSet: function(val) {
         var platforms = this.pp.getConfig('platforms'),
-                value = val || this.cookie('platform') || null,
-                tmp = platforms[0],
-                ref = this,
-                pos = ref.pp.getPosition(),
-                old = $.inArray(value, platforms);
+            value = val || this.cookie('platform') || null,
+            tmp = platforms[0],
+            ref = this,
+            pos = ref.pp.getPosition(),
+            old = $.inArray(value, platforms);
 
         if (value=='auto') {
             this.cookie('platform', false, true);

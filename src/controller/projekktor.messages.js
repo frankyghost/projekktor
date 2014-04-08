@@ -5,8 +5,8 @@ projekktorMessages = {
     "pause": "pause playback",
     
     // settings 
-    "help": "help center",
-    "keyboard controls": "keyboard controls",
+    "help": "help:",
+    "keyboard controls": "keyboard",
     "debug": "debug",
     "player info": "player info",
     "platform": "platform",
@@ -19,6 +19,21 @@ projekktorMessages = {
     "medium": "medium",
     "low": "low",
 
+    // settings
+    'ok': 'OK',
+    'report': 'Report a bug',
+    'cancel': 'cancel',
+    'continue': 'continue',
+    'sendto': 'Please send this information to the webmaster of this site.',
+    'please': 'Please describe your problem as detailed as possible....',
+    'thanks': 'Thank you very much.',
+    'error': 'An error occured',
+    'help1': '<em>space</em> play / pause',
+    'help2': '<em>↑</em><em>↓</em> volume <em>←</em><em>→</em> scrub',
+    'help3': '<em>ENTER</em> toggle fullscreen',
+    'help4': 'Mouse must hover the player.',
+    
+    
     /* flash & native: */
     "error0": '#0 An (unknown) error occurred.',
     "error1": '#1 You aborted the media playback. ',

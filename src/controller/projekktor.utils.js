@@ -487,6 +487,24 @@ jQuery(function ($) {
             return true;
         },
 
+		/**
+		* replaces {}-tags with parameter equialents
+		* @public
+		* @param (String) Da string to get processed
+		* @param (Object) Object holding data to fill in
+		* @return (String) Da parsed string
+		*/
+		parseTemplate: function (template, data, encode) {
+			if (data === undefined || data.length == 0 || typeof data != 'object') return template;
+			
+			for (var i in data) {
+				template = template.replace(new RegExp('%{' + i + '}', 'gi'), ((encode === true) ? window.encodeURIComponent(data[i]) : data[i]))
+			}
+			template = template.replace(/%{(.*?)}/gi, '');
+			return template;
+		},
+
+		
         /**
          * serializes a simple object to a JSON formatted string.
          * Note: stringify() is different from jQuery.serialize() which URLEncodes form elements

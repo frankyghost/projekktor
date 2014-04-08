@@ -85,7 +85,7 @@ projekktorPluginInterface.prototype = {
         var results = [],
             re = /%{([^}]+)}/g,
             text,
-            custom = $.extend(true, {}, this.getConfig('messages') || {}, {title: this.getConfig('title')}),
+            custom = $.extend(true, {}, this.getConfig('messages') || {}, {title: this.getConfig('title'), version: this.pp.getVersion()}),
             msg = ''; 
 
         while(text = re.exec(str)) {
@@ -214,6 +214,15 @@ projekktorPluginInterface.prototype = {
         return false;    
     },
     
+    /**
+    * set and get cookie-values for this specific plugin
+    * 
+    * @public
+    * @key (String) variable name / key
+    * @value (Mixed) Value to store
+    * @ttl (Mixed) Time to live in seconds or "false" for instant deletion
+    * @return (Object) the element
+    */    
     cookie: function (key, value, ttl) {
         if (document.cookie===undefined || document.cookie===false) return null;
         if (key==null && value!=null) return null;
