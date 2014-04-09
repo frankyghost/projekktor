@@ -2191,7 +2191,7 @@ projekktor = $p = function() {
         for (var i=0; i<len;i++) {
             if (this.listeners[i]==undefined) continue;
             if (this.listeners[i].event!=evt[0] && evt[0]!=='*') continue;                
-                if ( (this.listeners[i].ns!=evt[1] && evt[1]!=='*') || (this.listeners[i].callback+''!=callback+'' && callback!=null) ) continue;        
+                if ( (this.listeners[i].ns!=evt[1] && evt[1]!=='*') || (this.listeners[i].callback!=callback && callback!=null) ) continue;        
                 this.listeners.splice(i,1);
         }
         return this;
@@ -2401,17 +2401,19 @@ projekktor = $p = function() {
             isAvailable: function() {return this._unlocked;},
                     
             _stateListener: function(state, player) {
-            if ('STOPPED|COMPLETED|DESTROYING'.indexOf(state)>-1) {
-                if (this._active)
-                try {  this.callback(false, this, player); } catch(e) {}
-                this._active = false;
-                this._lastTime = -1;
-            }
+                try{
+                    if ('STOPPED|COMPLETED|DESTROYING'.indexOf(state)>-1) {
+                        if (this._active)
+                        try {  this.callback(false, this, player); } catch(e) {}
+                        this._active = false;
+                        this._lastTime = -1;
+                    }
+                }catch(e){}
 
             },
             _timeListener: function(time, player) {
-
-                        if (player.getItemIdx()!==this.item && this.item!='*')
+                try{
+                    if (player.getItemIdx()!==this.item && this.item!='*')
                             return;
                         
             var timeIdx = (this.precision==0) ? Math.round(time) : $p.utils.roundNumber(time, this.precision),                           
@@ -2471,6 +2473,7 @@ projekktor = $p = function() {
                         }
 
             this._lastTime = timeIdx;
+                }catch(e){}
             },
                     addListener: function(event, func) {
                         if (this._listeners[event]==null)
@@ -2555,13 +2558,9 @@ projekktor = $p = function() {
                 ref.removeListener('state', cuePointObj.stateEventHandler);
             } catch(e) {}
             
-            cuePointObj.timeEventHandler = function(time, player) {
-                try {cuePointObj._timeListener(time, player);} catch(e){}
-            },
+            cuePointObj.timeEventHandler = cuePointObj._timeListener;
     
-            cuePointObj.stateEventHandler = function(state, player) {
-                try {cuePointObj._stateListener(state, player);} catch(e){}
-            },
+            cuePointObj.stateEventHandler = cuePointObj._stateListener;
     
     
             ref.addListener('time', cuePointObj.timeEventHandler);
