@@ -314,6 +314,7 @@ controlbar plugin
 /* volume slider - right */
 .ppvslider {
     margin: 13px 5px;
+    padding: 0 1px;
     height: 16px;
     width: 60px;
     background: url("maccaco.png") no-repeat -781px -13px transparent;
@@ -335,7 +336,7 @@ controlbar plugin
     background: url("maccaco.png") no-repeat -699px -5px transparent;
     top: -13px;
     left:0;
-    width: 6px;
+    width: 4px;
     height: 20px;
     padding: 0;
 
