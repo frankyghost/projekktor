@@ -598,7 +598,10 @@ jQuery(function ($) {
             var isVisible = this.cb.hasClass('active'),
                 ref = this,
                 fixed = this.getConfig('fixedVolume'),
-                toggleMute = (this.controlElements['mute'].hasClass('toggle') || this.controlElements['unmute'].hasClass('toggle') || this.getConfig('toggleMute'));
+                toggleMute = (this.controlElements['mute'].hasClass('toggle') || this.controlElements['unmute'].hasClass('toggle') || this.getConfig('toggleMute')),
+                // check if the volume is in the proper range and correct its value if it's not
+                volume = volume > 1 ? 1 : volume,
+                volume = volume < 0 ? 0 : volume;
 
             // hide volume mess in case volume is fixed
             this._active('mute', !fixed);
@@ -612,12 +615,25 @@ jQuery(function ($) {
 
             // make controls visible in order to allow dom manipulations
             // this.cb.stop(true, true).show();
-            if (this.controlElements['vslider'].width() > this.controlElements['vslider'].height()) {
-                this.controlElements['vmarker'].css('width', volume * 100 + "%");
-                this.controlElements['vknob'].css('left', volume * 100 + "%");
-            } else {
-                this.controlElements['vmarker'].css('height', volume * 100 + "%");
-                this.controlElements['vknob'].css('top', (100 - volume * 100) + "%");
+            var vslider = this.controlElements['vslider'],
+                vmarker = this.controlElements['vmarker'],
+                vknob = this.controlElements['vknob'],
+                orientation = vslider.width() > vslider.height() ? "horizontal" : "vertical";
+            
+            switch(orientation){
+                case "horizontal":
+                    
+                    vmarker.css('width', volume * 100 + "%");
+                    vknob.css('left', Math.round((vslider.width() * volume) - (vknob.width() * volume)) + "px" );
+                    
+                break;
+                
+                case "vertical":
+                    
+                    vmarker.css('height', volume * 100 + "%");
+                    vknob.css('bottom', Math.round((vslider.height() * volume) - (vknob.height() * volume)) + "px" );
+                    
+                break;
             }
 
             // "li" hack
@@ -816,12 +832,16 @@ jQuery(function ($) {
 
         volumeHandler: function (value) {
             try {
-               if (value>0)
+               if (value>0){
                    this.cookie('muted', false);
-                   
-               if (!this.cookie('muted'))
+               }
+ 
+               if (!this.cookie('muted')){
                    this.cookie('volume', value);
+               }
+               
             } catch(e){console.log(e)}
+            
             this.displayVolume(this._getVolume());
         },
 
@@ -1154,52 +1174,69 @@ jQuery(function ($) {
             this._vSliderAct = true;
 
             var ref = this,
-                sliderIdx = (this.pp.getInFullscreen() === true && this.controlElements['vslider'].length > 1) ? 1 : 0,
-                knob = $(domObj[sliderIdx]),
-                slider = $(this.controlElements['vslider'][sliderIdx]),
-                dx = Math.abs(parseFloat(knob.position().left) - event.clientX),
-                dy = Math.abs(parseFloat(knob.position().top) - event.clientY),
+                    
+                vslider = ref.controlElements['vslider'],
+                vmarker = ref.controlElements['vmarker'],
+                vknob = ref.controlElements['vknob'],
+                
+                orientation = vslider.width() > vslider.height() ? "horizontal" : "vertical",
                 
                 volume = 0,
-                mouseUp = function (mouseupevt) {
+                
+                mouseUp = function (mouseUpEvent) {
                     ref.playerDom.unbind('mouseup', mouseUp);
-                    slider.unbind('mousemove', mouseMove);
-                    slider.unbind('mouseup', mouseUp);
-                    knob.unbind('mousemove', mouseMove);
-                    knob.unbind('mouseup', mouseUp);
+                    vslider.unbind('mousemove', mouseMove);
+                    vslider.unbind('mouseup', mouseUp);
+                    vknob.unbind('mousemove', mouseMove);
+                    vknob.unbind('mouseup', mouseUp);
                     ref._vSliderAct = false;
 
                     return false;
                 },
 
-                mouseMove = function (dragevent) {
+                mouseMove = function (dragEvent) {
                     clearTimeout(ref._cTimer);
-                    var newXPos = (dragevent.clientX - dx),
-                        newXPos = (newXPos > slider.width() - knob.width() / 2) ? slider.width() - (knob.width() / 2) : newXPos,
-                        newXPos = (newXPos < 0) ? 0 : newXPos,
-                        newYPos = (dragevent.clientY - dy),                        
-                        newYPos = (newYPos > slider.height() - knob.height() / 2) ? slider.height() - (knob.height() / 2) : newYPos,
-                        newYPos = (newYPos < 0) ? 0 : newYPos;
                     
-                    if (ref.controlElements['vslider'].width() > ref.controlElements['vslider'].height()) {                    
-                        knob.css('left', newXPos + 'px');
-                        volume = Math.abs(newXPos / (slider.width() - (knob.width() / 2)));
-                        $(ref.controlElements['vmarker'][sliderIdx]).css('width', volume * 100 + "%");
-                    } else {
-                        knob.css('top', newYPos + 'px');
-                        volume = 1 - Math.abs(newYPos / (slider.height() - (knob.height() / 2)));
-                        $(ref.controlElements['vmarker'][sliderIdx]).css('height', volume * 100 + "%");
+                    var newXPos = (dragEvent.clientX - vslider.offset().left),
+                        newXPos = (newXPos > vslider.width()) ? vslider.width() : newXPos,
+                        newXPos = (newXPos < 0) ? 0 : newXPos,
+                        
+                        newYPos = (dragEvent.clientY - vslider.offset().top),                        
+                        newYPos = (newYPos > vslider.height()) ? vslider.height() : newYPos,
+                        newYPos = (newYPos < 0) ? 0 : newYPos;
+                        
+                       
+            
+                    switch(orientation){
+                        case "horizontal":
+                            volume = Math.abs(newXPos / vslider.width());
+                            
+                            vmarker.css('width', volume * 100 + "%");
+                            vknob.css('left', Math.round((vslider.width() * volume) - (vknob.width() * volume)) + "px" );
+
+                        break;
+
+                        case "vertical":
+                            volume = 1 - Math.abs(newYPos / vslider.height());
+                            
+                            vmarker.css('height', volume * 100 + "%");
+                            vknob.css('bottom', Math.round((vslider.height() * volume) - (vknob.height()* volume)) + "px" );
+
+                        break;
                     }
+                    
+                    ref.pp.setVolume(volume);
+                    return false;
                 };
 
             // this.playerDom.mousemove(mouseMove);
             this.playerDom.mouseup(mouseUp);
 
-            slider.mousemove(mouseMove);
-            slider.mouseup(mouseUp);
+            vslider.mousemove(mouseMove);
+            vslider.mouseup(mouseUp);
 
-            knob.mousemove(mouseMove);
-            knob.mouseup(mouseUp);
+            vknob.mousemove(mouseMove);
+            vknob.mouseup(mouseUp);
 
         },
 
@@ -1255,7 +1292,7 @@ jQuery(function ($) {
         *******************************/
         _getVolume: function() {
 
-            var volume = parseFloat(this.cookie('volume') || this.getConfig('volume') || 0.5),
+            var volume = parseFloat(this.cookie('volume') || this.getConfig('volume')),
                 muted = this.cookie('muted') || false;
             
             if (this.getConfig('fixedVolume') || volume==null)
