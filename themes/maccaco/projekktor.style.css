@@ -754,7 +754,7 @@ settings menu
 }
 
 .ppsettingsmenu.inactive {
-    display: block;
+    display: none;
 }
 
 .pphttpVideoLive .ppsettingsmenu {

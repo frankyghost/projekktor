@@ -171,18 +171,9 @@ projekktor = $p = function() {
         }        
     ];
     
-        
-
-
     this._addItem = function(data, idx, replace) {
         var resultIdx = 0;
         
-        // replace "error dummy" if any:
-        if (this.media.length===1 && this.media[0].mediaModel=='NA') {
-            this._detachplayerModel();
-            this.media = [];
-        }
-
         // inject or append:
         if (idx===undefined || idx<0 || idx>this.media.length-1) {
             this.media.push(data);
@@ -192,8 +183,19 @@ projekktor = $p = function() {
             resultIdx = idx;
         }
 
+        // remove error model in case it is not required:
+        if (this.media.length==2) {
+            this.media = $.grep(this.media, function(value) {               
+                return value.mediaModel != "NA";
+            });
+            
+            if (this.playerModel.modelId=='NA') {
+                this.playerModel = null;
+                this.setActiveItem(0);
+            }
+        }
+        
         this._promote('scheduleModified', this.getItemCount());
- 
         return resultIdx;
     };
 
@@ -438,7 +440,7 @@ projekktor = $p = function() {
         });
             
 
-        var modelSet = (modelSets && modelSets.length>0) ? modelSets[0] : {type:'none/none', model: 'NA', errorCode: data.errorCode || 11};
+        var modelSet = (modelSets && modelSets.length>0) ? modelSets[0] : {type:'none/none', model: 'NA', errorCode: data.errorCode || 11, config: data.config};
 
         types = $p.utils.unique(types);
 
@@ -512,7 +514,7 @@ projekktor = $p = function() {
         this._promote('item', this.getItemIdx());
     };
     
-    this.pluginsReadyHandler = function(obj) {
+    this.pluginsReadyHandler = function(obj) {       
         switch (obj.callee) {
             
             case 'parserscollected':
@@ -1909,19 +1911,9 @@ return;
             newModel='NA';
             newItem.mediaModel = newModel;
             newItem.errorCode = 8;
-        } else {
-            // apply item specific class(es) to player
-            if (this.getConfig('className', null)!=null) {
-                this.getDC().addClass(this.getNS() + this.getConfig('className'))
-            }
-            this.getDC().addClass(this.getNS() + (this.getConfig('streamType') || 'http') );
-                
-            if (!$p.utils.cssTransitions()) this.getDC().addClass('notransitions')
-            if (this.getIsMobileClient()) this.getDC().addClass('mobile')
         }
-
-        // start model:
-  
+        
+        // start model  
         this.playerModel = new playerModel();
         $.extend(this.playerModel, $p.models[newModel].prototype );
               
@@ -1940,6 +1932,15 @@ return;
             fullscreen: this.getInFullscreen()
             // persistent: (ap || this.config._continuous) && (newModel==nextUp)
         });
+    
+        // apply item specific class(es) to player
+        if (this.getConfig('className', null)!=null) {
+            this.getDC().addClass(this.getNS() + this.getConfig('className'))
+        }
+        this.getDC().addClass(this.getNS() + (this.getConfig('streamType') || 'http') );
+            
+        if (!$p.utils.cssTransitions()) this.getDC().addClass('notransitions')
+        if (this.getIsMobileClient()) this.getDC().addClass('mobile')        
 
         return this;
     };    
@@ -2273,7 +2274,7 @@ return;
         }
                     
         this._clearqueue();
-        
+   
         if (itemData==null) {
             // remove item
             affectedIdx = this._removeItem(arguments[1]);
@@ -2284,8 +2285,8 @@ return;
         else {
             // add/set item
             affectedIdx = this._addItem( itemData, arguments[1], arguments[2]);
-            if (affectedIdx===this.getItemId()) {
-                this.setActiveItem(this.getItemIdx());
+            if (affectedIdx<=this.getItemIdx()) {
+                this.setActiveItem(affectedIdx);
             }
         }
 
