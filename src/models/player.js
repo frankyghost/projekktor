@@ -246,7 +246,7 @@ jQuery(function ($) {
                     break;
                 case 'fullscreen':
                     /* 
-                    * It´s vital to first tell the controller what happened in order to have an already altered DOM
+                    * It is vital to first tell the controller what happened in order to have an already altered DOM
                     * before processing further scaling processes.
                     * This is a break in the logic but seems to work.
                     */                    

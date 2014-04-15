@@ -15,5 +15,10 @@ pids
 logs
 results
 node_modules
+dest
+dist/*.js
+dist/*.json
+dist/*.map
+nonpublic
 
 npm-debug.log
