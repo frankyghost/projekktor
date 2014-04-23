@@ -33,8 +33,7 @@ projekktorMessages = {
     'help3': '<em>ENTER</em> toggle fullscreen',
     'help4': 'Mouse must hover the player.',
     
-    
-    /* flash & native: */
+    // flash & native:
     "error0": '#0 An (unknown) error occurred.',
     "error1": '#1 You aborted the media playback. ',
     "error2": '#2 A network error caused the media download to fail part-way. ',
@@ -56,7 +55,7 @@ projekktorMessages = {
     "error99": 'Click display to proceed. ',
     "error100": 'Keyboard Shortcuts',
         
-    /* youtube errors: */
+    // youtube errors: 
     "error500": 'This Youtube video has been removed or set to private',
     "error501": 'The Youtube user owning this video disabled embedding.',
     "error502": 'Invalid Youtube Video-Id specified.'

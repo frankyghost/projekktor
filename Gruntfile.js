@@ -64,6 +64,7 @@ module.exports = function (grunt) {
           "src/plugins/projekktor.display.js",
           "src/plugins/projekktor.controlbar.js",
           "src/plugins/projekktor.contextmenu.js",
+          "src/plugins/projekktor.settings.js", 
           {user:true, flag: "plugins/ima", src: "ima", ver: true },
           {user:true, flag: "plugins/logo", src: "logo" , ver: true},
           {user:true, flag: "plugins/postertitle", src: "postertitle", ver: true },
@@ -71,8 +72,7 @@ module.exports = function (grunt) {
           {user:true, flag: "plugins/tracking", src: "tracking", ver: true },
           {user:true, flag: "plugins/tracks", src:  "tracks", ver: true },
           {user:true, flag: "plugins/audioslideshow", src:  "audioslideshow", ver: true },
-          {user:true, flag: "plugins/vastdemo", src:  "vastdemo", ver: true },
-          {user:true, flag: "plugins/settings", src:  "settings", ver: true }          
+          {user:true, flag: "plugins/vastdemo", src:  "vastdemo", ver: true }        
         ]
       }
     },    

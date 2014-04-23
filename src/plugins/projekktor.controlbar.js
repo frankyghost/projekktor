@@ -516,9 +516,11 @@ jQuery(function ($) {
                 this.cb.removeClass('active').addClass('inactive');
                 return;
             }
-                        
-            if (this.getConfig('showOnIdle') && this.pp.getState('IDLE'))
+
+            if (this.getConfig('showOnIdle') && this.pp.getState('IDLE')) {
+                this.showcb(true);
                 return;
+            }
 
             if (instant)
                 this._noHide = false;

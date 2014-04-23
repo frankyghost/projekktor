@@ -173,7 +173,7 @@ projekktor = $p = function() {
     
     this._addItem = function(data, idx, replace) {
         var resultIdx = 0;
-        
+
         // inject or append:
         if (idx===undefined || idx<0 || idx>this.media.length-1) {
             this.media.push(data);
@@ -666,13 +666,18 @@ projekktor = $p = function() {
     };
     
     this.errorHandler = function(value) {
-        if (this.getConfig('skipTestcard') && this.getItemCount() > 1) {
+        if (this.getConfig('skipTestcard')) {
            this.setActiveItem('next');
         } 
     }; 
 
     this.doneHandler = function() {
         this.setActiveItem(0, false);
+        // prevent player-hangup in sitiations where
+        // playlist becomes virtually empty by applied filter rules (e.g. maxviews)
+        if (!this.getNextItem()) {
+            this.reset();
+        }
     };
     
     this._syncPlugins = function(callee, data) {
@@ -1853,8 +1858,8 @@ return;
     };
 */
     this.setActiveItem = function(mixedData, autoplay) {        
-        var newItem = this.getItem(),
-            lastItem = this.getItem(),
+        var lastItem = this.getItem(),
+            newItem = null,
             ref = this,
             ap = this.config._autoplay;
 
@@ -1881,7 +1886,7 @@ return;
             this._promote('done', {});
             return this;            
         } 
-       
+   
         // item change requested...
         if (newItem!=lastItem) {
             // and denied... gnehe
@@ -2264,7 +2269,7 @@ return;
 
         var itemData = (arguments[0]) ? this._prepareMedia({file:arguments[0], config:arguments[0].config || {}}) : false,
             affectedIdx = 0;
-
+            
         if (itemData===false) {
             return false;
         }
@@ -2541,7 +2546,7 @@ return;
             },
             
             _timeListener: function(time, player) {
-                
+
                 if (player.getItemId() !== this.item && this.item !== '*')
                     return;
 
@@ -3125,7 +3130,9 @@ return;
 
         var theNode = customNode || srcNode,
             theCfg = customCfg || cfg,
-            cfgByTag = this._readMediaTag(theNode);
+            cfgByTag = this._readMediaTag(theNode),
+            ref = this,
+            iframeParent = this.getIframeParent();
 
         // -----------------------------------------------------------------------------
         // - 1. GENERAL CONFIG ---------------------------------------------------------
@@ -3192,23 +3199,12 @@ return;
             this.config.fixedVolume = true;
         }
 
-
         // -----------------------------------------------------------------------------
         // - 2. TRIM DEST --------------------------------------------------------------
         // -----------------------------------------------------------------------------
 
         // make sure we can deal with a domID here:
         this.env.playerDom.attr('id', this._id);
-
-
-        return this._start(false);;
-    };
-
-
-    this._start = function(data) {
-
-        var ref = this,
-            iframeParent = this.getIframeParent();
 
         // load and initialize plugins
         this._registerPlugins();
@@ -3247,7 +3243,7 @@ return;
                 }
             }
         }
-
+        this._testMediaSupport();
         this.setFile(this.config._playlist);
 
         return this;

@@ -161,11 +161,10 @@ $p.newModel({
 
         switch(event) {
             case 'onJavaScriptBridgeCreated':
-                
-                if (this.mediaElement!==null && this.getState('AWAKENING') ) {                
+                if (this.mediaElement!==null && (this.getState('AWAKENING') || this.getState('STARTING'))) {                
                     $.each(this._eventMap, function(key, value){
                         ref.mediaElement.get(0).addEventListener(key, "projekktor('"+ref.pp.getId()+"').playerModel." + value);
-                    });                    
+                    });
                     this.applySrc();
                     this.displayReady();      
                 }

@@ -22,24 +22,24 @@ projekktorSettings.prototype = {
         settingsMenu:
             '<ul id="tool" class="ppsettingslist active">' +
                 '<li class="first">%{help}</li>' +
-                '<li data-pp-settings-func="tool_help" class="active">%{keyboard controls}</li>' +
-                '<li data-pp-settings-func="tool_debug" class="active">%{debug}</li>' +
-                '<li data-pp-settings-func="tool_version" class="active">%{player info}</li>' +
+                '<li data-pp-settings-func="tool_help" class="inactive">%{keyboard controls}</li>' +
+                '<li data-pp-settings-func="tool_debug" class="inactive">%{debug}</li>' +
+                '<li data-pp-settings-func="tool_version" class="inactive">%{player info}</li>' +
                 '<li></li>' +
             '</ul>' +
             '<ul id="platform" class="ppsettingslist active">' +
-                '<li class="first">%{platform}:</li>' +
-                '<li data-pp-settings-func="platform_flash" class="active">%{flash}</li>' +
-                '<li data-pp-settings-func="platform_native" class="active">%{html5}</li>' +
-                '<li data-pp-settings-func="platform_vlc" class="active">%{vlc}</li>' +
-                '<li data-pp-settings-func="platform_auto" class="auto active">%{automatic}</li>' +
+                '<li class="first">%{platform}</li>' +
+                '<li data-pp-settings-func="platform_flash" class="inactive">%{flash}</li>' +
+                '<li data-pp-settings-func="platform_native" class="inactive">%{html5}</li>' +
+                '<li data-pp-settings-func="platform_vlc" class="inactive">%{vlc}</li>' +
+                '<li data-pp-settings-func="platform_auto" class="auto inactive">%{automatic}</li>' +
             '</ul>' +
             '<ul id="quality" class="ppsettingslist active">' +
-                '<li class="first">%{quality}:</li>' +
-                '<li data-pp-settings-func="quality_l"  class="active">%{high}</li>' +
-                '<li data-pp-settings-func="quality_m"  class="active">%{medium}</li>' +
-                '<li data-pp-settings-func="quality_s"  class="active">%{low}</li>' +
-                '<li data-pp-settings-func="quality_auto"  class="auto active">%{automatic}</li>' +
+                '<li class="first">%{quality}</li>' +
+                '<li data-pp-settings-func="quality_l"  class="inactive">%{high}</li>' +
+                '<li data-pp-settings-func="quality_m"  class="inactive">%{medium}</li>' +
+                '<li data-pp-settings-func="quality_s"  class="inactive">%{low}</li>' +
+                '<li data-pp-settings-func="quality_auto"  class="auto inactive">%{automatic}</li>' +
             '</ul>' +
             '<div class="ppclear"></div>',
             
@@ -98,7 +98,7 @@ projekktorSettings.prototype = {
 
         var ref = this,
             _outDelay = 0;
-            
+
         // button, main container and options
         this.dest = this.applyToPlayer($('<div/>').addClass('settingsmenu').html(this.i18n(this.getConfig('settingsMenu'))));
         this.btn = this.applyToPlayer($('<div/>').addClass('settingsbtn'), 'btn');
@@ -168,7 +168,7 @@ projekktorSettings.prototype = {
     itemHandler: function() {
         var ref = this,
             pCount = 0,
-            menuOptions = [];  
+            menuOptions = [];    
 
         $.each(this.dest.find("[" + this.getDA('func') + "]"), function() {
             var func = $(this).attr(ref.getDA('func')).split('_');
@@ -180,7 +180,7 @@ projekktorSettings.prototype = {
             // check
             if (!ref[func[0] + 'Check'](func[1]) && func[1]!='auto') {
                 $(this).addClass('inactive').removeClass('active');
-                return true;
+                // return true;
             } else {
                 $(this).addClass('active').removeClass('inactive');
             }
@@ -189,7 +189,7 @@ projekktorSettings.prototype = {
 
             // visual feedback custom settings
             if (ref.cookie(func[0])==func[1] || ( (ref.cookie(func[0])===false || ref.cookie(func[0])==null) && func[1]=='auto')) {
-                 $(this).addClass('on').removeClass('off');
+                $(this).addClass('on').removeClass('off');
             }
             else {
                 $(this).addClass('off').removeClass('on');
