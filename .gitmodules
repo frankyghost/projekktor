@@ -1,0 +1,3 @@
+[submodule "libs/projekktor-StrobeMediaPlayback"]
+	path = libs/projekktor-StrobeMediaPlayback
+	url = https://github.com/fixedmachine/projekktor-StrobeMediaPlayback.git
