@@ -29,7 +29,7 @@ projekktorMessages = {
     'thanks': 'Thank you very much.',
     'error': 'An error occured',
     'help1': '<em>space</em> play / pause',
-    'help2': '<em>↑</em><em>↓</em> volume <em>←</em><em>→</em> scrub',
+    'help2': '<em>up</em><em>down</em> volume <em>left</em><em>right</em> scrub',
     'help3': '<em>ENTER</em> toggle fullscreen',
     'help4': 'Mouse must hover the player.',
     
