@@ -315,7 +315,7 @@ projekktor = $p = function() {
                             // set priority level
                             $p.mmap[mmapIndex].level = $.inArray(platform, ref.config._platforms);
                             $p.mmap[mmapIndex].level = ($p.mmap[mmapIndex].level<0) ? 100 : $p.mmap[mmapIndex].level;
-                           
+                        
                             // upcoming fun:
                             extRegEx.push( '.'+$p.mmap[mmapIndex].ext );
                             
@@ -369,6 +369,7 @@ projekktor = $p = function() {
 
         for(var index in data.file) {
             if (data.file.hasOwnProperty(index)) {
+
                 // meeeep
                 if (index=='config') continue;
         
@@ -409,7 +410,7 @@ projekktor = $p = function() {
                 if (typesModels[data.file[index].type] && typesModels[data.file[index].type].length>0) {
                       
                     typesModels[data.file[index].type].sort(function(a, b) {
-                            return a.level - b.level;
+                        return a.level - b.level;
                     });
                
                     modelSets.push(typesModels[data.file[index].type] [0]);
@@ -421,12 +422,12 @@ projekktor = $p = function() {
             modelSets = typesModels['none/none'];
         }
         else {
-            
+        
             // find highest priorized playback model
             modelSets.sort(function(a, b) {
                 return a.level - b.level;
             });
-
+ 
             bestMatch = modelSets[0].level;
             
             modelSets = $.grep(modelSets, function(value) {
@@ -446,6 +447,11 @@ projekktor = $p = function() {
 
         for (index in data.file) {
             if (data.file.hasOwnProperty(index)) {
+            
+                if (!data.availableFiles) {
+                    data.availableFiles = data.file;
+                }
+               
             
                 // discard files not matching the selected model
                 if (data.file[index].type==null)
@@ -486,6 +492,7 @@ projekktor = $p = function() {
             ID: data.config.id || $p.utils.randomId(8),
             cat: data.config.cat || 'clip',
             file: mediaFiles,
+            availableFiles: data.availableFiles,
             platform: modelSet.platform,
             platforms: platforms,
             qualities: $p.utils.intersect($p.utils.unique(_setQual), $p.utils.unique(qualities)),
@@ -519,7 +526,6 @@ projekktor = $p = function() {
             
             case 'parserscollected':
                 var parser = this._parsers.pop();
-                // console.log(parser(obj.data))
                 this.setPlaylist(parser(obj.data));
                 break;
                 if (this.getItemCount()<1) {
@@ -1534,7 +1540,33 @@ return;
     };
 
     this.getPlatforms = function()  {        
-        return $.map($p._platformTableCache, function(n,i){return n.toLowerCase();});
+        // return $.map($p._platformTableCache, function(n,i){return n.toLowerCase();});
+        var ref = this,
+            platforms = this._testMediaSupport(true),
+            item = this.getItem(),
+            cfg = this.getConfig('platforms'),
+            tmp = [],
+            result = [];
+
+        try {
+            for (var i in item.availableFiles) {
+                if (item.availableFiles.hasOwnProperty(i)) {
+                    for (var j in platforms) {                      
+                        if (this._canPlay(item.availableFiles[i].type.replace(/x-/, ''), platforms[j].toLowerCase(), this.getConfig('streamType')) ) {
+                            if ($.inArray(platforms[j].toLowerCase(), result)==-1) {
+                                result.push(platforms[j].toLowerCase());
+                            }
+                        }
+                    }
+                }
+            }
+        } catch(e) {}
+
+        result.sort(function(a, b) {
+            return $.inArray(a, cfg) - $.inArray(b, cfg);
+        });
+
+        return result;        
     };
 
     /*

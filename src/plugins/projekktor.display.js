@@ -132,6 +132,7 @@ projekktorDisplay.prototype = {
             
             case 'IDLE':
                 this.showStartButton();
+                this.hideBufferIcon();
                 break;
             
             case 'STARTING':
@@ -270,13 +271,14 @@ projekktorDisplay.prototype = {
         this.buffIcn.addClass('inactive').removeClass('active');
     },
         
-    showBufferIcon: function(instant) {                        
+    showBufferIcon: function(instant) {
         var ref=this;
 
         clearTimeout(this.bufferDelayTimer);
 
-        if (this.pp.getHasGUI())
+        if (this.pp.getHasGUI() || this.pp.getState('IDLE')) {
             return;
+        }
     
         if ( (this.pp.getModel()==='YTAUDIO' || this.pp.getModel()==='YTVIDEO') && !this.pp.getState('IDLE'))
             instant=true;

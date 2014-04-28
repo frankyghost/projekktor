@@ -19,6 +19,7 @@ projekktorSettings.prototype = {
     
     config: {
         contextTitle: 'Settings',
+        feedbackUrl: false,
         settingsMenu:
             '<ul id="tool" class="ppsettingslist active">' +
                 '<li class="first">%{help}</li>' +
@@ -180,7 +181,7 @@ projekktorSettings.prototype = {
             // check
             if (!ref[func[0] + 'Check'](func[1]) && func[1]!='auto') {
                 $(this).addClass('inactive').removeClass('active');
-                // return true;
+                return true;
             } else {
                 $(this).addClass('active').removeClass('inactive');
             }
@@ -206,8 +207,7 @@ projekktorSettings.prototype = {
         });
 
         // restore presets:
-        for (var i in menuOptions) {
-            
+        for (var i in menuOptions) {   
             if (menuOptions[i].length<3) {
                 this.dest.find('#' + i).addClass('inactive').removeClass('active');
             } else {
@@ -272,6 +272,11 @@ projekktorSettings.prototype = {
             step = stp || 1,
             ref = this,
             isPlaying = this.pp.getState('PLAYING');
+
+        if (func=='debug' && this.getConfig('feedbackUrl')) {
+            window.location.href = this.getConfig('feedbackUrl');
+            return; 
+        }
         
         tpl.html(this.i18n(this.getConfig(func + 'Tpl')));
         
@@ -280,6 +285,7 @@ projekktorSettings.prototype = {
         this.tool.find('#' + func + '_' + step).addClass('active').removeClass('inactive');
         this.setActive(this.tool);
 
+        
         if (data==null) {
             this.tool.find('#message').focus(function(){
                 $(this).html('').unbind('focus').css({color:'#000'});
@@ -308,6 +314,7 @@ projekktorSettings.prototype = {
             $.each(this.pp.config._platforms, function(key, value) {
                 debugData[value + 'ver'] = $p.platforms[value.toUpperCase()]();
             });
+                        
             this.tool.find((func=='debug') ? '#result' : '#errortxt')
                 .attr({readonly: 'readonly'})
                 .val(
