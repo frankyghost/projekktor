@@ -2495,7 +2495,7 @@ return;
             cleanConfig[(i.substr(0,1)=='_') ? i.substr(1) : i] = this.config[i];
         }
 
-        // cleanConfig['autoplay'] = false;
+        cleanConfig['autoplay'] = cleanConfig['loop'];
 
         this._init(this.env.playerDom, cleanConfig);
 
