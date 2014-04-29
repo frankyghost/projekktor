@@ -378,8 +378,8 @@ projekktorSettings.prototype = {
 
         if (value=='auto') {
             this.cookie('platform', false, true);
-            this.pp.reset(false);
-            return null;
+            this.pp.reset(this.pp.getState('PLAYING') || this.pp.getState('PAUSED'));
+            return true;
         }
 
         if (value==null) return null; // bullshit
@@ -393,8 +393,8 @@ projekktorSettings.prototype = {
 
         if (val!=null) {
             this.cookie('platform', value);
-            this.pp.reset(true);
-            setTimeout(function() {console.log("HUHU");ref.pp.setPlayhead(pos);}, 500);
+            this.pp.reset(this.pp.getState('PLAYING') || this.pp.getState('PAUSED'));
+            setTimeout(function() {ref.pp.setPlayhead(pos);}, 500);
             return true;
         }
 

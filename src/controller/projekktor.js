@@ -2497,9 +2497,26 @@ projekktor = $p = function() {
     */
     this.reset = function(autoplay) {
         var ref = this;
-        this._clearqueue();
-        this.setFullscreen(false);
-        this._enqueue(function() {ref._reset(autoplay);});
+        try {       
+            this.addListener('fullscreen.reset', function() {
+                ref.removeListener('fullscreen.reset');
+                ref._clearqueue();       
+                ref._enqueue(function() {
+                   ref._reset(autoplay);
+               });           
+            })
+            
+            this.setFullscreen(false);
+        } catch(e) {
+            // this needs to be fixed
+            // fails with an "this.playerModel.applyCommand is not a function" from time to time
+            // ugly workaround to prevent player to hang up: 
+            ref.removeListener('fullscreen.reset');
+            ref._clearqueue();       
+            ref._enqueue(function() {
+                ref._reset(autoplay);
+            });
+         }
         return this;
     },
 

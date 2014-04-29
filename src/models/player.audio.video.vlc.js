@@ -218,23 +218,27 @@ $p.newModel({
 
     setFullscreen: function() {
         // windowless:true rescaling issue workaround
+        if (this.mediaElement) {
         pos = this.mediaElement.get(0).input.position;
         this.mediaElement.get(0).playlist.stop();
         this.setPlay();
         this.mediaElement.get(0).input.position = pos;
         if (this.getState('PAUSED'))
             this.setPause();
+        }
     },
     
     setResize: function() {
         this._scaleVideo(false);
-        // windowless:true rescaling issue workaround
-        pos = this.mediaElement.get(0).input.position;
-        this.mediaElement.get(0).playlist.stop();
-        this.setPlay();
-        this.mediaElement.get(0).input.position = pos;
-        if (this.getState('PAUSED'))
-            this.setPause();
+        if (this.mediaElement) {
+            // windowless:true rescaling issue workaround
+            pos = this.mediaElement.get(0).input.position;
+            this.mediaElement.get(0).playlist.stop();
+            this.setPlay();
+            this.mediaElement.get(0).input.position = pos;
+            if (this.getState('PAUSED'))
+                this.setPause();
+        }
     }    
     
 });
