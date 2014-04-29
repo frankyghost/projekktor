@@ -701,6 +701,16 @@ jQuery(function ($) {
             
             // no changes
             if (currentImageObj.attr('src')==url) {
+                if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), currentImageObj, destObj.width(), destObj.height())) {
+                    try {
+                        ref.sendUpdate('scaled', {
+                            realWidth: currentImageObj._originalDimensions.width,
+                            realHeight: currentImageObj._originalDimensions.height,
+                            displayWidth: ref.mediaElement.width(),
+                            displayHeight: ref.mediaElement.height()
+                        });
+                    } catch (e) {}
+                }
                 return currentImageObj;
             }
 

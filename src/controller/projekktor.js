@@ -625,7 +625,7 @@ projekktor = $p = function() {
     
     this.fullscreenHandler = function(value) {
         var nativeFullscreen = this.getNativeFullscreenSupport(); 
-     
+
         if (value===true) {
             this.getDC().addClass('fullscreen');
             this._enterFullViewport();
@@ -1052,7 +1052,7 @@ projekktor = $p = function() {
             margin: 0,
             padding: 0
         });     
-return;
+
         // prepare parent window
         win.scrollTop(0).scrollLeft(0);
         $(win[0].document.body).css({
@@ -2498,6 +2498,7 @@ return;
     this.reset = function(autoplay) {
         var ref = this;
         this._clearqueue();
+        this.setFullscreen(false);
         this._enqueue(function() {ref._reset(autoplay);});
         return this;
     },
@@ -2509,7 +2510,7 @@ return;
               
         // this._isReady = false;
         
-        this.setFullscreen(false);
+        
         
         $(this).unbind();
         $((this.getIframe()) ? parent.window.document : document).unbind(".projekktor");
