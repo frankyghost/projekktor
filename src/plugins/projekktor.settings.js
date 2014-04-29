@@ -378,7 +378,7 @@ projekktorSettings.prototype = {
 
         if (value=='auto') {
             this.cookie('platform', false, true);
-            this.pp.reset();
+            this.pp.reset(false);
             return null;
         }
 
@@ -393,9 +393,8 @@ projekktorSettings.prototype = {
 
         if (val!=null) {
             this.cookie('platform', value);
-            this.pp.reset();
-            this.pp.setPlay();
-            setTimeout(function() {ref.pp.setPlayhead(pos);}, 500);
+            this.pp.reset(true);
+            setTimeout(function() {console.log("HUHU");ref.pp.setPlayhead(pos);}, 500);
             return true;
         }
 

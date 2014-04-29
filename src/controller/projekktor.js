@@ -2495,14 +2495,14 @@ return;
     * @public
     * @return {Object} this
     */
-    this.reset = function() {
+    this.reset = function(autoplay) {
         var ref = this;
         this._clearqueue();
-        this._enqueue(function() {ref._reset();});
+        this._enqueue(function() {ref._reset(autoplay);});
         return this;
     },
 
-    this._reset = function() {
+    this._reset = function(autoplay) {
 
         var cleanConfig = {},
             ref = this;
@@ -2527,7 +2527,7 @@ return;
             cleanConfig[(i.substr(0,1)=='_') ? i.substr(1) : i] = this.config[i];
         }
 
-        cleanConfig['autoplay'] = cleanConfig['loop'];
+        cleanConfig['autoplay'] = cleanConfig['loop'] || autoplay;
 
         this._init(this.env.playerDom, cleanConfig);
 

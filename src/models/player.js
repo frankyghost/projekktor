@@ -686,21 +686,25 @@ jQuery(function ($) {
         applyImage: function (url, destObj) {
 
             var imageObj = $('<img/>').hide(),
+                currentImageObj = $("#" + this.pp.getMediaId() + "_image");
                 ref = this;
 
             $p.utils.blockSelection(imageObj);
-            
-            $("#" + this.pp.getMediaId() + "_image").remove();
-
+                       
             // empty URL... apply placeholder
             if (url == null || url === false) {
+                currentImageObj.remove();
                 return $('<span/>').attr({
                     "id": this.pp.getMediaId() + "_image"
                 }).appendTo(destObj);
             }
+            
+            // no changes
+            if (currentImageObj.attr('src')==url) {
+                return currentImageObj;
+            }
 
             imageObj.html('').appendTo(destObj).attr({
-                "id": this.pp.getMediaId() + "_image",
                 "alt": this.pp.getConfig('title') || ''
             }).css({
                 position: 'absolute'
@@ -716,6 +720,9 @@ jQuery(function ($) {
                 if (!imageObj.attr("data-od-width")) imageObj.attr("data-od-width", dest.naturalWidth);
                 if (!imageObj.attr("data-od-height")) imageObj.attr("data-od-height", dest.naturalHeight);
                 
+                currentImageObj.remove();
+                
+                imageObj.attr('id', ref.pp.getMediaId() + "_image");
                 imageObj.show();
 
                 if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), imageObj, destObj.width(), destObj.height())) {
