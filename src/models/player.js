@@ -686,7 +686,7 @@ jQuery(function ($) {
         applyImage: function (url, destObj) {
 
             var imageObj = $('<img/>').hide(),
-                currentImageObj = $("#" + this.pp.getMediaId() + "_image");
+                currentImageObj = $("." + this.pp.getMediaId() + "_image"); // select by class to workaround timing issues causing multiple <img> of the same ID being present in the DOM
                 ref = this;
 
             $p.utils.blockSelection(imageObj);
@@ -694,14 +694,15 @@ jQuery(function ($) {
             // empty URL... apply placeholder
             if (url == null || url === false) {
                 currentImageObj.remove();
-                return $('<span/>').attr({
-                    "id": this.pp.getMediaId() + "_image"
+                return $('<img/>').attr({
+                    "id": this.pp.getMediaId() + "_image",
+                    "src": $p.utils.imageDummy()
                 }).appendTo(destObj);
             }
-            
+
             // no changes
-            if (currentImageObj.attr('src')==url) {
-                if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), currentImageObj, destObj.width(), destObj.height())) {
+            if ($(currentImageObj[0]).attr('src')==url) {
+                if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), $(currentImageObj[0]), destObj.width(), destObj.height())) {
                     try {
                         ref.sendUpdate('scaled', {
                             realWidth: currentImageObj._originalDimensions.width,
@@ -711,21 +712,11 @@ jQuery(function ($) {
                         });
                     } catch (e) {}
                 }
-                return currentImageObj;
+                return $(currentImageObj[0]);
             }
 
-            imageObj.html('').appendTo(destObj).attr({
-                "alt": this.pp.getConfig('title') || ''
-            }).css({
-                position: 'absolute'
-            });
-
-            imageObj.error(function (event) {
-                $(this).remove();
-            });
-
             imageObj.load(function (event) {
-                var dest = event.currentTarget;
+                var dest = $(event.currentTarget);
                 
                 if (!imageObj.attr("data-od-width")) imageObj.attr("data-od-width", dest.naturalWidth);
                 if (!imageObj.attr("data-od-height")) imageObj.attr("data-od-height", dest.naturalHeight);
@@ -735,7 +726,7 @@ jQuery(function ($) {
                 imageObj.attr('id', ref.pp.getMediaId() + "_image");
                 imageObj.show();
 
-                if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), imageObj, destObj.width(), destObj.height())) {
+                if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), dest, destObj.width(), destObj.height())) {
                     try {
                         ref.sendUpdate('scaled', {
                             realWidth: imgObj._originalDimensions.width,
@@ -749,10 +740,21 @@ jQuery(function ($) {
 
             imageObj.removeData('od');
             
+            imageObj.appendTo(destObj).attr({
+                "alt": this.pp.getConfig('title') || ''
+            }).css({
+                position: 'absolute'
+            }).addClass(this.pp.getMediaId() + "_image");            
+            
             // IE<9 trap:
             imageObj.attr('src', url);
 
-
+            imageObj.error(function (event) {
+                console.log("error", event)
+                $(this).remove();
+                currentImageObj.show();
+            });
+            
             this.pp.removeListener('fullscreen.poster');
             this.pp.removeListener('resize.poster');
 
