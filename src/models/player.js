@@ -356,7 +356,7 @@ jQuery(function ($) {
         },
 
         getDuration: function () {
-            return this.media.duration || 0;
+            return this.media.duration || this.pp.getConfig('duration') || 0;
         },
 
         getMaxPosition: function () {
@@ -716,17 +716,17 @@ jQuery(function ($) {
             }
 
             imageObj.load(function (event) {
-                var dest = $(event.currentTarget);
-                
-                if (!imageObj.attr("data-od-width")) imageObj.attr("data-od-width", dest.naturalWidth);
-                if (!imageObj.attr("data-od-height")) imageObj.attr("data-od-height", dest.naturalHeight);
+                var target = $(event.currentTarget);
+
+                if (!imageObj.attr("data-od-width")) imageObj.attr("data-od-width", target.naturalWidth);
+                if (!imageObj.attr("data-od-height")) imageObj.attr("data-od-height", target.naturalHeight);
                 
                 currentImageObj.remove();
                 
                 imageObj.attr('id', ref.pp.getMediaId() + "_image");
                 imageObj.show();
 
-                if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), dest, destObj.width(), destObj.height())) {
+                if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), target, destObj.width(), destObj.height())) {
                     try {
                         ref.sendUpdate('scaled', {
                             realWidth: imgObj._originalDimensions.width,
@@ -740,6 +740,17 @@ jQuery(function ($) {
 
             imageObj.removeData('od');
             
+            this.pp.removeListener('fullscreen.poster');
+            this.pp.removeListener('resize.poster');
+
+            this.pp.addListener('fullscreen.poster', function () {
+                ref.applyImage(ref.getPoster(), destObj);  
+            });
+            
+            this.pp.addListener('resize.poster', function () {
+                ref.applyImage(ref.getPoster(), destObj);  
+            });            
+            
             imageObj.appendTo(destObj).attr({
                 "alt": this.pp.getConfig('title') || ''
             }).css({
@@ -750,22 +761,10 @@ jQuery(function ($) {
             imageObj.attr('src', url);
 
             imageObj.error(function (event) {
-                console.log("error", event)
                 $(this).remove();
                 currentImageObj.show();
             });
             
-            this.pp.removeListener('fullscreen.poster');
-            this.pp.removeListener('resize.poster');
-
-            this.pp.addListener('fullscreen.poster', function () {
-                ref.applyImage(ref.getPoster(), destObj);  
-            });
-            
-            this.pp.addListener('resize.poster', function () {
-                ref.applyImage(ref.getPoster(), destObj);  
-            });
-
             return imageObj;
         },
 

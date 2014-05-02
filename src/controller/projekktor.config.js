@@ -191,7 +191,7 @@ projekktorConfig.prototype = {
     the player will proceed to the next item without showing a testcard */
     skipTestcard:                   false,  
         
-    /* sets the duration for media items without a duration (images & html pages) */
+    /* (pre-) sets the media-duration / will be overwritten once META data is available */
     duration:                       0,
     
     /* add this CSS classes on startup */

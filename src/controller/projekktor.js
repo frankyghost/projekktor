@@ -2241,6 +2241,7 @@ projekktor = $p = function() {
 
     this.setLoop = function(value) {
         this.config._loop = value || !this.config._loop;
+        return this;
     };
 
     this.setDebug = function(value) {
@@ -2249,6 +2250,7 @@ projekktor = $p = function() {
         if ($p.utils.logging) {
             $p.utils.log('DEBUG MODE #' + this.getId() + " Level: " + this.getConfig('debugLevel') );
         }
+        return this;
     };
 
     this.addListener = function(evt, callback) {
