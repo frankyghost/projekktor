@@ -555,23 +555,23 @@ jQuery(function ($) {
 	$p.platforms = {
 
         VLC: function() {
-            if (navigator.plugins && (navigator.plugins.length > 0)) {
-                for(var i=0;i<navigator.plugins.length;++i) {
-                    if (navigator.plugins[i].name.indexOf("VLC") != -1) {
-                        if (navigator.plugins[i].version!=null)
-                            return navigator.plugins[i].version || "0";
-                        if (navigator.plugins[i].description!=null)
-                            if (navigator.plugins[i].description.match(/\d{1,}\.\d{1,}\.\d{1,}/i)[0])
-                                return navigator.plugins[i].description.match(/\d{1,}\.\d{1,}\.\d{1,}/i)[0];
-                    }
-                }
-            }
-            else {
-                try {
-                    new ActiveXObject("VideoLAN.VLCPlugin.2");
-                    return "0"; // no, please, no
-                } catch (err) {}
-            }        
+			try {
+				if (navigator.plugins && (navigator.plugins.length > 0)) {
+					for(var i=0;i<navigator.plugins.length;++i) {
+						if (navigator.plugins[i].name.indexOf("VLC") != -1) {
+							if (navigator.plugins[i].version!=null)
+								return navigator.plugins[i].version || "0";
+							if (navigator.plugins[i].description!=null)
+								if (navigator.plugins[i].description.match(/\d{1,}\.\d{1,}\.\d{1,}/i)[0])
+									return navigator.plugins[i].description.match(/\d{1,}\.\d{1,}\.\d{1,}/i)[0];
+						}
+					}
+				}
+				else {
+					new ActiveXObject("VideoLAN.VLCPlugin.2");
+					return "0"; // no, please, no
+				}
+			} catch(e) {}
             return "0";
         },
 

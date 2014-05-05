@@ -74,7 +74,8 @@ $p.newModel({
     },
     
     applyMedia: function(destContainer) {
-        var ref = this; 
+        var ref = this,
+            sources = this.getSource();
 
         window['projekktorOSMFReady'+this.pp.getId()] = function() {
             projekktor(ref.pp.getId()).playerModel._OSMFListener(arguments);
@@ -88,8 +89,10 @@ $p.newModel({
                 'position': 'absolute',
                 'top': 0,
                 'left': 0
-            })        
-        
+            })
+            try {
+                console.log( this.pp.getConfig('OSMFVars') || sources[0].config.OSMFVars )
+            } catch(e) {console.log(e);}
         var domOptions = {
             id: this.pp.getMediaId()+"_flash",
             name: this.pp.getMediaId()+"_flash",
@@ -110,7 +113,7 @@ $p.newModel({
                 enableStageVideo: this._hardwareAcceleration,
                 disableHardwareAcceleration: !this._hardwareAcceleration,
                 javascriptCallbackFunction: 'window.projekktorOSMFReady'+this.pp.getId()               
-            }, this.pp.getConfig('OSMFVars'))
+            }, this.pp.getConfig('OSMFVars') || sources[0].config.OSMFVars)
         };
     
         this.createFlash(domOptions, destContainer);
@@ -499,6 +502,7 @@ $p.newModel({
         window['projekktorOSMFReady'+this.pp.getId()] = function() {
             projekktor(ref.pp.getId()).playerModel._OSMFListener(arguments);
         };
+            
         
         var domOptions = {
             id: this.pp.getMediaId()+"_flash",

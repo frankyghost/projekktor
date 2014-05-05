@@ -1149,14 +1149,18 @@ projekktor = $p = function() {
             return this.media[idx]['config'];
         }
 
-        // get value from item-specific config (beats them all)
+        // get value from item-specific config (playlist level)
         if (this.config['_'+name]==null) {        
             try {
                 if (this.media[idx]['config'][name]!==undefined) {
                     result = this.media[idx]['config'][name];            
                 }
             } catch(e){}
+            
+            
+            
         }
+        
 
         if (name.indexOf('plugin_')>-1) {
             try {

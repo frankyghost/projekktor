@@ -268,7 +268,11 @@ projekktorSettings.prototype = {
      * **************************************************/
     toolSet: function(func, stp, data) {
 
-        var tpl = this.applyToPlayer($('<div/>'), 'toolwindow_' + func),
+        if (func==undefined) {
+            return;
+        }
+        
+        var tpl = $('<div/>').appendTo(this.tool), // this.applyToPlayer($('<div/>'), 'toolwindow_' + func),
             step = stp || 1,
             ref = this,
             isPlaying = this.pp.getState('PLAYING');
@@ -279,13 +283,12 @@ projekktorSettings.prototype = {
         }
         
         tpl.html(this.i18n(this.getConfig(func + 'Tpl')));
-        
+       
         this.tool.html($p.utils.parseTemplate(tpl.html(), this.pp.config) );
         this.tool.find('.wizzard').addClass('inactive').removeClass('active');
         this.tool.find('#' + func + '_' + step).addClass('active').removeClass('inactive');
         this.setActive(this.tool);
-
-        
+ 
         if (data==null) {
             this.tool.find('#message').focus(function(){
                 $(this).html('').unbind('focus').css({color:'#000'});

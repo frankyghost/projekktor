@@ -690,7 +690,7 @@ jQuery(function ($) {
                 ref = this;
 
             $p.utils.blockSelection(imageObj);
-                       
+
             // empty URL... apply placeholder
             if (url == null || url === false) {
                 currentImageObj.remove();
@@ -718,19 +718,19 @@ jQuery(function ($) {
             imageObj.load(function (event) {
                 var target = $(event.currentTarget);
 
-                if (!imageObj.attr("data-od-width")) imageObj.attr("data-od-width", target.naturalWidth);
-                if (!imageObj.attr("data-od-height")) imageObj.attr("data-od-height", target.naturalHeight);
+                target.attr("data-od-width", target.get(0).naturalWidth);
+                target.attr("data-od-height", target.get(0).naturalHeight);
                 
                 currentImageObj.remove();
                 
-                imageObj.attr('id', ref.pp.getMediaId() + "_image");
-                imageObj.show();
+                target.attr('id', ref.pp.getMediaId() + "_image");
+                target.show();
 
                 if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), target, destObj.width(), destObj.height())) {
                     try {
                         ref.sendUpdate('scaled', {
-                            realWidth: imgObj._originalDimensions.width,
-                            realHeight: imgObj._originalDimensions.height,
+                            realWidth: target._originalDimensions.width,
+                            realHeight: target._originalDimensions.height,
                             displayWidth: ref.mediaElement.width(),
                             displayHeight: ref.mediaElement.height()
                         });
