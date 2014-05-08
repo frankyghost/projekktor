@@ -1184,11 +1184,16 @@ jQuery(function ($) {
                 volume = 0,
                 
                 mouseUp = function (mouseUpEvent) {
-                    ref.playerDom.unbind('mouseup', mouseUp);
-                    vslider.unbind('mousemove', mouseMove);
-                    vslider.unbind('mouseup', mouseUp);
-                    vknob.unbind('mousemove', mouseMove);
-                    vknob.unbind('mouseup', mouseUp);
+                    if(window.onmouseup === undefined){ // IE < 9 has no window mouse events support
+                        $(document).unbind('mousemove', mouseMove);
+                        $(document).unbind('mouseup', mouseUp);
+                        $(document).unbind('mouseleave', mouseUp);
+                    }
+                    else {
+                        $(window).unbind('mousemove', mouseMove);
+                        $(window).unbind('mouseup', mouseUp);
+                    }
+                    
                     ref._vSliderAct = false;
 
                     return false;
@@ -1229,15 +1234,15 @@ jQuery(function ($) {
                     return false;
                 };
 
-            // this.playerDom.mousemove(mouseMove);
-            this.playerDom.mouseup(mouseUp);
-
-            vslider.mousemove(mouseMove);
-            vslider.mouseup(mouseUp);
-
-            vknob.mousemove(mouseMove);
-            vknob.mouseup(mouseUp);
-
+            if(window.onmouseup === undefined){
+                $(document).mousemove(mouseMove);
+                $(document).mouseup(mouseUp);
+                $(document).mouseleave(mouseUp);
+            }
+            else {
+                $(window).mousemove(mouseMove);
+                $(window).mouseup(mouseUp);
+            }
         },
 
         handleStartDragListener: function (evt, domObj) {
