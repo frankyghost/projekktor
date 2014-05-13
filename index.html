@@ -317,14 +317,14 @@
             }
         ]  
         
-            
+            alert("hier")
             var player = projekktor('.projekktor', {
                 // ratio: 16/9,
                 width: 760,
                 autoplay: true,
                 height: 426,
                 cookiePath: '/projekktor/',
-                
+                // iframe: true,
                 // height: false,
                 imageScaling: "fixed",
                 // debug: true,
@@ -426,7 +426,7 @@
         
         
             }, function(player) {
-            console.log("on ready")
+            console.log("on ready", player.getId())
                 return;
                 player.addListener('key', function() {console.log("intro.inc.html", arguments);})
                 // player.setFullscreen(true);        

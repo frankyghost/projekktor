@@ -37,6 +37,7 @@ projekktorSettings.prototype = {
             '</ul>' +
             '<ul id="quality" class="ppsettingslist active">' +
                 '<li class="first">%{quality}</li>' +
+                '<li data-pp-settings-func="quality_xl"  class="inactive">%{hd}</li>' +
                 '<li data-pp-settings-func="quality_l"  class="inactive">%{high}</li>' +
                 '<li data-pp-settings-func="quality_m"  class="inactive">%{medium}</li>' +
                 '<li data-pp-settings-func="quality_s"  class="inactive">%{low}</li>' +

@@ -17,16 +17,16 @@ $p.newModel({
     flashVerifyMethod: 'addEventListener',
     
     iLove: [
-        {ext:'flv', type:'video/flv', platform:'flash', fixed: true, streamType: ['*']},
-        {ext:'mp4', type:'video/mp4', platform:'flash', streamType: ['*']},
-        {ext:'f4v', type:'video/mp4', platform:'flash', streamType: ['*']},
-        {ext:'mov', type:'video/quicktime', platform:'flash', streamType: ['*']},
-        {ext:'m4v', type:'video/mp4', platform:'flash', fixed: true, streamType: ['*']},
-        {ext:'f4m', type:'application/f4m+xml', platform:'flash', fixed: true, streamType: ['*']},
-        {ext:'m3u8', type:'application/mpegURL', platform:'flash', fixed: true, streamType: ['*']},
-        {ext:'m3u8', type:'application/x-mpegURL', platform:'flash', fixed: true, streamType: ['*']},
-        {ext:'m3u8', type:'application/vnd.apple.mpegurl', platform:'flash', fixed: true, streamType: ['*']},
-        {ext:'manifest', type:'application/vnd.ms-ss', platform:'flash', fixed: true, streamType: ['*']}
+        {ext:'flv', type:'video/flv', platform:'flash', fixed: true, streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'mp4', type:'video/mp4', platform:'flash', streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'f4v', type:'video/mp4', platform:'flash', streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'mov', type:'video/quicktime', platform:'flash', streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'m4v', type:'video/mp4', platform:'flash', fixed: true, streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'f4m', type:'application/f4m+xml', platform:'flash', fixed: true, streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'m3u8', type:'application/mpegURL', platform:'flash', fixed: true, streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'m3u8', type:'application/x-mpegURL', platform:'flash', fixed: true, streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'m3u8', type:'application/vnd.apple.mpegurl', platform:'flash', fixed: true, streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'manifest', type:'application/vnd.ms-ss', platform:'flash', fixed: true, streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']}
     ],
 
     hasGUI: false,    
@@ -75,8 +75,13 @@ $p.newModel({
     
     applyMedia: function(destContainer) {
         var ref = this,
+            OSMFVars = this.pp.getConfig('OSMFVars'),
             sources = this.getSource();
 
+        if (sources[0].config && sources[0].config) {
+            OSMFVars = sources[0].config.OSMFVars;
+        }
+            
         window['projekktorOSMFReady'+this.pp.getId()] = function() {
             projekktor(ref.pp.getId()).playerModel._OSMFListener(arguments);
         };     
@@ -90,9 +95,7 @@ $p.newModel({
                 'top': 0,
                 'left': 0
             })
-            try {
-                console.log( this.pp.getConfig('OSMFVars') || sources[0].config.OSMFVars )
-            } catch(e) {console.log(e);}
+
         var domOptions = {
             id: this.pp.getMediaId()+"_flash",
             name: this.pp.getMediaId()+"_flash",
@@ -113,9 +116,9 @@ $p.newModel({
                 enableStageVideo: this._hardwareAcceleration,
                 disableHardwareAcceleration: !this._hardwareAcceleration,
                 javascriptCallbackFunction: 'window.projekktorOSMFReady'+this.pp.getId()               
-            }, this.pp.getConfig('OSMFVars') || sources[0].config.OSMFVars)
+            }, OSMFVars)
         };
-    
+
         this.createFlash(domOptions, destContainer);
     },
     
@@ -258,8 +261,7 @@ $p.newModel({
     
     /* catching playStateChange and playerStateChange and playerStateChange aaaand... and playerStateChange */
     OSMF_playerStateChange: function(state) {
-        var ref = this;
-        
+        var ref = this;        
         // getIsDVR & getIsDVRLive seem to be broken - workaround:
         if (!this._isDVR && this.mediaElement.get(0).getStreamType()=='dvr') {
             this._isDVR = true;
@@ -309,13 +311,13 @@ $p.newModel({
         }
 
         $p.utils.log( dynamicStreams );
-        
+
         $.each( this.availableQualities, function(key, val) {
             result.push(key);
         });
         
         result.push('auto');
-        
+     
         this._isDynamicStream = true; // important: set this before sending the update
         this.sendUpdate('availableQualitiesChange', result);        
     },
@@ -391,7 +393,7 @@ $p.newModel({
         if (newpos==-1) {
             newpos = this.getDuration();
         }
-        
+
         this.mediaElement.get(0).seek(newpos);
     },
     
@@ -460,16 +462,18 @@ $p.newModel({
 
     modelId: 'OSMFVIDEONA',
     iLove: [
-        {ext:'flv', type:'video/flv', platform:'flashna', fixed: true, streamType: ['*']},
-        {ext:'mp4', type:'video/mp4', platform:'flashna', streamType: ['*']},
-        {ext:'f4v', type:'video/mp4', platform:'flashna', streamType: ['*']},
-        {ext:'mov', type:'video/quicktime', platform:'flashna', streamType: ['*']},
-        {ext:'m4v', type:'video/mp4', platform:'flashna', fixed: true, streamType: ['*']},
-        {ext:'f4m', type:'application/f4m+xml', platform:'flashna', fixed: true, streamType: ['*']}   
+        {ext:'flv', type:'video/flv', platform:'flashna', fixed: true, streamType:['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'mp4', type:'video/mp4', platform:'flashna', streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'f4v', type:'video/mp4', platform:'flashna', streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'mov', type:'video/quicktime', platform:'flashna', streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'m4v', type:'video/mp4', platform:'flashna', fixed: true, streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']},
+        {ext:'f4m', type:'application/f4m+xml', platform:'flashna', fixed: true, streamType: ['http', 'httpVideo', 'pseudo', 'rtmp', 'httpVideoLive']}   
     ],    
     _hardwareAcceleration: false
 }, 'OSMFVIDEO');
 
+/*
+ 
 $p.newModel({    
 
     modelId: 'OSMFAUDIO',
@@ -483,7 +487,13 @@ $p.newModel({
     ],
     
     applyMedia: function(destContainer) {
-        var ref = this; 
+        var ref = this,
+            OSMFVars = this.pp.getConfig('OSMFVars'),
+            sources = this.getSource();
+
+        if (sources[0].config && sources[0].config) {
+            OSMFVars = sources[0].config.OSMFVars;
+        }
         
         $p.utils.blockSelection(destContainer);        
 
@@ -519,11 +529,12 @@ $p.newModel({
             bgcolor: '#ccc',
             FlashVars: $.extend({      
                 javascriptCallbackFunction: 'window.projekktorOSMFReady'+this.pp.getId()               
-            }, this.pp.getConfig('OSMFVars'))
+            }, OSMFVars)
             };
 
         this.createFlash(domOptions, flashContainer, false); 
     }
     
 }, 'OSMFVIDEO');
+*/
 });

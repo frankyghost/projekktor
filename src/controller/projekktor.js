@@ -237,7 +237,7 @@ projekktor = $p = function() {
             tm = ref._testMediaSupport();
 
         $.each(pltfrm, function(nothing, plt) {
-            $.each($.extend(tm[st], tm['*'] || []) || [], function(thisPlatform, val) {
+            $.each($.extend(tm[st], tm['*'] || []) || [], function(thisPlatform, val) {               
                 if (plt!=null) {
                     if (thisPlatform!=plt) {
                         return true;
@@ -297,11 +297,11 @@ projekktor = $p = function() {
                 $.each(platforms, function(_na, platform) {
                     var k = 0,
                         streamType = 'http';
-              
+    
                     for (var j in data.file) {
                         if (data.file.hasOwnProperty(j)) {
-                            if (j==='config') continue;
-                            streamType = data.file[j].streamType || ref.getConfig('streamType') || 'http';
+                            if (j==='config') continue; 
+                            streamType = data.file[j].streamType || data.config.streamType || 'http';
 
                             if ( ref._canPlay($p.mmap[mmapIndex].type, platform, streamType) ) {
                                 k++;
@@ -324,7 +324,7 @@ projekktor = $p = function() {
                                 extTypes[$p.mmap[mmapIndex].ext] = [];
                             }                            
                             extTypes[$p.mmap[mmapIndex].ext].push( $p.mmap[mmapIndex] );
-                            
+
                             if ($p.mmap[mmapIndex].streamType===null || $p.mmap[mmapIndex].streamType=='*' || $.inArray(streamType  || [], $p.mmap[mmapIndex].streamType || '')>-1) {
 
                                 if (!typesModels[$p.mmap[mmapIndex].type]) {
@@ -1028,7 +1028,7 @@ projekktor = $p = function() {
             win = $(window);
             target = this.getDC();
         }
-     
+
         // prepare target:
         target.data('fsdata', {
             scrollTop: win.scrollTop() || 0,
@@ -1041,17 +1041,7 @@ projekktor = $p = function() {
             bodyOverflowY: $(win[0].document.body).css('overflow-y'), // prevent IE7 crash
             iframeWidth: target.attr('width') || 0,
             iframeHeight: target.attr('height') || 0
-        }).css({
-            position: 'absolute',
-            display: 'block',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            zIndex: 99999,
-            margin: 0,
-            padding: 0
-        });     
+        }).addClass('fullviewport').removeAttr( 'style' );
 
         // prepare parent window
         win.scrollTop(0).scrollLeft(0);
@@ -1094,6 +1084,7 @@ projekktor = $p = function() {
                 }
                 target
                     .attr('style', (fsData.targetStyle==null) ? '' : fsData.targetStyle )
+                    .removeClass('fullviewport')
                     .data('fsdata', null);
             }
     };
@@ -1628,7 +1619,7 @@ projekktor = $p = function() {
         if (fullScreenApi.supportsFullScreen=='viewport' || (fullScreenApi.supportsFullScreen=='dom' && this.getConfig('forceFullViewport'))) {
             return fullScreenApi;
         }
-        
+
         // MEDIA ONLY:
         // the browser supports true fullscreen for the media element only - this is semi cool
         if (fullScreenApi.supportsFullScreen=='mediaonly') {
@@ -1752,6 +1743,7 @@ projekktor = $p = function() {
     };
 
     this.getCssPrefix = this.getNS = function() {
+        
         return this.config._cssClassPrefix || this.config._ns || 'pp';
     };
 
@@ -1940,9 +1932,12 @@ projekktor = $p = function() {
         this._detachplayerModel();
         
         // reset player class
-        var wasFullscreen = this.getDC().hasClass('fullscreen');
+        var wasFullscreen = this.getDC().hasClass('fullscreen'),
+            wasFullViewport = this.getDC().hasClass('fullviewport');
+            
         this.getDC().attr('class', this.env.className)
         if (wasFullscreen) this.getDC().addClass('fullscreen');
+        if (wasFullViewport) this.getDC().addClass('fullviewport');
 
         // create player instance
         var newModel = newItem.mediaModel.toUpperCase();
@@ -2240,7 +2235,9 @@ projekktor = $p = function() {
             if (h) target.css({height: h + "px" });        
         }
         
-        try {this.playerModel.applyCommand('resize', {width: w, height: h}); } catch(e) {}                            
+        try {this.playerModel.applyCommand('resize', {width: w, height: h}); } catch(e) {}
+        
+        return this;
     };
 
     this.setLoop = function(value) {
@@ -3024,25 +3021,27 @@ projekktor = $p = function() {
         for (var i=0; i < $p.mmap.length; i++ ) {
             if ($p.mmap.hasOwnProperty(i)) {
                 platforms = (typeof $p.mmap[i]['platform']=='object') ? $p.mmap[i]['platform'] : [ $p.mmap[i]['platform'] ];
-                
+            
                 $.each(platforms, function(_na, platform) {
         
                     if (platform==null)
                         return true;
     
                     streamType = $p.mmap[i]['streamType'] || ['http'];
-    
+
                     $.each(streamType, function(key, st) {
-    
+  
                         if (result[st]==null)
                             result[st] = {};        
                         
-                        if (result[st][platform]==null)
+                        if (result[st][platform]==null) {
                             result[st][platform] = [];
-                    
+                        }
+               
                         // avoid dupes
-                        if ( $.inArray($p.mmap[i]['type'], result[st][platform] )>-1 )
-                            return true;
+                        if ( $.inArray($p.mmap[i]['type'], result[st][platform] )>-1 ) {
+                            // return true;
+                        }
                         
                         
                         var reqPlatformVersion = ($p.models[ $p.mmap[i]['model'].toUpperCase() ].prototype[(platform.toLowerCase()) + 'Version'] || "1").toString();
@@ -3051,7 +3050,7 @@ projekktor = $p = function() {
                         try {
                             if ( $p.utils.versionCompare($p.platforms[platform.toUpperCase()]($p.mmap[i]['type']), reqPlatformVersion) ) {                                
                                 // check if platform is enabled in config
-                                if (ref.getConfig('enable'+platform.toUpperCase()+'Platform')!=false && $.inArray(platform.toLowerCase(), ref.getConfig('platforms'))>-1) {
+                                if (ref.getConfig('enable'+platform.toUpperCase()+'Platform')!=false && $.inArray(platform.toLowerCase(), ref.getConfig('platforms'))>-1) {                                   
                                     result[st][platform].push($p.mmap[i]['type']);
                                     if ($.inArray(platform.toUpperCase(), resultPlatforms)==-1) {
                                         resultPlatforms.push(platform.toUpperCase());
@@ -3070,6 +3069,7 @@ projekktor = $p = function() {
                 })
             }
         }
+
         $p._compTableCache = result;
         $p._platformTableCache = resultPlatforms;
         
@@ -3315,7 +3315,7 @@ $p.models = {};
 $p.newModel = function(obj, ext) {
     if (typeof obj!='object') return false;
     if (!obj.modelId) return false;
-    
+
     var result = false,
         extend = ($p.models[ext] && ext!=undefined) ? $p.models[ext].prototype : {};
   

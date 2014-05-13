@@ -191,11 +191,11 @@ jQuery(function ($) {
 
         /* firefox reinit-issue-workaround-helper-thingy */
         reInit: function () {
+
             // no FF:
             if (this.flashVersion !== false || !this._isFF() || this.getState('ERROR') || this.pp.getConfig('bypassFlashFFFix') === true) {
                 return;
             }
-
             // elsewise nuke:
             this.sendUpdate('FFreinit');
             this.removeListeners();
@@ -249,7 +249,11 @@ jQuery(function ($) {
                     * It is vital to first tell the controller what happened in order to have an already altered DOM
                     * before processing further scaling processes.
                     * This is a break in the logic but seems to work.
-                    */                    
+                    */
+                    if (this.getState('IDLE')) {
+                        this.applyImage(this.getPoster(), this.pp.getMediaContainer().html(''));
+                    }
+                    
                     if (value != this._isFullscreen) {
                         this._isFullscreen = value;                    
                         this.sendUpdate('fullscreen', this._isFullscreen);
@@ -259,6 +263,9 @@ jQuery(function ($) {
                     break;
                 case 'resize':
                     this.setResize();
+                    if (this.getState('IDLE')) {
+                        this.applyImage(this.getPoster(), this.pp.getMediaContainer().html(''));
+                    }
                     this.sendUpdate('resize', value);
                     break;
             }
@@ -436,8 +443,8 @@ jQuery(function ($) {
 
             qual = this.pp.getAppropriateQuality(quals);
           
-            for (var j in cfg) {            
-                if (cfg[j].src != undefined && (cfg[j].quality == qual || result == "" || qual == "default"))  {
+            for (var j in cfg) {
+                if (cfg[j].src != "" && cfg[j].src != undefined && (cfg[j].quality == qual || result == "" || qual == "default"))  {
                     result = cfg[j].src;                  
                 }
             }
@@ -686,18 +693,18 @@ jQuery(function ($) {
         applyImage: function (url, destObj) {
 
             var imageObj = $('<img/>').hide(),
-                currentImageObj = $("." + this.pp.getMediaId() + "_image"); // select by class to workaround timing issues causing multiple <img> of the same ID being present in the DOM
+                currentImageObj = this.pp.getDC().find("." + this.pp.getMediaId() + "_image"); // select by class to workaround timing issues causing multiple <img> of the same ID being present in the DOM
                 ref = this;
 
             $p.utils.blockSelection(imageObj);
 
-            // empty URL... apply placeholder
+            // empty URL... return placeholder
             if (url == null || url === false) {
                 currentImageObj.remove();
                 return $('<img/>').attr({
                     "id": this.pp.getMediaId() + "_image",
                     "src": $p.utils.imageDummy()
-                }).appendTo(destObj);
+                });
             }
 
             // no changes
@@ -722,8 +729,7 @@ jQuery(function ($) {
                 target.attr("data-od-height", target.get(0).naturalHeight);
                 
                 currentImageObj.remove();
-                
-                target.attr('id', ref.pp.getMediaId() + "_image");
+            
                 target.show();
 
                 if ($p.utils.stretch(ref.pp.getConfig('imageScaling'), target, destObj.width(), destObj.height())) {
@@ -737,19 +743,15 @@ jQuery(function ($) {
                     } catch (e) {}
                 }
             });
+            
+            imageObj.error(function() {
+                $(this).remove();
+                currentImageObj.show();                
+            })
+
+            imageObj.attr('id', this.pp.getMediaId() + "_image");
 
             imageObj.removeData('od');
-            
-            this.pp.removeListener('fullscreen.poster');
-            this.pp.removeListener('resize.poster');
-
-            this.pp.addListener('fullscreen.poster', function () {
-                ref.applyImage(ref.getPoster(), destObj);  
-            });
-            
-            this.pp.addListener('resize.poster', function () {
-                ref.applyImage(ref.getPoster(), destObj);  
-            });            
             
             imageObj.appendTo(destObj).attr({
                 "alt": this.pp.getConfig('title') || ''
@@ -759,12 +761,7 @@ jQuery(function ($) {
             
             // IE<9 trap:
             imageObj.attr('src', url);
-
-            imageObj.error(function (event) {
-                $(this).remove();
-                currentImageObj.show();
-            });
-            
+         
             return imageObj;
         },
 

@@ -53,13 +53,14 @@ module.exports = function (grunt) {
           "src/controller/projekktor.messages.js",          
           "src/models/player.js",
           "src/models/player.NA.js",
+          // {flag: "jwflash", src: "src/models/player.video.jwflash.js", alt: "src/models/player.audio.video.osmf.js" },         
+          {flag: "jarisflash", src: "src/models/player.audio.video.flash.js", alt: "src/models/player.audio.video.osmf.js" },
+          {flag: "jarisaudioflash", src: "src/models/player.audio.flash.js"},          
           "src/models/player.audio.video.js",
           "src/models/player.audio.video.hls.js",
           "src/models/player.audio.video.vlc.js",
           "src/models/player.playlist.js",
           "src/models/player.image.html.js",          
-          // {flag: "jwflash", src: "src/models/player.video.jwflash.js", alt: "src/models/player.audio.video.osmf.js" },         
-          {flag: "jarisflash", src: "src/models/player.audio.video.flash.js", alt: "src/models/player.audio.video.osmf.js" },
           // {flag: "osmf", src: "src/models/player.audio.video.osmf.js"},         
           {flag: "youtube", src: "src/models/player.youtube.js" },          
           "src/plugins/projekktor.display.js",
@@ -107,7 +108,7 @@ module.exports = function (grunt) {
       all: {
         files: filesPreUglify,
         options: {
-          banner: "/*! Projekktor v<%= pkg.version %> | " + "http://www.projekktor.com | " + "Copyright 2010-2014 Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com | " + "GNU General Public License - http://www.projekktor.com/license/\n" + "*/"
+          banner: "/*! Projekktor v" + version + " | " + "http://www.projekktor.com | " + "Copyright 2010-2014 Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com | " + "GNU General Public License - http://www.projekktor.com/license/\n" + "*/"
         }
       }
     },
@@ -297,12 +298,14 @@ module.exports = function (grunt) {
       if (filepath.ver===true) {
         var versionpath =  pluginspath + "/" + filepath.src;
         var dirs = grunt.file.expand({filter: 'isDirectory'}, [versionpath + "/*"]);
+        
         dirs.sort(
           function versionSort($a, $b) {
                   return -1 * version_compare($a, $b);
           }           
         )
       filepath.src = dirs[0] + "/projekktor." + filepath.src + ".js";
+      grunt.log.writeln(filepath.src);
       }
       // check for user plugins
       var user = filepath.user;

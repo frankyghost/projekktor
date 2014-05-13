@@ -15,6 +15,7 @@ projekktorMessages = {
     "vlc": "VLC Plugin",
     "auto": "automatic",
     "quality": "quality",
+    "hd": "hd",
     "high": "high",
     "medium": "medium",
     "low": "low",
