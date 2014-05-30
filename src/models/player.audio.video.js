@@ -350,8 +350,8 @@ $p.newModel({
     iLove: [
         {ext:'ogg', type:'audio/ogg', platform:'native', streamType: ['http', 'httpAudio']},
         {ext:'oga', type:'audio/ogg', platform:'native', streamType: ['http', 'httpAudio']},
-        {ext:'mp3', type:'audio/mp3', platform:['ios', 'android', 'native'], streamType: ['http', 'httpAudio']},
-        {ext:'mp3', type:'audio/mpeg', platform:['ios', 'android', 'native'], streamType: ['http', 'httpAudio']}        
+        {ext:'mp3', type:'audio/mp3', platform:['ios', 'android', 'native'], streamType: ['http', 'httpAudio', 'httpAudioLive']},
+        {ext:'mp3', type:'audio/mpeg', platform:['ios', 'android', 'native'], streamType: ['http', 'httpAudio', 'httpAudioLive']}        
     ],
     
     imageElement: {},
