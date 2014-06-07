@@ -581,6 +581,24 @@ background: url("maccaco.png") no-repeat -91px top transparent;
 	margin-left: -5px;
 }
 
+.ppcontrols .pplogo {
+    max-width: 140px;
+    height: 30px;
+    border-right: 1px solid #000;
+    border-left: 1px solid #413e3e;
+    background: transparent;
+}
+
+.ppcontrols .pplogo img {
+    max-height: 100%;
+    width: auto;
+    height: 100%;
+    padding: 1px;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box; 
+}
+
 
 /* Context Menu */
 .ppcontextmenu.active {

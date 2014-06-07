@@ -250,7 +250,11 @@ jQuery(function ($) {
             },
 
             'controls': null,
-            'title': null
+            'title': null,
+            'logo': {
+                on: ['touchstart', 'click'],
+                call: 'logoClk'
+            }
         },
 
         config: {
@@ -277,10 +281,31 @@ jQuery(function ($) {
                  },
                  'data': {test:'data test'} // you can add any custom data you want
                 } */
-            ],            
+            ],
+            /**
+             * displays logo on the controlbar
+             * You can set the logo config globally for all playlist items in the controllbar plugin config or locally for every playlist item.
+             * Playlist item config overwrites the global config.
+             */
+            logo: {
+                /* // Sample global config (per item config follows the same schema).
+                src: 'media/logo.png', // URL to your logo image (works fine with SVG too)
+                title: 'visit our website', // Title added to the <img> element title and alt attributes.
+                link: { // URL to go to after click on the logo [optional].
+                    url: 'http://www.projekktor.com',
+                    target: '_blank'
+                },
+                callback: function(player, e){ // Function called after click on the logo [optional]. It works only if the link config isn't present. 
+                                               // There are two parameters passed to the callback function:
+                                               // player - reference to the current projekktor instance
+                                               // e - event object
+                    alert("projekktor v." + player.getVersion());
+                }*/
+            },
+               
 
             /* Default layout */
-            controlsTemplate: '<ul class="left"><li><div %{play}></div><div %{pause}></div></li></ul><ul class="right"><li><div %{fsexit}></div><div %{fsenter}></div></li><li><div %{settingsbtn}></div></li><li><div %{tracksbtn}></div></li><li><div %{vmax}></div></li><li><div %{vslider}><div %{vmarker}></div><div %{vknob}></div></div></li><li><div %{mute}></div></li><li><div %{timeleft}>%{hr_elp}:%{min_elp}:%{sec_elp} | %{hr_dur}:%{min_dur}:%{sec_dur}</div></li><li><div %{next}></div></li><li><div %{prev}></div></li></ul><ul class="bottom"><li><div %{scrubber}><div %{loaded}></div><div %{playhead}></div><div %{scrubberknob}></div><div %{scrubberdrag}></div></div></li></ul><div %{scrubbertip}>%{hr_tip}:%{min_tip}:%{sec_tip}</div>'
+            controlsTemplate: '<ul class="left"><li><div %{play}></div><div %{pause}></div></li></ul><ul class="right"><li><div %{logo}></div></li><li><div %{fsexit}></div><div %{fsenter}></div></li><li><div %{settingsbtn}></div></li><li><div %{tracksbtn}></div></li><li><div %{vmax}></div></li><li><div %{vslider}><div %{vmarker}></div><div %{vknob}></div></div></li><li><div %{mute}></div></li><li><div %{timeleft}>%{hr_elp}:%{min_elp}:%{sec_elp} | %{hr_dur}:%{min_dur}:%{sec_dur}</div></li><li><div %{next}></div></li><li><div %{prev}></div></li></ul><ul class="bottom"><li><div %{scrubber}><div %{loaded}></div><div %{playhead}></div><div %{scrubberknob}></div><div %{scrubberdrag}></div></div></li></ul><div %{scrubbertip}>%{hr_tip}:%{min_tip}:%{sec_tip}</div>'
         },
 
         initialize: function () {
@@ -319,7 +344,7 @@ jQuery(function ($) {
         /* parse and apply controls dom-template */
         applyTemplate: function (dest, templateString) {
             var ref = this,
-                classPrefix = this.pp.getNS()
+                classPrefix = this.pp.getNS(),
                 label = '';
 
             // apply template string if required:
@@ -503,6 +528,31 @@ jQuery(function ($) {
         *******************************/
         drawTitle: function () {
             this.controlElements['title'].html(this.getConfig('title', ''));
+        },
+        
+        displayLogo: function() {
+            var logoConfig = this.pp.getItemConfig('logo') || this.getConfig('logo'),
+                logoElement = this.controlElements['logo'],
+                img;
+            
+            if(logoElement && logoConfig && logoConfig.src){
+                img = $('<img>')
+                        .attr({
+                            src: logoConfig.src,
+                            alt: logoConfig.title,
+                            title: logoConfig.title
+                        });
+                        
+                if((logoConfig.link && logoConfig.link.url) || typeof logoConfig.callback == 'function'){
+                    img.css({cursor: 'pointer'});
+                }
+                
+                logoElement.empty().append(img);
+                this._active('logo', true);
+            }
+            else {
+                this._active('logo', false);
+            }
         },
 
         hidecb: function (instant) {
@@ -792,9 +842,9 @@ jQuery(function ($) {
             $(this.cb).find('.' + this.pp.getNS() + 'cuepoint').remove();
             this.pp.setVolume(this._getVolume())
             this.updateDisplay();
-            this.hidecb(true);
+            this.hidecb(false);
             this.drawTitle();
-            this.displayQualityToggle();
+            this.displayLogo();
             this.pluginReady = true;
         },
 
@@ -1046,6 +1096,19 @@ jQuery(function ($) {
                 ref.controlElements['open'].toggle();
                 ref.controlElements['close'].toggle()
             });
+        },
+        
+        logoClk: function(evt){
+            var ref = this,
+                logoConfig = this.pp.getConfig('logo') || this.getConfig('logo');
+                if(logoConfig){
+                    if(logoConfig.link && logoConfig.link.url){
+                        window.open(logoConfig.link.url,logoConfig.link.target);
+                    }
+                    else if(typeof logoConfig.callback == 'function'){
+                        logoConfig.callback(this.pp, evt);
+                    }
+                }
         },
 
         volumeBtnHover: function (evt) {
