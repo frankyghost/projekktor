@@ -2056,6 +2056,11 @@ projekktor = $p = function() {
         }
 
         if (typeof frame == 'number') {
+            if ((position - this.getPosition()) > 0 && typeof this.getConfig('disallowSkip') == 'object' && this.getConfig('disallowSkip').forward==true) {
+              return this;
+            } else if ((position - this.getPosition()) < 0 && typeof this.getConfig('disallowSkip') == 'object' && this.getConfig('disallowSkip').backward==true) {
+              return this;
+            }
             this._enqueue('frame', frame);
         }
 
