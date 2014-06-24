@@ -2020,10 +2020,9 @@ projekktor = $p = function() {
             position = this.getPosition();
         }
         }
-            
+
         if (typeof position == 'number') {
           if ((position - this.getPosition()) > 0 && typeof this.getConfig('disallowSkip') == 'object' && this.getConfig('disallowSkip').forward==true) {
-            console.log('you can not go forward, dumb ass');
             return this;
           } else if ((position - this.getPosition()) < 0 && typeof this.getConfig('disallowSkip') == 'object' && this.getConfig('disallowSkip').backward==true) {
             return this;
