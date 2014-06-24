@@ -1,6 +1,6 @@
 /*
  * Projekktor II Plugin: Controlbar
- * 
+ *
  * DESC: Adds a fully features cb element to the player
  * Copyright 2010-2013 Sascha Kluger, Spinning Airwhale Media, http://www.spinningairwhale.com
  *
@@ -10,14 +10,14 @@
 var projekktorControlbar = function () {};
 jQuery(function ($) {
     projekktorControlbar.prototype = {
-    
+
         version: '1.1.01',
 
         _cTimer: null,
         _isDVR: false,
         _noHide: false,
         _vSliderAct: false,
-        
+
         cb: null,
 
         controlElements: {},
@@ -25,22 +25,22 @@ jQuery(function ($) {
             'sec_dur': null,
             'min_dur': null,
             'sec_abs_dur': null,
-            'min_abs_dur': null,            
+            'min_abs_dur': null,
             'hr_dur': null,
             'sec_elp': null,
             'min_elp': null,
             'sec_abs_elp': null,
-            'min_abs_elp': null,            
+            'min_abs_elp': null,
             'hr_elp': null,
             'sec_rem': null,
             'min_rem': null,
             'sec_abs_rem': null,
-            'min_abs_rem': null,            
+            'min_abs_rem': null,
             'hr_rem': null,
             'sec_tip': null,
             'min_tip': null,
             'sec_abs_tip': null,
-            'min_abs_tip': null,            
+            'min_abs_tip': null,
             'hr_tip': null,
 
             'cb': null,
@@ -271,7 +271,7 @@ jQuery(function ($) {
                 useTemplate = true,
                 classPrefix = this.pp.getNS();
 
-            // check if ANY control element already exists        
+            // check if ANY control element already exists
             for (var i in this.controlElementsConfig) {
                 if (playerHtml.match(new RegExp(classPrefix + i, 'gi'))) {
                     useTemplate = false;
@@ -286,7 +286,7 @@ jQuery(function ($) {
                 this.cb = this.playerDom.find("." + classPrefix + 'controls');
             }
 
-            // find (inter)active elements    
+            // find (inter)active elements
             for (var i in this.controlElementsConfig) {
                 this.controlElements[i] = $(this.playerDom).find('.' + classPrefix + i);
                 $p.utils.blockSelection($(this.controlElements[i]));
@@ -337,9 +337,15 @@ jQuery(function ($) {
             }
 
             // prev / next button
-            if (this.pp.getItemCount() < 2 || this.getConfig('disallowSkip')) {
+            if (this.pp.getItemCount() < 2 || this.getConfig('disallowSkip') === true) {
                 this._active('prev', false);
                 this._active('next', false);
+            } else if (typeof this.getConfig('disallowSkip') == 'object' && this.getConfig('disallowSkip').forward === true) {
+                this._active('prev', true);
+                this._active('next', false);
+            } else if (typeof this.getConfig('disallowSkip') == 'object' && this.getConfig('disallowSkip').backward === true) {
+                this._active('prev', false);
+                this._active('next', true);
             } else {
                 this._active('prev', true);
                 this._active('next', true);
@@ -373,7 +379,7 @@ jQuery(function ($) {
             this._active('rewind', state !== 'IDLE');
 
 
-            // fullscreen button    
+            // fullscreen button
             if (this.pp.getInFullscreen() === true) {
                 this.drawExitFullscreenButton();
             } else {
@@ -443,7 +449,7 @@ jQuery(function ($) {
 
                     });
                 }
-                return true;                
+                return true;
             });
             this.cb.mousemove(function (event) {
                 ref.controlsFocus(event);
@@ -456,7 +462,7 @@ jQuery(function ($) {
         /* generic click handler for all controlbar buttons */
         clickCatcher: function (evt, callback, element) {
             var ref = this;
-            
+
             evt.stopPropagation();
             evt.preventDefault();
             // $p.utils.log('Controlbar: Click', element, callback, evt)
@@ -493,7 +499,7 @@ jQuery(function ($) {
                 this.cb.removeClass('active').addClass('inactive');
                 return;
             }
-                        
+
                         if (this.getConfig('showOnIdle') && this.pp.getState('IDLE'))
                             return;
 
@@ -541,7 +547,7 @@ jQuery(function ($) {
                 function() {
                     ref.hidecb();
                 }, this.getConfig('fadeDelay')
-            );            
+            );
         },
 
         displayTime: function (pct, dur, pos) {
@@ -642,7 +648,7 @@ jQuery(function ($) {
                     this._active('mute', true);
                     this._active('unmute', false);
                     this._active('vmax', false);
-                    //  vknob.css('left', volume*(vslider.width()-(vknob.width()/2))+"px");  
+                    //  vknob.css('left', volume*(vslider.width()-(vknob.width()/2))+"px");
                     break;
                 }
             }
@@ -818,7 +824,7 @@ jQuery(function ($) {
             try {
                if (value>0)
                    this.cookie('muted', false);
-                   
+
                if (!this.cookie('muted'))
                    this.cookie('volume', value);
             } catch(e){console.log(e)}
@@ -837,21 +843,21 @@ jQuery(function ($) {
         qualityChangeHandler: function (qual) {
             this.displayQualityToggle(qual);
         },
-        
+
         streamTypeChangeHandler: function (streamType) {
             if (streamType=='dvr') {
                 this._isDVR = true;
                 this.setActive(this.controlElements['golive'], true);
             }
         },
-        
+
         isLiveHandler: function (islive) {
             if (islive) {
                 this.controlElements['golive'].addClass('on').removeClass('off');
             } else {
                 this.controlElements['golive'].addClass('off').removeClass('on');
             }
-        },            
+        },
 
         fullscreenHandler: function (inFullscreen) {
 
@@ -876,12 +882,12 @@ jQuery(function ($) {
 
             if (this.pp.getState() == 'IDLE' && !this.getConfig('showOnIdle'))
                 this.hidecb(true);
-        },        
-        
+        },
+
         durationChangeHandler: function (dur) {
             this.displayCuePoints(dur);
         },
-        
+
         errorHandler: function (value) {
             this.hidecb(true);
         },
@@ -893,27 +899,27 @@ jQuery(function ($) {
         focusHandler: function (evt) {
             this.showcb();
         },
-        
+
         mouseenterHandler: function (evt) {
             this.showcb();
-        },        
+        },
 
         mousemoveHandler: function (evt) {
-            if (this.pp.getState('STARTING')) return;             
+            if (this.pp.getState('STARTING')) return;
             this.showcb();
         },
-        
+
         mouseleaveHandler: function() {},
-        
+
         mousedownHandler: function (evt) {
-            this.showcb();     
+            this.showcb();
         },
-        
+
         /*******************************
         ControlUI Event LISTENERS
         *******************************/
         controlsFocus: function (evt) {
-            
+
                 this._noHide = true;
         },
 
@@ -928,7 +934,7 @@ jQuery(function ($) {
         goliveClk: function (evt) {
             this.pp.setSeek(-1);
         },
-        
+
         playClk: function (evt) {
             this.pp.setPlay();
         },
@@ -1039,7 +1045,7 @@ jQuery(function ($) {
                 result = (orientation == 'hor') ? (requested / totalDim) : 1 - (requested / totalDim);
             }
 
-            this.pp.setVolume(result);            
+            this.pp.setVolume(result);
         },
 
         scrubberShowTooltip: function (event) {
@@ -1066,12 +1072,12 @@ jQuery(function ($) {
                 newPos = pageX - slider.offset().left - (tip.outerWidth() / 2),
                 timeIdx = this.pp.getDuration() / 100 * ((pageX - slider.offset().left) * 100 / slider.width()),
                 times = this._clockDigits(timeIdx, 'tip');
-                
-            if (this._isDVR) { 
-                timeIdx =  this.pp.getDuration() - timeIdx; 
+
+            if (this._isDVR) {
+                timeIdx =  this.pp.getDuration() - timeIdx;
                 var then = new Date( (new Date().getTime() / 1000 - timeIdx) * 1000), // date minus timeidx
                     then = then.getSeconds() + (60 * then.getMinutes()) + (60 * 60 * then.getHours()); // second of today
-                    
+
                 times = this._clockDigits( then , 'tip');
             }
 
@@ -1159,7 +1165,7 @@ jQuery(function ($) {
                 slider = $(this.controlElements['vslider'][sliderIdx]),
                 dx = Math.abs(parseFloat(knob.position().left) - event.clientX),
                 dy = Math.abs(parseFloat(knob.position().top) - event.clientY),
-                
+
                 volume = 0,
                 mouseUp = function (mouseupevt) {
                     ref.playerDom.unbind('mouseup', mouseUp);
@@ -1177,11 +1183,11 @@ jQuery(function ($) {
                     var newXPos = (dragevent.clientX - dx),
                         newXPos = (newXPos > slider.width() - knob.width() / 2) ? slider.width() - (knob.width() / 2) : newXPos,
                         newXPos = (newXPos < 0) ? 0 : newXPos,
-                        newYPos = (dragevent.clientY - dy),                        
+                        newYPos = (dragevent.clientY - dy),
                         newYPos = (newYPos > slider.height() - knob.height() / 2) ? slider.height() - (knob.height() / 2) : newYPos,
                         newYPos = (newYPos < 0) ? 0 : newYPos;
-                    
-                    if (ref.controlElements['vslider'].width() > ref.controlElements['vslider'].height()) {                    
+
+                    if (ref.controlElements['vslider'].width() > ref.controlElements['vslider'].height()) {
                         knob.css('left', newXPos + 'px');
                         volume = Math.abs(newXPos / (slider.width() - (knob.width() / 2)));
                         $(ref.controlElements['vmarker'][sliderIdx]).css('width', volume * 100 + "%");
@@ -1215,7 +1221,7 @@ jQuery(function ($) {
         bottom: this.cb.css('bottom'),
         left: this.cb.css('left'),
         right: this.cb.css('right')
-        
+
     };
     */
             // this._initalPosition = $.extend({}, this.cb.attr('style'), this.cb.css());
@@ -1257,15 +1263,15 @@ jQuery(function ($) {
 
             var volume = parseFloat(this.cookie('volume') || this.getConfig('volume') || 0.5),
                 muted = this.cookie('muted') || false;
-            
+
             if (this.getConfig('fixedVolume') || volume==null)
                 return this.getConfig('volume');
-                
+
             if (muted) return 0;
-            
+
             return volume;
         },
-        
+
         _active: function (elmName, on) {
             var dest = this.controlElements[elmName];
             if (on == true) dest.addClass('active').removeClass('inactive');
@@ -1288,13 +1294,13 @@ jQuery(function ($) {
                 sec = Math.floor(divisor_for_seconds),
                 sec_abs = secs,
                 result = {};
-                
+
             result['min_' + postfix] = (min < 10) ? "0" + min : min;
             result['min_abs_' + postfix] = (min_abs < 10) ? "0" + min_abs : min_abs;
             result['sec_' + postfix] = (sec < 10) ? "0" + sec : sec;
-            result['sec_abs_' + postfix] = (sec_abs < 10) ? "0" + sec_abs : sec_abs;            
+            result['sec_abs_' + postfix] = (sec_abs < 10) ? "0" + sec_abs : sec_abs;
             result['hr_' + postfix] = (hr < 10) ? "0" + hr : hr;
-            
+
             return result;
         }
     }
