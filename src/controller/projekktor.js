@@ -1827,7 +1827,7 @@ projekktor = $p = function() {
         // item change requested...
         if (newItem!=this._currentItem) {
             // and denied... gnehe
-            if ( (this.getConfig('disallowSkip')===true || typeof this.getConfig('disallowSkip') == 'object') && (!this.getState('COMPLETED') && !this.getState('IDLE')) ) {
+            if ( (this.getConfig('disallowSkip')===true || typeof this.getConfig('disallowSkip') == 'object') && (!this.getState('COMPLETED') && !this.getState('IDLE')) || (newItem > this._currentItem && this.getConfig('disallowSkip') == 'object' && this.getConfig('disallowSkip').forward === true) || (newItem < this._currentItem && this.getConfig('disallowSkip') == 'object' && this.getConfig('disallowSkip').backward === true)) {
                         return this;
             }
         }
