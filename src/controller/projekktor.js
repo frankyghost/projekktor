@@ -753,7 +753,7 @@ projekktor = $p = function() {
 
         $(window)
             .bind('resize.projekktor'+this.getId(), function() {
-              if (!ref.isFullScreen()) {
+              if (ref.isFullScreen() === false) {
                 ref.setSize();
               }
             })
