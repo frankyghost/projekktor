@@ -43,7 +43,7 @@ $p.newModel({
                         var ref = navigator.plugins[i][j];
                         if (ref.suffixes!=null && ref.type!=null) {
                             $.each(ref.suffixes.split(','), function(key, value) {
-                                model.iLove.push( {ext:value, type: ref.type.replace(/x-/, ''), platform:['vlc'], streamType: ['rtsp', 'http', 'pseudo', 'httpVideo', 'multipart']} );
+                                model.iLove.push( {ext:value.toLowerCase(), type: ref.type.toLowerCase(), platform:['vlc'], streamType: ['rtsp', 'http', 'pseudo', 'httpVideo', 'multipart']} );
                             })
                         }
                     }

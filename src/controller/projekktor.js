@@ -268,7 +268,7 @@ projekktor = $p = function() {
             checkFor = [],
             st = streamType || 'http',
             pltfrm = (typeof platform=='object') ? platform : [platform],
-            type = (mediaType) ? mediaType.replace(/x-/, '') : undefined,
+            type = (mediaType) ? mediaType.toLowerCase() : undefined,
             tm = ref._testMediaSupport();
 
         $.each(pltfrm, function(nothing, plt) {
@@ -432,8 +432,8 @@ projekktor = $p = function() {
                         if (codecMatch[1]!=null) {
                             data.file[index].codec = codecMatch[1];                
                         }
-                        data.file[index].type = codecMatch[0].replace(/x-/, '');
-                        data.file[index].originalType = codecMatch[0];
+                        data.file[index].type = codecMatch[0].toLowerCase(); // mimeTypes are case insensitive
+                        data.file[index].originalType = codecMatch[0].toLowerCase();
                     } catch(e){}
                 }
                 else {
@@ -485,7 +485,7 @@ projekktor = $p = function() {
                 if (data.file[index].type==null)
                     continue;
                 
-                if ( ($.inArray( data.file[index].type.replace(/x-/, ''), types)<0) && modelSet.type!='none/none') {
+                if ( ($.inArray(data.file[index].type, types) < 0) && modelSet.type != 'none/none') {
                     continue;
                 }
                 
@@ -1461,7 +1461,7 @@ projekktor = $p = function() {
             for (var i in this.media[this._currentItem].file) {
                 if (this.media[this._currentItem].file.hasOwnProperty(i)) {
                     for (var j in platforms) {
-                        if (this._canPlay(this.media[this._currentItem].file[i].type.replace(/x-/, ''), platforms[j].toLowerCase(), this.getConfig('streamType')) ) {
+                        if (this._canPlay(this.media[this._currentItem].file[i].type, platforms[j].toLowerCase(), this.getConfig('streamType')) ) {
                             if ($.inArray(platforms[j].toLowerCase(), result)==-1) {
                                 result.push(platforms[j].toLowerCase());
                             }

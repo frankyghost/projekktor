@@ -14,12 +14,10 @@ $p.newModel({
     androidVersion: 4,
     iosVersion: 3,    
     iLove: [
-        {ext:'m3u8', type:'application/mpegURL', platform: ['ios', 'android'], streamType: ['http','httpVideo', 'httpVideoLive']},
-        {ext:'m3u', type:'application/mpegURL', platform: ['ios', 'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']},
-        {ext:'m3u8', type:'application/vnd.apple.mpegURL', platform: ['ios', 'android'], streamType: ['http','httpVideo', 'httpVideoLive']},
-        {ext:'m3u', type:'application/vnd.apple.mpegURL', platform: ['ios', 'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']},             
-        {ext:'m3u8', type:'application/x-mpegURL', platform: ['ios', 'android'], streamType: ['http','httpVideo', 'httpVideoLive']},
-        {ext:'m3u', type:'application/x-mpegURL', platform: ['ios', 'android'], streamType: ['http', 'httpVideo', 'httpVideoLive']}    
+        {ext:'m3u8', type:'application/vnd.apple.mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http','httpVideo', 'httpVideoLive']},
+        {ext:'m3u', type:'application/vnd.apple.mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http', 'httpVideo', 'httpVideoLive']},             
+        {ext:'m3u8', type:'application/x-mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http','httpVideo', 'httpVideoLive']},
+        {ext:'m3u', type:'application/x-mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http', 'httpVideo', 'httpVideoLive']}    
     ]
     
 }, 'VIDEO');
@@ -29,14 +27,14 @@ $p.newModel({
     androidVersion: 4,
     iosVersion: 3,
     iLove: [
-        {ext:'m3u8', type:'application/mpegURL', platform: ['ios', 'android'], streamType: ['http','httpAudio', 'httpAudioLive']},
-        {ext:'m3u', type:'application/mpegURL', platform: ['ios', 'android'], streamType: ['http','httpAudio', 'httpAudioLive']},
-        {ext:'m3u8', type:'application/vnd.apple.mpegURL', platform: ['ios', 'android'], streamType: ['http','httpAudio', 'httpAudioLive']},
-        {ext:'m3u', type:'application/vnd.apple.mpegURL', platform: ['ios', 'android'], streamType: ['http','httpAudio', 'httpAudioLive']},             
-        {ext:'m3u8', type:'application/x-mpegURL', platform: ['ios', 'android'], streamType: ['http','httpAudio', 'httpAudioLive']},
-        {ext:'m3u', type:'application/x-mpegURL', platform: ['ios', 'android'], streamType: ['http','httpAudio', 'httpAudioLive']},    
-        {ext:'m3u8', type:'audio/mpegURL', platform: ['ios', 'android'], streamType: ['http','httpAudio', 'httpAudioLive']},
-        {ext:'m3u', type:'audio/mpegURL', platform: ['ios', 'android'], streamType: ['http', 'httpAudio', 'httpAudioLive']}
+        {ext:'m3u8', type:'application/vnd.apple.mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http','httpAudio', 'httpAudioLive']},
+        {ext:'m3u', type:'application/vnd.apple.mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http','httpAudio', 'httpAudioLive']},             
+        {ext:'m3u8', type:'application/x-mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http','httpAudio', 'httpAudioLive']},
+        {ext:'m3u', type:'application/x-mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http','httpAudio', 'httpAudioLive']},    
+        {ext:'m3u8', type:'audio/mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http','httpAudio', 'httpAudioLive']},
+        {ext:'m3u', type:'audio/mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http', 'httpAudio', 'httpAudioLive']},
+        {ext:'m3u8', type:'audio/x-mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http','httpAudio', 'httpAudioLive']},
+        {ext:'m3u', type:'audio/x-mpegurl', platform: ['ios', 'android', 'native'], streamType: ['http', 'httpAudio', 'httpAudioLive']}
     ]
     
 }, 'AUDIO');
