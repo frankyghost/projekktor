@@ -763,6 +763,7 @@ jQuery(function ($) {
         *******************************/
         itemHandler: function (data) {
             $(this.cb).find('.' + this.pp.getNS() + 'cuepoint').remove();
+            this._lastPos = -1;
             this.pp.setVolume(this._getVolume())
             this.updateDisplay();
             this.hidecb(true);
