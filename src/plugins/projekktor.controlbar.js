@@ -255,6 +255,7 @@ jQuery(function ($) {
         config: {
             /* Plugin: cb - enable/disable fade away of overlayed controls */
             toggleMute: false,
+            startMuted: false,
             showCuePoints: false,
             fadeDelay: 2500,
             showOnStart: false,
@@ -294,6 +295,12 @@ jQuery(function ($) {
 
             this.addGuiListeners();
             this.hidecb(true);
+
+            // allow to start "mute" but keep initial volume
+            if (this.getConfig('startMuted')) {
+                this.cookie('volume', this._getVolume());
+                this.cookie('muted', true);
+            }
             this.pluginReady = true;
         },
 
