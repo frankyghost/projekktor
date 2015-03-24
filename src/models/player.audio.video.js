@@ -105,7 +105,8 @@ $p.newModel({
          * instead of <video> 'src' attribute.
          */
         this.mediaElement.attr('src', media[0].src);
-        
+        this._quality = media[0].quality;
+
         /* Some Android Gingerbread devices will not play video when
          * the <video> 'type' attribute is set explicitly 
          */
